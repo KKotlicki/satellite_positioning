@@ -1,6 +1,6 @@
 import { Button, Card, CardActions, CardContent, CardHeader } from "@mui/material";
 
-export default function Home() {
+export default function Settings() {
   return (
     <>
       <Card sx={{
