@@ -17,6 +17,15 @@ import { Roboto } from 'next/font/google';
 import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useState } from 'react';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
 
 const project = 'GNSS Planning';
 
@@ -35,6 +44,8 @@ const theme = createTheme({
 });
 
 const pages = ['Settings', 'Charts', 'Sky Plot', 'World View'] as const;
+
+const drawerWidth = 240;
 
 export default function App({ Component, pageProps }: AppProps) {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -58,7 +69,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <ThemeProvider theme={theme}>
         <CssBaseline></CssBaseline>
         <main className={roboto.className}>
-          <AppBar position="static">
+          <AppBar position="relative" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
             <Container maxWidth="xl">
               <Toolbar disableGutters>
                 <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
@@ -157,6 +168,47 @@ export default function App({ Component, pageProps }: AppProps) {
               </Toolbar>
             </Container>
           </AppBar>
+          
+          <Drawer
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+        variant="permanent"
+        anchor="left"
+      >
+        <Toolbar />
+        <Divider />
+        <List>
+          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+        <Divider />
+        <List>
+          {['All mail', 'Trash', 'Spam'].map((text, index) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton>
+                <ListItemIcon>
+                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
           <Component {...pageProps} />
         </main>
       </ThemeProvider>
