@@ -1,6 +1,6 @@
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
-import { CssBaseline } from '@mui/material';
+import { Card, CardContent, CardHeader, CssBaseline, Grid, Slider } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -46,6 +46,10 @@ const theme = createTheme({
 const pages = ['Settings', 'Charts', 'Sky Plot', 'World View'] as const;
 
 const drawerWidth = 240;
+
+function valuetext(value: number) {
+  return `${value}°C`;
+}
 
 export default function App({ Component, pageProps }: AppProps) {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -168,48 +172,61 @@ export default function App({ Component, pageProps }: AppProps) {
               </Toolbar>
             </Container>
           </AppBar>
-          
-          <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="permanent"
-        anchor="left"
-      >
-        <Toolbar />
-        <Divider />
-        <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {['All mail', 'Trash', 'Spam'].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
-          <Component {...pageProps} />
+          <Grid container spacing={0} sx={{ position: 'relative' }}>
+            <Drawer
+              sx={{
+                width: drawerWidth,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                  width: drawerWidth,
+                  boxSizing: 'border-box',
+                },
+              }}
+              variant="permanent"
+              anchor="left"
+            >
+              <Toolbar />
+              <Divider />
+              <Card sx={{
+                width: 'full-width',
+                margin: '1rem',
+              }} variant="outlined">
+                <CardHeader title='Local Time'
+                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                <CardContent>
+                  <Slider
+                    aria-label="Local Time"
+                    defaultValue={30}
+                    getAriaValueText={valuetext}
+                    valueLabelDisplay="off"
+                    step={1}
+                    marks
+                    min={0}
+                    max={144}
+                  />
+                </CardContent>
+              </Card>
+              <Divider />
+              <Card sx={{
+                width: 'full-width',
+                margin: '1rem',
+              }} variant="outlined">
+                <CardHeader title='Satellite Selection'
+                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                  <CardContent></CardContent>
+              </Card>
+              <Divider />
+              <Card sx={{
+                width: 'full-width',
+                margin: '1rem',
+              }} variant="outlined">
+                <CardHeader title='My Settings'
+                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                  <CardContent></CardContent>
+              </Card>
+            </Drawer>
+            <Component {...pageProps} />
+          </Grid>
         </main>
       </ThemeProvider>
 
