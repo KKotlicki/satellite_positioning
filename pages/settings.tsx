@@ -61,7 +61,7 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '150px',
+        height: '100px',
         margin: '1rem 0',
         cursor: 'pointer',
         backgroundColor: isDragging ? theme.palette.primary.light : 'inherit',
