@@ -5,6 +5,8 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,15 +19,69 @@ import { Roboto } from 'next/font/google';
 import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useState } from 'react';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
+
+
+const mi = 3.986005 * 10 ^ 14
+const wE = 7.2921151467 * 10 ^ -5
+
+function timeSinceAlmanac(t: number, toa: number) {
+  return t - toa
+}
+
+function semiMajorAxisOfOrbit(a0: number) {
+  return a0 ^ 2
+}
+
+function meanMotionOfOrbit(a0: number) {
+  return Math.sqrt(mi / a0 ^ 3)
+}
+
+function meanAnomalyOfOrbit(M0: number, n: number, tk: number) {
+  return M0 + n * tk
+}
+
+function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk): number {
+  const Ei: number = E + e * Math.sin(E)
+  if (Math.abs(Ei - E) < 1e-12) {
+    return Ei
+  } else {
+    return eccentricAnomalyOfOrbit(e, Mk, Ei)
+  }
+}
+
+function trueAnomalyOfOrbit(e: number, Ek: number) {
+  return Math.atan2(Math.sqrt(1 - e ^ 2) * Math.sin(Ek), Math.cos(Ek) - e)
+}
+
+function argumentOfPerigeeOfOrbit(vk: number, omega: number) {
+  return vk - omega
+}
+
+function radiusOfOrbit(a: number, e: number, Ek: number) {
+  return a * (1 - e * Math.cos(Ek))
+}
+
+function positionInOrbit(rk: number, psi: number, uk: number): [number, number] {
+  const xk: number = rk * Math.cos(psi)
+  const yk: number = rk * Math.sin(psi)
+  return [xk, yk]
+}
+
+function ascendingNodeOfOrbit(Omega0: number, Omega: number, tk: number, toa: number) {
+  return Omega0 + (Omega - wE) * tk - wE * toa
+}
+
+function positionInECEF(xk: number, yk: number, OmegaK: number, inc: number): [number, number, number] {
+  const x: number = xk * Math.cos(OmegaK) - yk * Math.cos(inc) * Math.sin(OmegaK)
+  const y: number = xk * Math.sin(OmegaK) + yk * Math.cos(inc) * Math.cos(OmegaK)
+  const z: number = yk * Math.sin(inc)
+  return [x, y, z]
+}
+
+
+
+
+
 
 const project = 'GNSS Planning';
 
@@ -213,7 +269,7 @@ export default function App({ Component, pageProps }: AppProps) {
               }} variant="outlined">
                 <CardHeader title='Satellite Selection'
                   style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                  <CardContent></CardContent>
+                <CardContent></CardContent>
               </Card>
               <Divider />
               <Card sx={{
@@ -222,7 +278,7 @@ export default function App({ Component, pageProps }: AppProps) {
               }} variant="outlined">
                 <CardHeader title='My Settings'
                   style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                  <CardContent></CardContent>
+                <CardContent></CardContent>
               </Card>
             </Drawer>
             <Component {...pageProps} />
@@ -233,5 +289,3 @@ export default function App({ Component, pageProps }: AppProps) {
     </>
   )
 }
-
-
