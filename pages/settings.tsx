@@ -125,6 +125,15 @@ export default function Settings() {
               endAdornment: <InputAdornment position="end">m</InputAdornment>,
             }}
           />
+          <TextField
+            label="Elevation cutoff"
+            fullWidth
+            margin="normal"
+            defaultValue="7"
+            InputProps={{
+              endAdornment: <InputAdornment position="end">°</InputAdornment>,
+            }}
+          />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="Start time and date"

@@ -113,6 +113,11 @@ export default function App({ Component, pageProps }: AppProps) {
     setAnchorElNav(null);
   };
 
+  var sliderValue = 0;
+  const now = new Date();
+  const time = new Date(now.getTime() + (sliderValue * 10 * 60 * 1000)).toLocaleTimeString();
+  const date = new Date(now.getTime() + (sliderValue * 10 * 60 * 1000)).toLocaleDateString();
+
   return (
     <>
       <Head>
@@ -245,6 +250,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 <CardHeader title='Local Time'
                   style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
                 <CardContent>
+                  <Typography gutterBottom>
+                    {date} {time}
+                  </Typography>
                   <Slider
                     aria-label="Local Time"
                     defaultValue={30}
