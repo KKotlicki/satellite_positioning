@@ -78,11 +78,6 @@ function positionInECEF(xk: number, yk: number, OmegaK: number, inc: number): [n
   return [x, y, z]
 }
 
-
-
-
-
-
 const project = 'GNSS Planning';
 
 const roboto = Roboto({
