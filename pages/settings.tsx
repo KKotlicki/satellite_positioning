@@ -4,7 +4,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { FC, useState } from "react";
 
-// Define your settings types here
 type Settings = {
   [key: string]: any;
 };
