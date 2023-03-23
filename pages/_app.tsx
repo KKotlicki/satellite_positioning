@@ -20,9 +20,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useState } from 'react';
 
-
-const mi = 3.986005 * 10 ^ 14
-const wE = 7.2921151467 * 10 ^ -5
+const mi = 3.986005 * 1e14
+const wE = 7.2921151467 * 1e-5
 
 function timeSinceAlmanac(t: number, toa: number) {
   return t - toa
@@ -114,10 +113,7 @@ export default function App({ Component, pageProps }: AppProps) {
   };
 
   var sliderValue = 0;
-  const now = new Date();
-  const time = new Date(now.getTime() + (sliderValue * 10 * 60 * 1000)).toLocaleTimeString();
-  const date = new Date(now.getTime() + (sliderValue * 10 * 60 * 1000)).toLocaleDateString();
-
+ 
   return (
     <>
       <Head>
@@ -251,7 +247,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
                 <CardContent>
                   <Typography gutterBottom>
-                    {date} {time}
+                    {sliderValue}
                   </Typography>
                   <Slider
                     aria-label="Local Time"
@@ -281,7 +277,10 @@ export default function App({ Component, pageProps }: AppProps) {
               }} variant="outlined">
                 <CardHeader title='My Settings'
                   style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                <CardContent></CardContent>
+                <CardContent>
+                  {/* List chosen parameters */}
+
+                </CardContent>
               </Card>
             </Drawer>
             <Component {...pageProps} />

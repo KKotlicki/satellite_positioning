@@ -4,6 +4,21 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { FC, useState } from "react";
 
+// Define your settings types here
+type Settings = {
+  [key: string]: any;
+};
+
+// Initialize an empty settings state
+const [settings, setSettings] = useState<Settings>({});
+
+
+const handleShowTimestampsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  setSettings({
+    ...settings,
+    showTimestamps: event.target.checked,
+  });
+};
 
 interface UploadZoneProps {
   onFilesDropped: (files: File[]) => void;
@@ -81,6 +96,12 @@ export default function Settings() {
   );
   const [filesUploaded, setFilesUploaded] = useState(false);
   const handleFilesDropped = (files: File[]) => {
+    if (files.length === 0) return;
+    // check if file extension is .alm
+    if (files[0].name.split('.').pop() !== 'alm') {
+      alert('File type not supported');
+      return;
+    }
     console.log(files);
     setFilesUploaded(true); // <-- update state variable
   };
