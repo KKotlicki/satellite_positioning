@@ -9,17 +9,6 @@ type Settings = {
   [key: string]: any;
 };
 
-// Initialize an empty settings state
-const [settings, setSettings] = useState<Settings>({});
-
-
-const handleShowTimestampsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  setSettings({
-    ...settings,
-    showTimestamps: event.target.checked,
-  });
-};
-
 interface UploadZoneProps {
   onFilesDropped: (files: File[]) => void;
 }
