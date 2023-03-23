@@ -1,15 +1,52 @@
-import { Button, Card, CardActions, CardContent, CardHeader, InputAdornment, TextField, useTheme } from "@mui/material";
+import useStore from "@/store/store";
+import { Card, CardContent, CardHeader, InputAdornment, TextField, useTheme } from "@mui/material";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
 import { FC, useState } from "react";
 
-type Settings = {
-  [key: string]: any;
-};
+function parseAlmFile(input: string): Map<number, number[]> {
+  let data: string = input
+
+  let res = [] as number[][]
+
+  let shiftToNext = 0
+
+  let previousColumnsAmount = 0
+
+  data.split("\n").forEach((line) => {
+    const numbers = line.replace(/\-/g, " -").trim().split(/\s+/)
+
+    if (numbers.length <= 1) {
+      shiftToNext += previousColumnsAmount
+      return
+    }
+
+    previousColumnsAmount = numbers.length + 1
+
+    numbers.forEach((n, i) => {
+      const satellite = res[i + shiftToNext]
+      if (!satellite) res[i + shiftToNext] = []
+      if (Number.isNaN(n)) return
+      res[i + shiftToNext]!.push(+n)
+    })
+  })
+
+  res = res.filter(x => x)
+
+  const dic = new Map<number, number[]>()
+
+  res.forEach((nums) => {
+    dic.set(nums[0]!, nums.splice(1))
+  })
+
+  return dic
+}
+
+
+
 
 interface UploadZoneProps {
-  onFilesDropped: (files: File[]) => void;
+  onFilesDropped: (content: string | ArrayBuffer | null) => void;
 }
 
 const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
@@ -26,25 +63,29 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
     setIsDragging(false);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
-
-    // Handle the dropped files here
     const files = Array.from(e.dataTransfer.files);
-    onFilesDropped(files);
+    const text = await files[0]?.text()
+    // get filename here
+
+    onFilesDropped(text ?? "");
   };
 
   const handleChooseFile = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = '.alm,.yum'; // Acceptable file types
+    fileInput.accept = '.alm,.yum';
     fileInput.multiple = true;
-    fileInput.onchange = (e: Event) => {
+    fileInput.onchange = async (e: Event) => {
       const target = e.target as HTMLInputElement;
       if (target && target.files) {
         const files = Array.from(target.files);
-        onFilesDropped(files);
+        const text = await files[0]?.text()
+        // get filename here
+
+        onFilesDropped(text ?? "");
       }
     };
     fileInput.click();
@@ -79,20 +120,30 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
 
 export default function Settings() {
   const theme = useTheme();
-  const [value, setValue] = useState<Dayjs | null>(
-    dayjs('2023-01-01T00:00:00.000Z'),
-  );
   const [filesUploaded, setFilesUploaded] = useState(false);
-  const handleFilesDropped = (files: File[]) => {
-    if (files.length === 0) return;
-    // check if file extension is .alm
-    if (files[0].name.split('.').pop() !== 'alm') {
-      alert('File type not supported');
-      return;
-    }
-    console.log(files);
-    setFilesUploaded(true); // <-- update state variable
+  const [almanac, setalmanac] = useState<null | Map<number, number[]>>(null)
+
+  const handleFilesDropped = (content: string | ArrayBuffer | null) => {
+    const almanac = new Map<number, number[]>();
+    parseAlmFile(content as string).forEach((value, key) => {
+      almanac.set(key, value);
+    });
+
+    // console.log(alm);
+
+    setalmanac(almanac)
+    setFilesUploaded(true);
   };
+  const latitude = useStore((state) => state.latitude)
+  const changeLatitude = useStore((state) => state.changeLatitude)
+  const longitude = useStore((state) => state.longitude)
+  const changeLongitude = useStore((state) => state.changeLongitude)
+  const height = useStore((state) => state.height)
+  const changeHeight = useStore((state) => state.changeHeight)
+  const elevationCutoff = useStore((state) => state.elevationCutoff)
+  const changeElevationCutoff = useStore((state) => state.changeElevationCutoff)
+  const timeAndDate = useStore((state) => state.timeAndDate)
+  const changeTimeAndDate = useStore((state) => state.changeTimeAndDate)
 
   return (
     <>
@@ -109,36 +160,46 @@ export default function Settings() {
         <CardContent>
           <TextField
             label="Latitude"
+            value={latitude}
             fullWidth
             margin="normal"
-            defaultValue="N 0° 0' 0"
+            placeholder="N 0° 0' 0"
+            onChange={(e) => { changeLatitude(e.target.value) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">°</InputAdornment>,
             }}
           />
           <TextField
             label="Longitude"
+            value={longitude}
             fullWidth
             margin="normal"
-            defaultValue="E 0° 0' 0"
+            placeholder="E 0° 0' 0"
+            onChange={(e) => { changeLongitude(e.target.value) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">°</InputAdornment>,
             }}
           />
           <TextField
             label="Height"
+            value={height}
             fullWidth
             margin="normal"
-            defaultValue="480"
+            placeholder="480"
+            type="number"
+            onChange={(e) => { changeHeight(Number(e.target.value)) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">m</InputAdornment>,
             }}
           />
           <TextField
             label="Elevation cutoff"
+            value={elevationCutoff}
             fullWidth
             margin="normal"
-            defaultValue="7"
+            placeholder="7"
+            type="number"
+            onChange={(e) => { changeElevationCutoff(Number(e.target.value)) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">°</InputAdornment>,
             }}
@@ -147,9 +208,10 @@ export default function Settings() {
             <DateTimePicker
               label="Start time and date"
               renderInput={(params) => <TextField {...params} margin="normal" />}
-              value={value}
+              value={timeAndDate}
               onChange={(newValue) => {
-                setValue(newValue);
+                if (newValue === null) return;
+                changeTimeAndDate(newValue);
               }}
               componentsProps={{
                 actionBar: { actions: ["today"] },
@@ -160,9 +222,6 @@ export default function Settings() {
             <UploadZone onFilesDropped={handleFilesDropped} />
           </div>
         </CardContent>
-        <CardActions style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button disabled={!filesUploaded}>Apply</Button>
-        </CardActions>
       </Card>
     </>
   )
