@@ -6,7 +6,6 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -244,8 +243,8 @@ export default function App({ Component, pageProps }: AppProps) {
                   width: drawerWidth,
                   boxSizing: 'border-box',
                   height: 'calc(100% - 64px)', // Subtract the height of the Toolbar
-          overflowY: 'auto', // Allow vertical scrolling if content overflows
-        
+                  overflowY: 'auto', // Allow vertical scrolling if content overflows
+
                 },
               }}
               variant="permanent"
@@ -253,61 +252,61 @@ export default function App({ Component, pageProps }: AppProps) {
             >
               <Toolbar />
               <Box sx={{ height: '100%' }}>
-              <Card sx={{
-                width: 'full-width',
-                margin: '1rem',
-              }} variant="outlined">
-                <CardHeader title='Local Time'
-                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                <CardContent>
-                  <Typography gutterBottom>
-                    {sliderValue}
-                  </Typography>
-                  <Slider
-                    aria-label="Local Time"
-                    defaultValue={30}
-                    getAriaValueText={valuetext}
-                    valueLabelDisplay="off"
-                    step={1}
-                    marks
-                    min={0}
-                    max={144}
-                  />
-                </CardContent>
-              </Card>
-              <Card sx={{
-                width: 'full-width',
-                margin: '1rem',
-              }} variant="outlined">
-                <CardHeader title='Satellite Selection'
-                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                <CardContent>    <FormGroup>
-                  <FormControlLabel control={<Checkbox defaultChecked sx={{ color: green[800], '&.Mui-checked': { color: green[600], } }} />} label="GPS" />
-                  <FormControlLabel control={<Checkbox defaultChecked sx={{ color: red[800], '&.Mui-checked': { color: red[600], } }} />} label="GLONASS" />
-                  <FormControlLabel control={<Checkbox defaultChecked sx={{ color: blue[800], '&.Mui-checked': { color: blue[600], } }} />} label="Galileo" />
-                  <FormControlLabel control={<Checkbox defaultChecked sx={{ color: orange[800], '&.Mui-checked': { color: orange[600], } }} />} label="Beidou" />
-                  <FormControlLabel control={<Checkbox defaultChecked sx={{color: pink[800], '&.Mui-checked': { color: pink[600], } }} />} label="QZSS" />
-                </FormGroup></CardContent>
-              </Card>
-              <Card sx={{
-                width: 'full-width',
-                margin: '1rem',
-              }} variant="outlined">
-                <CardHeader title='My Settings'
-                  style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
-                <CardContent>
-                  <Box component="ul" sx={{
-                    m: 0, p: 0, pl: 1
-                  }}>
-                    <li>Latitude: {latitude}</li>
-                    <li>Longitude: {longitude}</li>
-                    <li>Height: {height}</li>
-                    <li>Elevation cutoff: {elevationCutoff}</li>
-                    <li>Time and Date: {timeAndDate.format('MM/DD/YYYY hh:mm A')}</li>
-                    <li>Almanac: </li>
-                  </Box>
-                </CardContent>
-              </Card>
+                <Card sx={{
+                  width: 'full-width',
+                  margin: '1rem',
+                }} variant="outlined">
+                  <CardHeader title='Local Time'
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                  <CardContent>
+                    <Typography gutterBottom>
+                      {sliderValue}
+                    </Typography>
+                    <Slider
+                      aria-label="Local Time"
+                      defaultValue={30}
+                      getAriaValueText={valuetext}
+                      valueLabelDisplay="off"
+                      step={1}
+                      marks
+                      min={0}
+                      max={144}
+                    />
+                  </CardContent>
+                </Card>
+                <Card sx={{
+                  width: 'full-width',
+                  margin: '1rem',
+                }} variant="outlined">
+                  <CardHeader title='Satellite Selection'
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                  <CardContent>    <FormGroup>
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: green[800], '&.Mui-checked': { color: green[600], } }} />} label="GPS" />
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: red[800], '&.Mui-checked': { color: red[600], } }} />} label="GLONASS" />
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: blue[800], '&.Mui-checked': { color: blue[600], } }} />} label="Galileo" />
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: orange[800], '&.Mui-checked': { color: orange[600], } }} />} label="Beidou" />
+                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: pink[800], '&.Mui-checked': { color: pink[600], } }} />} label="QZSS" />
+                  </FormGroup></CardContent>
+                </Card>
+                <Card sx={{
+                  width: 'full-width',
+                  margin: '1rem',
+                }} variant="outlined">
+                  <CardHeader title='My Settings'
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                  <CardContent>
+                    <Box component="ul" sx={{
+                      m: 0, p: 0, pl: 1
+                    }}>
+                      <li>Latitude: {latitude}</li>
+                      <li>Longitude: {longitude}</li>
+                      <li>Height: {height}</li>
+                      <li>Elevation cutoff: {elevationCutoff}</li>
+                      <li>Time and Date: {timeAndDate.format('MM/DD/YYYY hh:mm A')}</li>
+                      <li>Almanac: </li>
+                    </Box>
+                  </CardContent>
+                </Card>
               </Box>
             </Drawer>
             <Component {...pageProps} />
