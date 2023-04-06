@@ -120,6 +120,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const height = useStore((state) => state.height);
   const elevationCutoff = useStore((state) => state.elevationCutoff);
   const timeAndDate = useStore((state) => state.timeAndDate);
+  const almanacName = useStore((state) => state.almanacName);
 
 
   var sliderValue = 0;
@@ -303,7 +304,7 @@ export default function App({ Component, pageProps }: AppProps) {
                       <li>Height: {height}</li>
                       <li>Elevation cutoff: {elevationCutoff}</li>
                       <li>Time and Date: {timeAndDate.format('MM/DD/YYYY hh:mm A')}</li>
-                      <li>Almanac: </li>
+                      <li>Almanac: {almanacName}</li>
                     </Box>
                   </CardContent>
                 </Card>

@@ -1,5 +1,5 @@
-import { create } from 'zustand'
 import dayjs, { Dayjs } from 'dayjs'
+import { create } from 'zustand'
 
 const useStore = create<{
     latitude: string,

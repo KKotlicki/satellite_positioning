@@ -42,9 +42,6 @@ function parseAlmFile(input: string): Map<number, number[]> {
   return dic
 }
 
-
-
-
 interface UploadZoneProps {
   onFilesDropped: (content: string | ArrayBuffer | null) => void;
 }
@@ -120,19 +117,12 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
 
 export default function Settings() {
   const theme = useTheme();
-  const [filesUploaded, setFilesUploaded] = useState(false);
-  const [almanac, setalmanac] = useState<null | Map<number, number[]>>(null)
 
   const handleFilesDropped = (content: string | ArrayBuffer | null) => {
     const almanac = new Map<number, number[]>();
     parseAlmFile(content as string).forEach((value, key) => {
       almanac.set(key, value);
     });
-
-    // console.log(alm);
-
-    setalmanac(almanac)
-    setFilesUploaded(true);
   };
   const latitude = useStore((state) => state.latitude)
   const changeLatitude = useStore((state) => state.changeLatitude)
