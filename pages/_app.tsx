@@ -23,60 +23,61 @@ import { MouseEvent, useState } from 'react';
 const mi = 3.986005 * 1e14
 const wE = 7.2921151467 * 1e-5
 
+// function timeSinceAlmanac(t: number, toa: number) {
+//   return t - toa
+// }
 
-function timeSinceAlmanac(t: number, toa: number) {
-  return t - toa
-}
+// function semiMajorAxisOfOrbit(a0: number) {
+//   return a0 ^ 2
+// }
 
-function semiMajorAxisOfOrbit(a0: number) {
-  return a0 ^ 2
-}
+// function meanMotionOfOrbit(a0: number) {
+//   return Math.sqrt(mi / a0 ^ 3)
+// }
 
-function meanMotionOfOrbit(a0: number) {
-  return Math.sqrt(mi / a0 ^ 3)
-}
+// function meanAnomalyOfOrbit(M0: number, n: number, tk: number) {
+//   return M0 + n * tk
+// }
 
-function meanAnomalyOfOrbit(M0: number, n: number, tk: number) {
-  return M0 + n * tk
-}
+// function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk): number {
+//   const Ei: number = E + e * Math.sin(E)
+//   if (Math.abs(Ei - E) < 1e-12) {
+//     return Ei
+//   } else {
+//     return eccentricAnomalyOfOrbit(e, Mk, Ei)
+//   }
+// }
 
-function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk): number {
-  const Ei: number = E + e * Math.sin(E)
-  if (Math.abs(Ei - E) < 1e-12) {
-    return Ei
-  } else {
-    return eccentricAnomalyOfOrbit(e, Mk, Ei)
-  }
-}
+// function trueAnomalyOfOrbit(e: number, Ek: number) {
+//   return Math.atan2(Math.sqrt(1 - e ^ 2) * Math.sin(Ek), Math.cos(Ek) - e)
+// }
 
-function trueAnomalyOfOrbit(e: number, Ek: number) {
-  return Math.atan2(Math.sqrt(1 - e ^ 2) * Math.sin(Ek), Math.cos(Ek) - e)
-}
+// function argumentOfPerigeeOfOrbit(vk: number, omega: number) {
+//   return vk - omega
+// }
 
-function argumentOfPerigeeOfOrbit(vk: number, omega: number) {
-  return vk - omega
-}
+// function radiusOfOrbit(a: number, e: number, Ek: number) {
+//   return a * (1 - e * Math.cos(Ek))
+// }
 
-function radiusOfOrbit(a: number, e: number, Ek: number) {
-  return a * (1 - e * Math.cos(Ek))
-}
+// function positionInOrbit(rk: number, psi: number, uk: number): [number, number] {
+//   const xk: number = rk * Math.cos(psi)
+//   const yk: number = rk * Math.sin(psi)
+//   return [xk, yk]
+// }
 
-function positionInOrbit(rk: number, psi: number, uk: number): [number, number] {
-  const xk: number = rk * Math.cos(psi)
-  const yk: number = rk * Math.sin(psi)
-  return [xk, yk]
-}
+// function ascendingNodeOfOrbit(Omega0: number, Omega: number, tk: number, toa: number) {
+//   return Omega0 + (Omega - wE) * tk - wE * toa
+// }
 
-function ascendingNodeOfOrbit(Omega0: number, Omega: number, tk: number, toa: number) {
-  return Omega0 + (Omega - wE) * tk - wE * toa
-}
+// function positionInECEF(xk: number, yk: number, OmegaK: number, inc: number): [number, number, number] {
+//   const x: number = xk * Math.cos(OmegaK) - yk * Math.cos(inc) * Math.sin(OmegaK)
+//   const y: number = xk * Math.sin(OmegaK) + yk * Math.cos(inc) * Math.cos(OmegaK)
+//   const z: number = yk * Math.sin(inc)
+//   return [x, y, z]
+// }
 
-function positionInECEF(xk: number, yk: number, OmegaK: number, inc: number): [number, number, number] {
-  const x: number = xk * Math.cos(OmegaK) - yk * Math.cos(inc) * Math.sin(OmegaK)
-  const y: number = xk * Math.sin(OmegaK) + yk * Math.cos(inc) * Math.cos(OmegaK)
-  const z: number = yk * Math.sin(inc)
-  return [x, y, z]
-}
+
 
 const project = 'GNSS Planning';
 
@@ -133,6 +134,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
       <ThemeProvider theme={theme}>
         <CssBaseline></CssBaseline>
         <main className={roboto.className}>

@@ -197,7 +197,7 @@ export default function Settings() {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="Start time and date"
-              renderInput={(params) => <TextField {...params} margin="normal" />}
+              slotProps={{ textField: { variant: 'outlined', margin: "normal" } }}
               value={timeAndDate}
               onChange={(newValue) => {
                 if (newValue === null) return;
