@@ -237,7 +237,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </Toolbar>
             </Container>
           </AppBar>
-          <Grid container spacing={0} sx={{ position: 'relative' }}>
+          <Box sx={{ display: 'flex' }}>
             <Drawer
               sx={{
                 width: drawerWidth,
@@ -245,9 +245,6 @@ export default function App({ Component, pageProps }: AppProps) {
                 '& .MuiDrawer-paper': {
                   width: drawerWidth,
                   boxSizing: 'border-box',
-                  height: 'calc(100% - 64px)', // Subtract the height of the Toolbar
-                  overflowY: 'auto', // Allow vertical scrolling if content overflows
-
                 },
               }}
               variant="permanent"
@@ -313,7 +310,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </Box>
             </Drawer>
             <Component {...pageProps} />
-          </Grid>
+            </Box>
         </main>
       </ThemeProvider>
 
