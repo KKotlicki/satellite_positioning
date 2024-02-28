@@ -134,10 +134,10 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
+      
       <ThemeProvider theme={theme}>
-        <CssBaseline></CssBaseline>
-        <main className={roboto.className}>
+<CssBaseline></CssBaseline>
+      <main className={roboto.className}>
           <AppBar position="relative" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
             <Container maxWidth="xl">
               <Toolbar disableGutters>
@@ -227,7 +227,7 @@ export default function App({ Component, pageProps }: AppProps) {
                       passHref>
                       <Button
                         onClick={handleCloseNavMenu}
-                        sx={{ my: 2, color: 'white', display: 'block' }}
+                        sx={{  color: 'white', display: 'block' }}
                       >
                         {page}
                       </Button>
@@ -237,7 +237,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </Toolbar>
             </Container>
           </AppBar>
-          <Box sx={{ display: 'flex' }}>
+<Box sx={{ display: 'flex' }}>
             <Drawer
               sx={{
                 width: drawerWidth,
@@ -251,7 +251,7 @@ export default function App({ Component, pageProps }: AppProps) {
               anchor="left"
             >
               <Toolbar />
-              <Box sx={{ height: '100%' }}>
+              <Box sx={{overflow: 'auto' }}>
                 <Card sx={{
                   width: 'full-width',
                   margin: '1rem',
@@ -311,7 +311,7 @@ export default function App({ Component, pageProps }: AppProps) {
             </Drawer>
             <Component {...pageProps} />
             </Box>
-        </main>
+</main>
       </ThemeProvider>
 
     </>
