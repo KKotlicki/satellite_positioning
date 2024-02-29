@@ -19,7 +19,9 @@ import { Roboto } from 'next/font/google';
 import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useEffect, useState } from 'react';
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
 
 // const mi = 3.986005 * 1e14
 // const wE = 7.2921151467 * 1e-5
@@ -121,6 +123,11 @@ export default function App({ Component, pageProps }: AppProps) {
   const almanacName = useStore((state) => state.almanacName);
 
   const [sliderDateDraft, setSliderDate] = useState(date);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
 
   const sliderValueToTime = (value: number) => {
 
@@ -146,6 +153,23 @@ export default function App({ Component, pageProps }: AppProps) {
       setSliderDate(date);
     }
   }, [date, time]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        if (time === 144) {
+          changeTime(0);
+          setSliderDate(sliderDateDraft.add(1, 'day'));
+        } else {
+          changeTime(time + 1);
+        }
+      }, 100);
+      return () => {
+        clearInterval(interval);
+      };
+    }
+    return;
+  }, [isPlaying, time]);
 
   return (
     <>
@@ -295,6 +319,11 @@ export default function App({ Component, pageProps }: AppProps) {
                       max={144}
                       onChange={handleSliderChange}
                     />
+                    <Box display="flex" justifyContent="center" style={{ marginBottom: '-16px' }}>
+                      <IconButton aria-label="play/pause" onClick={handlePlayPause}>
+                        {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+                      </IconButton>
+                    </Box>
                   </CardContent>
                 </Card>
                 <Card sx={{
