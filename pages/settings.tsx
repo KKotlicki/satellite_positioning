@@ -49,6 +49,7 @@ interface UploadZoneProps {
 const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const theme = useTheme();
+  const changeAlmanacName = useStore((state) => state.changeAlmanacName)
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -66,6 +67,8 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
     const files = Array.from(e.dataTransfer.files);
     const text = await files[0]?.text()
     // get filename here
+    if (!files[0]?.name) { throw new Error("No file name") }
+    changeAlmanacName(files[0]?.name)
 
     onFilesDropped(text ?? "");
   };
@@ -81,6 +84,8 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
         const files = Array.from(target.files);
         const text = await files[0]?.text()
         // get filename here
+        if (!files[0]?.name) { throw new Error("No file name") }
+        changeAlmanacName(files[0]?.name)
 
         onFilesDropped(text ?? "");
       }
@@ -118,11 +123,14 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
 export default function Settings() {
   const theme = useTheme();
 
+
+  const changeAlmanac = useStore((state) => state.changeAlmanac)
   const handleFilesDropped = (content: string | ArrayBuffer | null) => {
     const almanac = new Map<number, number[]>();
     parseAlmFile(content as string).forEach((value, key) => {
       almanac.set(key, value);
     });
+    changeAlmanac(almanac);
   };
   const latitude = useStore((state) => state.latitude)
   const changeLatitude = useStore((state) => state.changeLatitude)

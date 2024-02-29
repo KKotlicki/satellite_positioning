@@ -21,6 +21,8 @@ type Store = {
     changeTime: (newTime: number) => void
     almanacName: string,
     changeAlmanacName: (newAlmanacName: string) => void
+    almanac: Map<number, number[]>,
+    changeAlmanac: (newAlmanac: Map<number, number[]>) => void
     GPS: SatellitePath,
     changeGPS: (newGPS: SatellitePath) => void
 }
@@ -40,6 +42,8 @@ const useStore = create<Store>((set) => ({
     changeTime: (newTime) => set(() => ({ time: newTime })),
     almanacName: "",
     changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
+    almanac: new Map<number, number[]>(),
+    changeAlmanac: (newAlmanac) => set(() => ({ almanac: newAlmanac })),
     GPS: {
         2: Array.from({ length: 145 }, (_, index) => {
             const angle = (index / 145) * 2 * Math.PI;
