@@ -6,7 +6,6 @@ type SatellitePath = Record<number, [number, number][]>
 // const GPS = {
 //     1: [[0, 0], [0, 0], [0, 0], [0, 0]],
 // } as const satisfies SatellitePath
-
 type Store = {
     latitude: string,
     changeLatitude: (newLatitude: string) => void
@@ -16,10 +15,13 @@ type Store = {
     changeHeight: (newHeight: number) => void
     elevationCutoff: number,
     changeElevationCutoff: (newElevationCutoff: number) => void
-    timeAndDate: Dayjs,
-    changeTimeAndDate: (newTimeAndDate: Dayjs) => void
+    date: Dayjs,
+    changeDate: (newDate: Dayjs) => void
+    time: Dayjs,
+    changeTime: (newTime: Dayjs) => void
     almanacName: string,
     changeAlmanacName: (newAlmanacName: string) => void
+    
     GPS: SatellitePath,
     changeGPS: (newGPS: SatellitePath) => void
 }
@@ -33,8 +35,10 @@ const useStore = create<Store>((set) => ({
     changeHeight: (newHeight) => set(() => ({ height: newHeight })),
     elevationCutoff: 7,
     changeElevationCutoff: (newElevationCutoff) => set(() => ({ elevationCutoff: newElevationCutoff })),
-    timeAndDate: dayjs(new Date()),
-    changeTimeAndDate: (newTimeAndDate) => set(() => ({ timeAndDate: newTimeAndDate })),
+    date: dayjs(new Date()).startOf('day'),
+    changeDate: (newDate) => set(() => ({ date: newDate.startOf('day') })),
+    time: dayjs(new Date()).startOf('minute'),
+    changeTime: (newTime) => set(() => ({ time: newTime.startOf('minute') })),
     almanacName: "",
     changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
     GPS: {
@@ -57,8 +61,6 @@ const useStore = create<Store>((set) => ({
             return [latitude, longitude];
         }),
     },
-    // GPS: {},
-
     changeGPS: (newGPS) => set(() => ({ GPS: newGPS })),
 }));
 

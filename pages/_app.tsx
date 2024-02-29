@@ -1,7 +1,7 @@
 import useStore from '@/store/store';
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Card, CardContent, CardHeader, Checkbox, CssBaseline, FormControlLabel, FormGroup, Grid, Slider } from '@mui/material';
+import { Card, CardContent, CardHeader, Checkbox, CssBaseline, FormControlLabel, FormGroup, Slider } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -20,8 +20,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useState } from 'react';
 
-const mi = 3.986005 * 1e14
-const wE = 7.2921151467 * 1e-5
+// const mi = 3.986005 * 1e14
+// const wE = 7.2921151467 * 1e-5
 
 // function timeSinceAlmanac(t: number, toa: number) {
 //   return t - toa
@@ -120,7 +120,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const longitude = useStore((state) => state.longitude);
   const height = useStore((state) => state.height);
   const elevationCutoff = useStore((state) => state.elevationCutoff);
-  const timeAndDate = useStore((state) => state.timeAndDate);
+  const date = useStore((state) => state.date);
   const almanacName = useStore((state) => state.almanacName);
 
 
@@ -302,7 +302,7 @@ export default function App({ Component, pageProps }: AppProps) {
                       <li>Longitude: {longitude}</li>
                       <li>Height: {height}</li>
                       <li>Elevation cutoff: {elevationCutoff}</li>
-                      <li>Time and Date: {timeAndDate.format('MM/DD/YYYY hh:mm A')}</li>
+                      <li>Date: {date.format('MM/DD/YYYY')}</li>
                       <li>Almanac: {almanacName}</li>
                     </Box>
                   </CardContent>

@@ -1,6 +1,6 @@
 import useStore from "@/store/store";
 import { Card, CardContent, CardHeader, InputAdornment, TextField, useTheme } from "@mui/material";
-import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FC, useState } from "react";
 
@@ -132,8 +132,8 @@ export default function Settings() {
   const changeHeight = useStore((state) => state.changeHeight)
   const elevationCutoff = useStore((state) => state.elevationCutoff)
   const changeElevationCutoff = useStore((state) => state.changeElevationCutoff)
-  const timeAndDate = useStore((state) => state.timeAndDate)
-  const changeTimeAndDate = useStore((state) => state.changeTimeAndDate)
+  const date = useStore((state) => state.date)
+  const changeDate = useStore((state) => state.changeDate)
 
   return (
     <>
@@ -195,13 +195,13 @@ export default function Settings() {
             }}
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateTimePicker
-              label="Start time and date"
+            <DatePicker
+              label="Start date"
               slotProps={{ textField: { variant: 'outlined', margin: "normal" } }}
-              value={timeAndDate}
+              value={date}
               onChange={(newValue) => {
                 if (newValue === null) return;
-                changeTimeAndDate(newValue);
+                changeDate(newValue);
               }}
               componentsProps={{
                 actionBar: { actions: ["today"] },
