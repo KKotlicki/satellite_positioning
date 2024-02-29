@@ -41,20 +41,20 @@ const useStore = create<Store>((set) => ({
     almanacName: "",
     changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
     GPS: {
-        2: Array.from({ length: 144 }, (_, index) => {
-            const angle = (index / 144) * 2 * Math.PI;
+        2: Array.from({ length: 145 }, (_, index) => {
+            const angle = (index / 145) * 2 * Math.PI;
             const latitude = Math.sin(angle) * 100;
             const longitude = Math.cos(angle) * 100;
             return [latitude, longitude];
         }),
         3: Array.from({ length: 144 }, (_, index) => {
-            const angle = (index / 144) * 2 * Math.PI;
+            const angle = (index / 145) * 2 * Math.PI;
             const latitude = Math.sin(angle) * 200;
             const longitude = Math.cos(angle) * 200;
             return [latitude, longitude];
         }),
         4: Array.from({ length: 144 }, (_, index) => {
-            const angle = (index / 144) * 2 * Math.PI;
+            const angle = (index / 145) * 2 * Math.PI;
             const latitude = Math.sin(angle) * 300;
             const longitude = Math.cos(angle) * 300;
             return [latitude, longitude];
