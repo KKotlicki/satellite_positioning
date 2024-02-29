@@ -18,7 +18,8 @@ import type { AppProps } from 'next/app';
 import { Roboto } from 'next/font/google';
 import Head from 'next/head';
 import Link from 'next/link';
-import { MouseEvent, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
+import dayjs from 'dayjs'
 
 // const mi = 3.986005 * 1e14
 // const wE = 7.2921151467 * 1e-5
@@ -78,7 +79,6 @@ import { MouseEvent, useState } from 'react';
 // }
 
 
-
 const project = 'GNSS Planning';
 
 const roboto = Roboto({
@@ -99,11 +99,6 @@ const pages = ['Settings', 'Charts', 'Sky Plot', 'World View'] as const;
 
 const drawerWidth = 240;
 
-function valuetext(value: number) {
-  return `${value}°C`;
-}
-
-
 
 export default function App({ Component, pageProps }: AppProps) {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -121,10 +116,36 @@ export default function App({ Component, pageProps }: AppProps) {
   const height = useStore((state) => state.height);
   const elevationCutoff = useStore((state) => state.elevationCutoff);
   const date = useStore((state) => state.date);
+  const time = useStore((state) => state.time);
+  const changeTime = useStore((state) => state.changeTime)
   const almanacName = useStore((state) => state.almanacName);
 
+  const [sliderDateDraft, setSliderDate] = useState(date);
 
-  var sliderValue = 0;
+  const sliderValueToTime = (value: number) => {
+
+    return dayjs(new Date()).startOf('day').add(value * 10, 'minute');
+  };
+
+  const handleSliderChange = (_event: Event, newValue: number | number[]) => {
+    if (Array.isArray(newValue)) throw new Error('MUI Slider value return: Expected a number');
+    if (newValue == 144) {
+      const newDate = sliderDateDraft.add(1, 'day');
+      setSliderDate(newDate)
+    }
+    else {
+      setSliderDate(date)
+    }
+    changeTime(newValue);
+  };
+
+  useEffect(() => {
+    if (time === 144) {
+      setSliderDate(date.add(1, 'day'));
+    } else {
+      setSliderDate(date);
+    }
+  }, [date, time]);
 
   return (
     <>
@@ -134,10 +155,10 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
+
       <ThemeProvider theme={theme}>
-<CssBaseline></CssBaseline>
-      <main className={roboto.className}>
+        <CssBaseline></CssBaseline>
+        <main className={roboto.className}>
           <AppBar position="relative" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
             <Container maxWidth="xl">
               <Toolbar disableGutters>
@@ -227,7 +248,7 @@ export default function App({ Component, pageProps }: AppProps) {
                       passHref>
                       <Button
                         onClick={handleCloseNavMenu}
-                        sx={{  color: 'white', display: 'block' }}
+                        sx={{ color: 'white', display: 'block' }}
                       >
                         {page}
                       </Button>
@@ -237,7 +258,7 @@ export default function App({ Component, pageProps }: AppProps) {
               </Toolbar>
             </Container>
           </AppBar>
-<Box sx={{ display: 'flex' }}>
+          <Box sx={{ display: 'flex' }}>
             <Drawer
               sx={{
                 width: drawerWidth,
@@ -251,26 +272,28 @@ export default function App({ Component, pageProps }: AppProps) {
               anchor="left"
             >
               <Toolbar />
-              <Box sx={{overflow: 'auto' }}>
+              <Box sx={{ overflow: 'auto' }}>
                 <Card sx={{
                   width: 'full-width',
                   margin: '1rem',
                 }} variant="outlined">
                   <CardHeader title='Local Time'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}>
+                  </CardHeader>
                   <CardContent>
                     <Typography gutterBottom>
-                      {sliderValue}
+                      {sliderDateDraft.format('DD/MM/YYYY') + " " + sliderValueToTime(time).format('HH:mm')}
                     </Typography>
                     <Slider
                       aria-label="Local Time"
-                      defaultValue={30}
-                      getAriaValueText={valuetext}
-                      valueLabelDisplay="off"
+                      value={time}
+                      getAriaValueText={(value: number) => sliderValueToTime(value).format('HH:mm')}
+                      valueLabelDisplay='off'
                       step={1}
                       marks
                       min={0}
                       max={144}
+                      onChange={handleSliderChange}
                     />
                   </CardContent>
                 </Card>
@@ -310,10 +333,10 @@ export default function App({ Component, pageProps }: AppProps) {
               </Box>
             </Drawer>
             <Component {...pageProps} />
-            </Box>
-</main>
+          </Box>
+        </main>
       </ThemeProvider>
 
     </>
   )
-}
+};

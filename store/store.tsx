@@ -17,11 +17,10 @@ type Store = {
     changeElevationCutoff: (newElevationCutoff: number) => void
     date: Dayjs,
     changeDate: (newDate: Dayjs) => void
-    time: Dayjs,
-    changeTime: (newTime: Dayjs) => void
+    time: number,
+    changeTime: (newTime: number) => void
     almanacName: string,
     changeAlmanacName: (newAlmanacName: string) => void
-    
     GPS: SatellitePath,
     changeGPS: (newGPS: SatellitePath) => void
 }
@@ -37,8 +36,8 @@ const useStore = create<Store>((set) => ({
     changeElevationCutoff: (newElevationCutoff) => set(() => ({ elevationCutoff: newElevationCutoff })),
     date: dayjs(new Date()).startOf('day'),
     changeDate: (newDate) => set(() => ({ date: newDate.startOf('day') })),
-    time: dayjs(new Date()).startOf('minute'),
-    changeTime: (newTime) => set(() => ({ time: newTime.startOf('minute') })),
+    time: 72,
+    changeTime: (newTime) => set(() => ({ time: newTime })),
     almanacName: "",
     changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
     GPS: {

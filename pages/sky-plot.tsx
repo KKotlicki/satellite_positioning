@@ -8,8 +8,8 @@ const SkyPlotGraph = dynamic(() => import('../components/sky-plot-graph'), {
 
 const SkyPlot = () => {
   return (
-      <SkyPlotGraph />
+    <SkyPlotGraph />
   )
 }
 
-export default SkyPlot
+export default SkyPlot;
