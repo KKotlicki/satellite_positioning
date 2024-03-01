@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Plot from 'react-plotly.js';
+import Data from "react-plotly.js";
 import { useTheme } from '@mui/material/styles';
 import useStore from "@/store/store";
 import { green } from '@mui/material/colors';
@@ -8,14 +9,40 @@ function typeSafeKeys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof T>;
 }
 
+function generateData(sky: Map<number, Map<number, number[]>>, elevationCutoff: number): Data[] {
+  const data: Data[] = [];
+// for each key satelliteNumber in the sky variable
+  // if satelliteNumber === 39 (for the debugging purposes)
+    // get the value as satelliteMap Map<number, number[]> (timeIncrement: [elevation, azimuth])
+
+    // if satelliteMap(time)
+      // const currentPosition = satelliteMap(time)
+      // create a marker object with current position of Data type
+      // set the marker object to the data array
+
+    // const currentLine = [number, number][]
+    // for each timeIncrement (key) in the satelliteMap variable
+      // if satelliteMap(timeIncrement+1) exists or satelliteMap(timeIncrement-1) exists !!! Keep in mind that the timeIncrement+1 and timeincrement-1 are keys of the satelliteMap, not indexes.
+      // we are checking if the value of next or previous timeIncrement exists as a key in the satelliteMap
+        // add satelliteMap(timeIncrement) to the currentLine
+      // else if currentLine.length > 0
+        // create Data object with currentLine
+        // set the Data object to the data array
+        // reset currentLine to empty array
+
+  return data;
+}
+
 
 const SkyPlotGraph = () => {
   const theme = useTheme();
   const containerRef = useRef(null);
   const [size, setSize] = useState(0);
   const [margin, setMargin] = useState(0);
-  const GPS = useStore((state) => state.GPS);
+  const elevationCutoff = useStore((state) => state.elevationCutoff)
+  const sky = useStore((state) => state.sky);
   const time = useStore((state) => state.time);
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,47 +77,12 @@ const SkyPlotGraph = () => {
       }
     };
   }, [time]);
-
+  // console.log("AAA", typeSafeKeys(GNSS), GNSS)
   return (
     <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
       <Plot
-        data={typeSafeKeys(GPS).flatMap((key) => {
-          const gpsArray = GPS[key];
-          if (!gpsArray) throw new Error();
+        data={generateData(sky, elevationCutoff)}
 
-          const pathTrace = {
-            r: gpsArray.map((coord: [number, number]) => Math.sqrt(coord[0] ** 2 + coord[1] ** 2)),
-            theta: gpsArray.map((coord: [number, number]) => Math.atan2(coord[1], coord[0]) * (180 / Math.PI)),
-            mode: 'lines',
-            type: 'scatterpolar',
-            marker: { color: theme.palette.primary.main },
-          } as const;
-
-          const currentIndex = time % gpsArray.length;
-          const currentPosition = gpsArray[currentIndex];
-
-          if (!currentPosition) throw new Error();
-
-          const satelliteID = `G${String(key).padStart(2, '0')}`;
-          const currentTrace = {
-            r: [Math.sqrt(currentPosition[0] ** 2 + currentPosition[1] ** 2)],
-            theta: [Math.atan2(currentPosition[1], currentPosition[0]) * (180 / Math.PI)],
-            mode: 'text+markers' as const,
-            type: 'scatterpolar' as const,
-            text: [satelliteID],
-            textposition: 'top right' as const,
-            marker: {
-              color: green[800],
-              size: 10,
-            },
-            textfont: {
-              color: green[800],
-              size: 12,
-            },
-          };
-
-          return [pathTrace, currentTrace];
-        })}
         layout={{
           width: size,
           height: size,
@@ -103,15 +95,17 @@ const SkyPlotGraph = () => {
             bgcolor: theme.palette.divider,
             radialaxis: {
               visible: true,
-              range: [0, 360],
+              range: [90, 0],
               linecolor: theme.palette.text.primary,
               gridcolor: theme.palette.text.secondary,
-              tickvals: [120, 240],
+              tickvals: [30, 60],
               showticklabels: false,
             },
             angularaxis: {
               linecolor: theme.palette.text.primary,
               gridcolor: theme.palette.text.secondary,
+              rotation: 90,
+              direction: "clockwise"
             },
           },
           margin: {
