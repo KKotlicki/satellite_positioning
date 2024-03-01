@@ -1,37 +1,72 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Plot from 'react-plotly.js';
-import Data from "react-plotly.js";
+// import Data from "react-plotly.js";
 import { useTheme } from '@mui/material/styles';
 import useStore from "@/store/store";
-import { green } from '@mui/material/colors';
 
-function typeSafeKeys<T extends object>(obj: T): Array<keyof T> {
-  return Object.keys(obj) as Array<keyof T>;
-}
+// function typeSafeKeys<T extends object>(obj: T): Array<keyof T> {
+//   return Object.keys(obj) as Array<keyof T>;
+// }
 
-function generateData(sky: Map<number, Map<number, number[]>>, elevationCutoff: number): Data[] {
-  const data: Data[] = [];
-// for each key satelliteNumber in the sky variable
-  // if satelliteNumber === 39 (for the debugging purposes)
-    // get the value as satelliteMap Map<number, number[]> (timeIncrement: [elevation, azimuth])
+function generateData(sky: Map<number, Map<number, [number, number]>>, time: number): Array<any> {
+  const data: Array<any> = [];
+  const satelliteNumber: number = 39; // the satellite to debug
 
-    // if satelliteMap(time)
-      // const currentPosition = satelliteMap(time)
-      // create a marker object with current position of Data type
-      // set the marker object to the data array
+  const satelliteMap = sky.get(satelliteNumber);
+  if (!satelliteMap) return data; // if satellite 39 doesn't exist, return empty data
 
-    // const currentLine = [number, number][]
-    // for each timeIncrement (key) in the satelliteMap variable
-      // if satelliteMap(timeIncrement+1) exists or satelliteMap(timeIncrement-1) exists !!! Keep in mind that the timeIncrement+1 and timeincrement-1 are keys of the satelliteMap, not indexes.
-      // we are checking if the value of next or previous timeIncrement exists as a key in the satelliteMap
-        // add satelliteMap(timeIncrement) to the currentLine
-      // else if currentLine.length > 0
-        // create Data object with currentLine
-        // set the Data object to the data array
-        // reset currentLine to empty array
+  // Draw a point for the current time if it exists
+  if (satelliteMap.has(time)) {
+    const [elevation, azimuth] = satelliteMap.get(time) as [number, number];
+    data.push({
+      type: 'scatterpolar',
+      r: [elevation],
+      theta: [azimuth],
+      mode: 'markers',
+      marker: { size: 8 },
+    });
+  }
+
+  const path: Array<[number, number]> = []; // to store the satellite path
+  const separatePath: Array<[number, number]> = []; // to store the continuous line segments
+
+  satelliteMap.forEach((value: [number, number], timeIncrement: number) => {
+    // debugger;
+    const [elevation, azimuth] = value;
+    path.push([elevation, azimuth]);
+    if (satelliteMap.get(timeIncrement + 1)) {
+      separatePath.push([elevation, azimuth]);
+    }
+    else if (separatePath.length > 0) {
+      separatePath.push([elevation, azimuth]);
+      data.push({
+        type: 'scatterpolar',
+        r: separatePath.map(point => point[0]),
+        theta: separatePath.map(point => point[1]),
+        mode: 'lines',
+      });
+      separatePath.length = 0;
+    }
+  });
+
+  // const separatePath = [];
+  // // iterate over keys (not key index) and values
+  // for (const [key, value] of satelliteMap) {
+  //   separatePath.push([value[0], value[1]]);
+  // }
+
+  // if (path.length > 0) {
+  //   data.push({
+  //     type: 'scatterpolar',
+  //     r: path.map(point => point[0]),
+  //     theta: path.map(point => point[1]),
+  //     mode: 'lines',
+  //   });
+  // }
 
   return data;
 }
+
 
 
 const SkyPlotGraph = () => {
@@ -39,7 +74,7 @@ const SkyPlotGraph = () => {
   const containerRef = useRef(null);
   const [size, setSize] = useState(0);
   const [margin, setMargin] = useState(0);
-  const elevationCutoff = useStore((state) => state.elevationCutoff)
+  // const elevationCutoff = useStore((state) => state.elevationCutoff)
   const sky = useStore((state) => state.sky);
   const time = useStore((state) => state.time);
   
@@ -77,11 +112,10 @@ const SkyPlotGraph = () => {
       }
     };
   }, [time]);
-  // console.log("AAA", typeSafeKeys(GNSS), GNSS)
   return (
     <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
       <Plot
-        data={generateData(sky, elevationCutoff)}
+        data={generateData(sky, time)}
 
         layout={{
           width: size,
