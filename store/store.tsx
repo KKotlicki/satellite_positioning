@@ -181,11 +181,8 @@ function calculateSkyPositions(GNSS: SatellitePath, latitude: string, longitude:
     output.set(satellite, positions);
   });
 
-
   return output;
 }
-
-
 
 type Store = {
   latitude: string,
@@ -209,9 +206,9 @@ type Store = {
 }
 
 const useStore = create<Store>((set) => ({
-  latitude: "N 0° 0' 0",
+  latitude: "N 0° 0' 0.0",
   changeLatitude: (newLatitude) => set(() => ({ latitude: newLatitude })),
-  longitude: "E 0° 0' 0",
+  longitude: "E 0° 0' 0.0",
   changeLongitude: (newLongitude) => set(() => ({ longitude: newLongitude })),
   height: 480,
   changeHeight: (newHeight) => set(() => ({ height: newHeight })),
