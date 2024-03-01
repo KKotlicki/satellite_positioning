@@ -1,37 +1,47 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Plot from 'react-plotly.js';
-// import Data from "react-plotly.js";
-import { useTheme } from '@mui/material/styles';
 import useStore from "@/store/store";
+import { useTheme } from '@mui/material/styles';
+import { useEffect, useRef, useState } from 'react';
+import Plot from 'react-plotly.js';
 
-// function typeSafeKeys<T extends object>(obj: T): Array<keyof T> {
-//   return Object.keys(obj) as Array<keyof T>;
-// }
 
-function generateData(sky: Map<number, Map<number, [number, number]>>, time: number): Array<any> {
+function generateData(sky: Map<number, Map<number, [number, number]>>, time: number, elevationCutoff: number): Array<any> {
   const data: Array<any> = [];
-  const satelliteNumber: number = 39; // the satellite to debug
+
+  const numPoints = 1000;
+  const thetaValues = Array.from({ length: numPoints }, (_, i) => i * 360 / numPoints);
+  thetaValues.push(0);
+  const rValues = new Array(numPoints + 1).fill(elevationCutoff);
+  data.push({
+    type: 'scatterpolar',
+    r: rValues,
+    theta: thetaValues,
+    mode: 'lines',
+    line: { color: 'cyan', width: 2 },
+  });
+
+  const satelliteNumber: number = 39;
 
   const satelliteMap = sky.get(satelliteNumber);
-  if (!satelliteMap) return data; // if satellite 39 doesn't exist, return empty data
+  if (!satelliteMap) return data;
 
-  // Draw a point for the current time if it exists
   if (satelliteMap.has(time)) {
     const [elevation, azimuth] = satelliteMap.get(time) as [number, number];
     data.push({
       type: 'scatterpolar',
       r: [elevation],
       theta: [azimuth],
-      mode: 'markers',
-      marker: { size: 8 },
+      mode: 'markers+text',
+      marker: { size: 16, color: 'green' },
+      text: ['G39'],
+      textposition: 'top center',
+      textfont: { color: 'green', family: 'Roboto Bold, Roboto, sans-serif', size: 16 },
     });
   }
 
-  const path: Array<[number, number]> = []; // to store the satellite path
-  const separatePath: Array<[number, number]> = []; // to store the continuous line segments
+  const path: Array<[number, number]> = [];
+  const separatePath: Array<[number, number]> = [];
 
   satelliteMap.forEach((value: [number, number], timeIncrement: number) => {
-    // debugger;
     const [elevation, azimuth] = value;
     path.push([elevation, azimuth]);
     if (satelliteMap.get(timeIncrement + 1)) {
@@ -44,25 +54,11 @@ function generateData(sky: Map<number, Map<number, [number, number]>>, time: num
         r: separatePath.map(point => point[0]),
         theta: separatePath.map(point => point[1]),
         mode: 'lines',
+        line: { color: 'green', width: 2 },
       });
       separatePath.length = 0;
     }
   });
-
-  // const separatePath = [];
-  // // iterate over keys (not key index) and values
-  // for (const [key, value] of satelliteMap) {
-  //   separatePath.push([value[0], value[1]]);
-  // }
-
-  // if (path.length > 0) {
-  //   data.push({
-  //     type: 'scatterpolar',
-  //     r: path.map(point => point[0]),
-  //     theta: path.map(point => point[1]),
-  //     mode: 'lines',
-  //   });
-  // }
 
   return data;
 }
@@ -74,10 +70,10 @@ const SkyPlotGraph = () => {
   const containerRef = useRef(null);
   const [size, setSize] = useState(0);
   const [margin, setMargin] = useState(0);
-  // const elevationCutoff = useStore((state) => state.elevationCutoff)
+  const elevationCutoff = useStore((state) => state.elevationCutoff)
   const sky = useStore((state) => state.sky);
   const time = useStore((state) => state.time);
-  
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -115,7 +111,7 @@ const SkyPlotGraph = () => {
   return (
     <div ref={containerRef} style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
       <Plot
-        data={generateData(sky, time)}
+        data={generateData(sky, time, elevationCutoff)}
 
         layout={{
           width: size,
