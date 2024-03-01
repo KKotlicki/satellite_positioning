@@ -4,6 +4,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { FC, useState } from "react";
 
+
 function parseAlmFile(input: string): Map<number, number[]> {
   let data: string = input
 
@@ -66,7 +67,6 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
     setIsDragging(false);
     const files = Array.from(e.dataTransfer.files);
     const text = await files[0]?.text()
-    // get filename here
     if (!files[0]?.name) { throw new Error("No file name") }
     changeAlmanacName(files[0]?.name)
 
@@ -83,7 +83,6 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
       if (target && target.files) {
         const files = Array.from(target.files);
         const text = await files[0]?.text()
-        // get filename here
         if (!files[0]?.name) { throw new Error("No file name") }
         changeAlmanacName(files[0]?.name)
 

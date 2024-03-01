@@ -1,6 +1,8 @@
 import useStore from '@/store/store';
 import AdbIcon from '@mui/icons-material/Adb';
 import MenuIcon from '@mui/icons-material/Menu';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Card, CardContent, CardHeader, Checkbox, CssBaseline, FormControlLabel, FormGroup, Slider } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -14,71 +16,12 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { blue, deepPurple, green, orange, pink, red } from '@mui/material/colors';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import dayjs from 'dayjs';
 import type { AppProps } from 'next/app';
 import { Roboto } from 'next/font/google';
 import Head from 'next/head';
 import Link from 'next/link';
 import { MouseEvent, useEffect, useState } from 'react';
-import dayjs from 'dayjs';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-
-// const mi = 3.986005 * 1e14
-// const wE = 7.2921151467 * 1e-5
-
-// function timeSinceAlmanac(t: number, toa: number) {
-//   return t - toa
-// }
-
-// function semiMajorAxisOfOrbit(a0: number) {
-//   return a0 ^ 2
-// }
-
-// function meanMotionOfOrbit(a0: number) {
-//   return Math.sqrt(mi / a0 ^ 3)
-// }
-
-// function meanAnomalyOfOrbit(M0: number, n: number, tk: number) {
-//   return M0 + n * tk
-// }
-
-// function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk): number {
-//   const Ei: number = E + e * Math.sin(E)
-//   if (Math.abs(Ei - E) < 1e-12) {
-//     return Ei
-//   } else {
-//     return eccentricAnomalyOfOrbit(e, Mk, Ei)
-//   }
-// }
-
-// function trueAnomalyOfOrbit(e: number, Ek: number) {
-//   return Math.atan2(Math.sqrt(1 - e ^ 2) * Math.sin(Ek), Math.cos(Ek) - e)
-// }
-
-// function argumentOfPerigeeOfOrbit(vk: number, omega: number) {
-//   return vk - omega
-// }
-
-// function radiusOfOrbit(a: number, e: number, Ek: number) {
-//   return a * (1 - e * Math.cos(Ek))
-// }
-
-// function positionInOrbit(rk: number, psi: number, uk: number): [number, number] {
-//   const xk: number = rk * Math.cos(psi)
-//   const yk: number = rk * Math.sin(psi)
-//   return [xk, yk]
-// }
-
-// function ascendingNodeOfOrbit(Omega0: number, Omega: number, tk: number, toa: number) {
-//   return Omega0 + (Omega - wE) * tk - wE * toa
-// }
-
-// function positionInECEF(xk: number, yk: number, OmegaK: number, inc: number): [number, number, number] {
-//   const x: number = xk * Math.cos(OmegaK) - yk * Math.cos(inc) * Math.sin(OmegaK)
-//   const y: number = xk * Math.sin(OmegaK) + yk * Math.cos(inc) * Math.cos(OmegaK)
-//   const z: number = yk * Math.sin(inc)
-//   return [x, y, z]
-// }
 
 
 const project = 'GNSS Planning';
