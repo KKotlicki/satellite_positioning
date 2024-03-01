@@ -161,7 +161,7 @@ export default function Settings() {
             value={latitude}
             fullWidth
             margin="normal"
-            placeholder="N 0° 0' 0"
+            placeholder="N 0° 0' 0.0"
             onChange={(e) => { changeLatitude(e.target.value) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">°</InputAdornment>,
@@ -172,7 +172,7 @@ export default function Settings() {
             value={longitude}
             fullWidth
             margin="normal"
-            placeholder="E 0° 0' 0"
+            placeholder="E 0° 0' 0.0"
             onChange={(e) => { changeLongitude(e.target.value) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">°</InputAdornment>,
@@ -204,6 +204,7 @@ export default function Settings() {
           />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
+              format="DD/MM/YYYY"
               label="Start date"
               slotProps={{ textField: { variant: 'outlined', margin: "normal" } }}
               value={date}
