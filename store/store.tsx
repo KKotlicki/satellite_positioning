@@ -5,7 +5,7 @@ import { create } from 'zustand'
 dayjs.extend(weekOfYear);
 
 type SatellitePath = Map<number, [number, number, number][]>
-type SkyPath = Map<number, Map<number, number[]>>
+type SkyPath = Map<number, Map<number, [number, number]>>
 
 // const GPS = {
 //     1: [[0, 0], [0, 0], [0, 0], [0, 0]],
@@ -146,13 +146,13 @@ function calculateSatellitePositions(almanac: Map<number, number[]>, date: dayjs
 
     output.set(satellite, positions);
   }
-  console.log(output)
+  // console.log(output)
 
   return output;
 }
 
 function calculateSkyPositions(GNSS: SatellitePath, latitude: string, longitude: string, height: number, elevationCutoff: number) {
-  const output = new Map<number, Map<number, number[]>>();
+  const output = new Map<number, Map<number, [number, number]>>();
   // debugger
 
   // Constants for WGS84
@@ -172,7 +172,7 @@ function calculateSkyPositions(GNSS: SatellitePath, latitude: string, longitude:
 
   // Iterate through each satellite to calculate its position
   GNSS.forEach((satelliteData, satellite) => {
-    const positions = new Map<number, number[]>();
+    const positions = new Map<number, [number, number]>();
 
     satelliteData.forEach(([x, y, z], timeIncrement) => {
       // Transform satellite ECEF coordinates to topocentric coordinates
@@ -274,7 +274,7 @@ const useStore = create<Store>((set) => ({
   ]),
   // changeGPS: (newGPS) => set(() => ({ GPS: newGPS })),
   almanacName: "",
-  sky: new Map<number, Map<number, number[]>>(),
+  sky: new Map<number, Map<number, [number, number]>>(),
   changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
   almanac: new Map<number, number[]>(),
   changeAlmanac: (newAlmanac) => set(({ date }) =>
