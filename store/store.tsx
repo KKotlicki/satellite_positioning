@@ -1,9 +1,6 @@
 import dayjs, { Dayjs } from 'dayjs';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
 import { create } from 'zustand';
 
-
-dayjs.extend(weekOfYear);
 
 type SatellitePath = Map<number, [number, number, number][]>
 type SkyPath = Map<number, Map<number, [number, number]>>
@@ -185,10 +182,10 @@ function calculateSkyPositions(GNSS: SatellitePath, latitude: string, longitude:
 }
 
 type Store = {
-  latitude: string,
-  changeLatitude: (newLatitude: string) => void
-  longitude: string,
-  changeLongitude: (newLongitude: string) => void
+  latitude: number,
+  changeLatitude: (newLatitude: number) => void
+  longitude: number,
+  changeLongitude: (newLongitude: number) => void
   height: number,
   changeHeight: (newHeight: number) => void
   elevationCutoff: number,
@@ -206,16 +203,16 @@ type Store = {
 }
 
 const useStore = create<Store>((set) => ({
-  latitude: "N 0° 0' 0.0",
+  latitude: 0,
   changeLatitude: (newLatitude) => set(() => ({ latitude: newLatitude })),
-  longitude: "E 0° 0' 0.0",
+  longitude: 0,
   changeLongitude: (newLongitude) => set(() => ({ longitude: newLongitude })),
   height: 480,
   changeHeight: (newHeight) => set(() => ({ height: newHeight })),
   elevationCutoff: 7,
 
-  date: dayjs(new Date()).startOf('day'),
-  changeDate: (newDate) => set(() => ({ date: newDate.startOf('day') })),
+  date: dayjs().startOf('day'),
+  changeDate: (newDate) => set(() => ({ date: newDate })),
   time: 72,
   changeTime: (newTime) => set(() => ({ time: newTime })),
 
