@@ -10,10 +10,10 @@
 		}
 	},
 	"javascript": {
-    "formatter": {
-      "jsxQuoteStyle": "single",
-      "semicolons": "asNeeded",
-      "trailingComma": "none"
-    }
-  }
+		"formatter": {
+			"jsxQuoteStyle": "single",
+			"semicolons": "asNeeded",
+			"trailingComma": "none"
+		}
+	}
 }

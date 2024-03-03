@@ -1,7 +1,5 @@
 const WorldView = () => {
-  return (
-    <div>WorldView</div>
-  )
+	return <div>WorldView</div>
 }
 
 export default WorldView

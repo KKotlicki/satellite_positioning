@@ -1,314 +1,425 @@
-import useStore from '@/store/store';
-import AdbIcon from '@mui/icons-material/Adb';
-import MenuIcon from '@mui/icons-material/Menu';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Card, CardContent, CardHeader, Checkbox, CssBaseline, FormControlLabel, FormGroup, Slider } from '@mui/material';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { blue, deepPurple, green, orange, pink, red } from '@mui/material/colors';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import dayjs from 'dayjs';
-import type { AppProps } from 'next/app';
-import { Roboto } from 'next/font/google';
-import Head from 'next/head';
-import Link from 'next/link';
-import { MouseEvent, useEffect, useState } from 'react';
+import useStore from "@/store/store"
+import AdbIcon from "@mui/icons-material/Adb"
+import MenuIcon from "@mui/icons-material/Menu"
+import PauseIcon from "@mui/icons-material/Pause"
+import PlayArrowIcon from "@mui/icons-material/PlayArrow"
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	Checkbox,
+	CssBaseline,
+	FormControlLabel,
+	FormGroup,
+	Slider
+} from "@mui/material"
+import AppBar from "@mui/material/AppBar"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Container from "@mui/material/Container"
+import Drawer from "@mui/material/Drawer"
+import IconButton from "@mui/material/IconButton"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import {
+	blue,
+	deepPurple,
+	green,
+	orange,
+	pink,
+	red
+} from "@mui/material/colors"
+import { ThemeProvider, createTheme } from "@mui/material/styles"
+import dayjs from "dayjs"
+import type { AppProps } from "next/app"
+import { Roboto } from "next/font/google"
+import Head from "next/head"
+import Link from "next/link"
+import { MouseEvent, useEffect, useState } from "react"
 
-
-const project = 'GNSS Planning';
+const project = "GNSS Planning"
 
 const roboto = Roboto({
-  weight: '400',
-  subsets: ['latin'],
+	weight: "400",
+	subsets: ["latin"]
 })
 
 const theme = createTheme({
-  palette: {
-    primary: {
-      main: deepPurple[300],
-    },
-    mode: 'dark',
-  },
-});
+	palette: {
+		primary: {
+			main: deepPurple[300]
+		},
+		mode: "dark"
+	}
+})
 
-const pages = ['Settings', 'Charts', 'Sky Plot', 'World View'] as const;
+const pages = ["Settings", "Charts", "Sky Plot", "World View"] as const
 
-const drawerWidth = 240;
-
+const drawerWidth = 240
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+	const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
 
-  const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
+	const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
+		setAnchorElNav(event.currentTarget)
+	}
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+	const handleCloseNavMenu = () => {
+		setAnchorElNav(null)
+	}
 
-  const latitude = useStore((state) => state.latitude);
-  const longitude = useStore((state) => state.longitude);
-  const height = useStore((state) => state.height);
-  const elevationCutoff = useStore((state) => state.elevationCutoff);
-  const date = useStore((state) => state.date);
-  const time = useStore((state) => state.time);
-  const changeTime = useStore((state) => state.changeTime)
-  const almanacName = useStore((state) => state.almanacName);
+	const latitude = useStore((state) => state.latitude)
+	const longitude = useStore((state) => state.longitude)
+	const height = useStore((state) => state.height)
+	const elevationCutoff = useStore((state) => state.elevationCutoff)
+	const date = useStore((state) => state.date)
+	const time = useStore((state) => state.time)
+	const changeTime = useStore((state) => state.changeTime)
+	const almanacName = useStore((state) => state.almanacName)
 
-  const [sliderDateDraft, setSliderDate] = useState(date);
-  const [isPlaying, setIsPlaying] = useState(false);
+	const [sliderDateDraft, setSliderDate] = useState(date)
+	const [isPlaying, setIsPlaying] = useState(false)
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
+	const handlePlayPause = () => {
+		setIsPlaying(!isPlaying)
+	}
 
-  const sliderValueToTime = (value: number) => {
+	const sliderValueToTime = (value: number) => {
+		return dayjs(new Date())
+			.startOf("day")
+			.add(value * 10, "minute")
+	}
 
-    return dayjs(new Date()).startOf('day').add(value * 10, 'minute');
-  };
+	const handleSliderChange = (_event: Event, newValue: number | number[]) => {
+		if (Array.isArray(newValue))
+			throw new Error("MUI Slider value return: Expected a number")
+		if (newValue === 144) {
+			const newDate = sliderDateDraft.add(1, "day")
+			setSliderDate(newDate)
+		} else {
+			setSliderDate(date)
+		}
+		changeTime(newValue)
+	}
 
-  const handleSliderChange = (_event: Event, newValue: number | number[]) => {
-    if (Array.isArray(newValue)) throw new Error('MUI Slider value return: Expected a number');
-    if (newValue === 144) {
-      const newDate = sliderDateDraft.add(1, 'day');
-      setSliderDate(newDate)
-    }
-    else {
-      setSliderDate(date)
-    }
-    changeTime(newValue);
-  };
+	useEffect(() => {
+		if (time === 144) {
+			setSliderDate(date.add(1, "day"))
+		} else {
+			setSliderDate(date)
+		}
+	}, [date, time])
 
-  useEffect(() => {
-    if (time === 144) {
-      setSliderDate(date.add(1, 'day'));
-    } else {
-      setSliderDate(date);
-    }
-  }, [date, time]);
+	useEffect(() => {
+		if (isPlaying) {
+			const interval = setInterval(() => {
+				if (time === 144) {
+					changeTime(0)
+					setSliderDate(sliderDateDraft.add(1, "day"))
+				} else {
+					changeTime(time + 1)
+				}
+			}, 100)
+			return () => {
+				clearInterval(interval)
+			}
+		}
+		return
+	}, [isPlaying, time])
 
-  useEffect(() => {
-    if (isPlaying) {
-      const interval = setInterval(() => {
-        if (time === 144) {
-          changeTime(0);
-          setSliderDate(sliderDateDraft.add(1, 'day'));
-        } else {
-          changeTime(time + 1);
-        }
-      }, 100);
-      return () => {
-        clearInterval(interval);
-      };
-    }
-    return;
-  }, [isPlaying, time]);
+	return (
+		<>
+			<Head>
+				<title>{project}</title>
+				<meta name='description' content='Generated by create next app' />
+				<meta name='viewport' content='width=device-width, initial-scale=1' />
+				<link rel='icon' href='/favicon.ico' />
+			</Head>
 
-  return (
-    <>
-      <Head>
-        <title>{project}</title>
-        <meta name="description" content="Generated by create next app" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				<main className={roboto.className}>
+					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+						<Container maxWidth='xl'>
+							<Toolbar disableGutters>
+								<AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+								<Typography
+									color={theme.palette.mode === "dark" ? "primary" : "inherit"}
+									variant='h6'
+									noWrap
+									component='a'
+									href='/'
+									sx={{
+										mr: 2,
+										display: { xs: "none", md: "flex" },
+										fontFamily: "monospace",
+										fontWeight: 700,
+										textDecoration: "none"
+									}}
+								>
+									{project}
+								</Typography>
 
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <main className={roboto.className}>
-          <AppBar position="relative" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
-            <Container maxWidth="xl">
-              <Toolbar disableGutters>
-                <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-                <Typography
-                  color={theme.palette.mode === 'dark' ? 'primary' : 'inherit'}
-                  variant="h6"
-                  noWrap
-                  component="a"
-                  href="/"
-                  sx={{
-                    mr: 2,
-                    display: { xs: 'none', md: 'flex' },
-                    fontFamily: 'monospace',
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {project}
-                </Typography>
-
-                <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-                  <IconButton
-                    size="large"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleOpenNavMenu}
-                    color="inherit"
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                  <Menu
-                    id="menu-appbar"
-                    anchorEl={anchorElNav}
-                    anchorOrigin={{
-                      vertical: 'bottom',
-                      horizontal: 'left',
-                    }}
-                    keepMounted
-                    transformOrigin={{
-                      vertical: 'top',
-                      horizontal: 'left',
-                    }}
-                    open={Boolean(anchorElNav)}
-                    onClose={handleCloseNavMenu}
-                    sx={{
-                      display: { xs: 'block', md: 'none' },
-                    }}
-                  >
-                    {pages.map((page) => (
-                      <MenuItem key={page} onClick={handleCloseNavMenu}>
-                        <Link
-                          key={page}
-                          style={{ textDecoration: 'none', color: 'inherit' }}
-                          href={`/${page.toLowerCase().replace(' ', '-')}`}
-                          passHref>
-                          <Typography
-                            textAlign="center">{page}</Typography>
-                        </Link>
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </Box>
-                <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-                <Typography
-                  color={theme.palette.mode === 'dark' ? 'primary' : 'inherit'}
-                  variant="h5"
-                  noWrap
-                  component="a"
-                  href=""
-                  sx={{
-                    mr: 2,
-                    display: { xs: 'flex', md: 'none' },
-                    flexGrow: 1,
-                    fontFamily: 'monospace',
-                    textDecoration: 'none',
-                  }}
-                >
-                  {project}
-                </Typography>
-                <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                  {pages.map((page) => (
-                    <Link
-                      key={page}
-                      style={{ textDecoration: 'none' }}
-                      href={`/${page.toLowerCase().replace(' ', '-')}`}
-                      passHref>
-                      <Button
-                        onClick={handleCloseNavMenu}
-                        sx={{ color: 'white', display: 'block' }}
-                      >
-                        {page}
-                      </Button>
-                    </Link>
-                  ))}
-                </Box>
-              </Toolbar>
-            </Container>
-          </AppBar>
-          <Box sx={{ display: 'flex' }}>
-            <Drawer
-              sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                  width: drawerWidth,
-                  boxSizing: 'border-box',
-                },
-              }}
-              variant="permanent"
-              anchor="left"
-            >
-              <Toolbar />
-              <Box sx={{ overflow: 'auto' }}>
-                <Card sx={{
-                  width: 'full-width',
-                  margin: '1rem',
-                }} variant="outlined">
-                  <CardHeader title='Local Time'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}>
-                  </CardHeader>
-                  <CardContent>
-                    <Typography gutterBottom>
-                      {`${sliderDateDraft.format('DD/MM/YYYY')} ${sliderValueToTime(time).format('HH:mm')}`}
-                    </Typography>
-                    <Slider
-                      aria-label="Local Time"
-                      value={time}
-                      getAriaValueText={(value: number) => sliderValueToTime(value).format('HH:mm')}
-                      valueLabelDisplay='off'
-                      step={1}
-                      marks
-                      min={0}
-                      max={144}
-                      onChange={handleSliderChange}
-                    />
-                    <Box display="flex" justifyContent="center" style={{ marginBottom: '-16px' }}>
-                      <IconButton aria-label="play/pause" onClick={handlePlayPause}>
-                        {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                      </IconButton>
-                    </Box>
-                  </CardContent>
-                </Card>
-                <Card sx={{
-                  width: 'full-width',
-                  margin: '1rem',
-                }} variant="outlined">
-                  <CardHeader title='Satellite Selection'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }} />
-                  <CardContent>    <FormGroup>
-                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: green[800], '&.Mui-checked': { color: green[600], } }} />} label="GPS" />
-                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: red[800], '&.Mui-checked': { color: red[600], } }} />} label="GLONASS" />
-                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: blue[800], '&.Mui-checked': { color: blue[600], } }} />} label="Galileo" />
-                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: orange[800], '&.Mui-checked': { color: orange[600], } }} />} label="Beidou" />
-                    <FormControlLabel control={<Checkbox defaultChecked sx={{ color: pink[800], '&.Mui-checked': { color: pink[600], } }} />} label="QZSS" />
-                  </FormGroup></CardContent>
-                </Card>
-                <Card sx={{
-                  width: 'full-width',
-                  margin: '1rem',
-                }} variant="outlined">
-                  <CardHeader title='My Settings'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }} />
-                  <CardContent>
-                    <Box component="ul" sx={{
-                      m: 0, p: 0, pl: 1
-                    }}>
-                      <li>Latitude: {latitude}</li>
-                      <li>Longitude: {longitude}</li>
-                      <li>Height: {height}</li>
-                      <li>Elevation cutoff: {elevationCutoff}</li>
-                      <li>Date: {date.format('MM/DD/YYYY')}</li>
-                      <li>Almanac: {almanacName}</li>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Drawer>
-            <Component {...pageProps} />
-          </Box>
-        </main>
-      </ThemeProvider>
-
-    </>
-  )
-};
+								<Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
+									<IconButton
+										size='large'
+										aria-controls='menu-appbar'
+										aria-haspopup='true'
+										onClick={handleOpenNavMenu}
+										color='inherit'
+									>
+										<MenuIcon />
+									</IconButton>
+									<Menu
+										id='menu-appbar'
+										anchorEl={anchorElNav}
+										anchorOrigin={{
+											vertical: "bottom",
+											horizontal: "left"
+										}}
+										keepMounted
+										transformOrigin={{
+											vertical: "top",
+											horizontal: "left"
+										}}
+										open={Boolean(anchorElNav)}
+										onClose={handleCloseNavMenu}
+										sx={{
+											display: { xs: "block", md: "none" }
+										}}
+									>
+										{pages.map((page) => (
+											<MenuItem key={page} onClick={handleCloseNavMenu}>
+												<Link
+													key={page}
+													style={{ textDecoration: "none", color: "inherit" }}
+													href={`/${page.toLowerCase().replace(" ", "-")}`}
+													passHref
+												>
+													<Typography textAlign='center'>{page}</Typography>
+												</Link>
+											</MenuItem>
+										))}
+									</Menu>
+								</Box>
+								<AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+								<Typography
+									color={theme.palette.mode === "dark" ? "primary" : "inherit"}
+									variant='h5'
+									noWrap
+									component='a'
+									href=''
+									sx={{
+										mr: 2,
+										display: { xs: "flex", md: "none" },
+										flexGrow: 1,
+										fontFamily: "monospace",
+										textDecoration: "none"
+									}}
+								>
+									{project}
+								</Typography>
+								<Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+									{pages.map((page) => (
+										<Link
+											key={page}
+											style={{ textDecoration: "none" }}
+											href={`/${page.toLowerCase().replace(" ", "-")}`}
+											passHref
+										>
+											<Button
+												onClick={handleCloseNavMenu}
+												sx={{ color: "white", display: "block" }}
+											>
+												{page}
+											</Button>
+										</Link>
+									))}
+								</Box>
+							</Toolbar>
+						</Container>
+					</AppBar>
+					<Box sx={{ display: "flex" }}>
+						<Drawer
+							sx={{
+								width: drawerWidth,
+								flexShrink: 0,
+								"& .MuiDrawer-paper": {
+									width: drawerWidth,
+									boxSizing: "border-box"
+								}
+							}}
+							variant='permanent'
+							anchor='left'
+						>
+							<Toolbar />
+							<Box sx={{ overflow: "auto" }}>
+								<Card
+									sx={{
+										width: "full-width",
+										margin: "1rem"
+									}}
+									variant='outlined'
+								>
+									<CardHeader
+										title='Local Time'
+										style={{
+											borderBottom: `1px solid ${theme.palette.divider}`,
+											backgroundColor: theme.palette.divider
+										}}
+									></CardHeader>
+									<CardContent>
+										<Typography gutterBottom>
+											{`${sliderDateDraft.format(
+												"DD/MM/YYYY"
+											)} ${sliderValueToTime(time).format("HH:mm")}`}
+										</Typography>
+										<Slider
+											aria-label='Local Time'
+											value={time}
+											getAriaValueText={(value: number) =>
+												sliderValueToTime(value).format("HH:mm")
+											}
+											valueLabelDisplay='off'
+											step={1}
+											marks
+											min={0}
+											max={144}
+											onChange={handleSliderChange}
+										/>
+										<Box
+											display='flex'
+											justifyContent='center'
+											style={{ marginBottom: "-16px" }}
+										>
+											<IconButton
+												aria-label='play/pause'
+												onClick={handlePlayPause}
+											>
+												{isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+											</IconButton>
+										</Box>
+									</CardContent>
+								</Card>
+								<Card
+									sx={{
+										width: "full-width",
+										margin: "1rem"
+									}}
+									variant='outlined'
+								>
+									<CardHeader
+										title='Satellite Selection'
+										style={{
+											borderBottom: `1px solid ${theme.palette.divider}`,
+											backgroundColor: theme.palette.divider
+										}}
+									/>
+									<CardContent>
+										<FormGroup>
+											<FormControlLabel
+												control={
+													<Checkbox
+														defaultChecked
+														sx={{
+															color: green[800],
+															"&.Mui-checked": { color: green[600] }
+														}}
+													/>
+												}
+												label='GPS'
+											/>
+											<FormControlLabel
+												control={
+													<Checkbox
+														defaultChecked
+														sx={{
+															color: red[800],
+															"&.Mui-checked": { color: red[600] }
+														}}
+													/>
+												}
+												label='GLONASS'
+											/>
+											<FormControlLabel
+												control={
+													<Checkbox
+														defaultChecked
+														sx={{
+															color: blue[800],
+															"&.Mui-checked": { color: blue[600] }
+														}}
+													/>
+												}
+												label='Galileo'
+											/>
+											<FormControlLabel
+												control={
+													<Checkbox
+														defaultChecked
+														sx={{
+															color: orange[800],
+															"&.Mui-checked": { color: orange[600] }
+														}}
+													/>
+												}
+												label='Beidou'
+											/>
+											<FormControlLabel
+												control={
+													<Checkbox
+														defaultChecked
+														sx={{
+															color: pink[800],
+															"&.Mui-checked": { color: pink[600] }
+														}}
+													/>
+												}
+												label='QZSS'
+											/>
+										</FormGroup>
+									</CardContent>
+								</Card>
+								<Card
+									sx={{
+										width: "full-width",
+										margin: "1rem"
+									}}
+									variant='outlined'
+								>
+									<CardHeader
+										title='My Settings'
+										style={{
+											borderBottom: `1px solid ${theme.palette.divider}`,
+											backgroundColor: theme.palette.divider
+										}}
+									/>
+									<CardContent>
+										<Box
+											component='ul'
+											sx={{
+												m: 0,
+												p: 0,
+												pl: 1
+											}}
+										>
+											<li>Latitude: {latitude}</li>
+											<li>Longitude: {longitude}</li>
+											<li>Height: {height}</li>
+											<li>Elevation cutoff: {elevationCutoff}</li>
+											<li>Date: {date.format("MM/DD/YYYY")}</li>
+											<li>Almanac: {almanacName}</li>
+										</Box>
+									</CardContent>
+								</Card>
+							</Box>
+						</Drawer>
+						<Component {...pageProps} />
+					</Box>
+				</main>
+			</ThemeProvider>
+		</>
+	)
+}
