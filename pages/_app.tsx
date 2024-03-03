@@ -288,6 +288,8 @@ export default function App({ Component, pageProps }: AppProps) {
 											min={0}
 											max={144}
 											onChange={handleSliderChange}
+											onMouseDown={() => setIsPlaying(false)}
+											onTouchStart={() => setIsPlaying(false)}
 										/>
 										<Box
 											display='flex'
