@@ -127,7 +127,7 @@ export default function App({ Component, pageProps }: AppProps) {
 			}
 		}
 		return
-	}, [isPlaying, time])
+	}, [isPlaying, time, changeTime, sliderDateDraft.add])
 
 	return (
 		<>
@@ -269,7 +269,7 @@ export default function App({ Component, pageProps }: AppProps) {
 											borderBottom: `1px solid ${theme.palette.divider}`,
 											backgroundColor: theme.palette.divider
 										}}
-									></CardHeader>
+									/>
 									<CardContent>
 										<Typography gutterBottom>
 											{`${sliderDateDraft.format(
