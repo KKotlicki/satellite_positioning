@@ -1,5 +1,6 @@
 import useStore from "@/store/store"
 import { useTheme } from "@mui/material/styles"
+import { Data } from "plotly.js"
 import { useEffect, useRef, useState } from "react"
 import Plot from "react-plotly.js"
 
@@ -7,8 +8,8 @@ function generateData(
 	sky: Map<number, Map<number, [number, number]>>,
 	time: number,
 	elevationCutoff: number
-): Array<any> {
-	const data: Array<any> = []
+): Array<Data> {
+	const data: Array<Data> = []
 
 	const numPoints = 1000
 	const thetaValues = Array.from(
@@ -36,7 +37,7 @@ function generateData(
 			type: "scatterpolar",
 			r: [elevation],
 			theta: [azimuth],
-			mode: "markers+text",
+			mode: "text+markers",
 			marker: { size: 16, color: "green" },
 			text: ["G39"],
 			textposition: "top center",
@@ -113,7 +114,7 @@ const SkyPlotGraph = () => {
 				resizeObserver.unobserve(containerRef.current)
 			}
 		}
-	}, [time])
+	})
 	return (
 		<div
 			ref={containerRef}
