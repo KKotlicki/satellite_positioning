@@ -10,7 +10,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers"
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import dayjs, { Dayjs } from "dayjs"
-import { FC, useState } from "react"
+import { ChangeEvent, FC, useState } from "react"
 
 function parseAlmFile(input: string): Map<number, number[]> {
 	const data: string = input
@@ -21,31 +21,35 @@ function parseAlmFile(input: string): Map<number, number[]> {
 
 	let previousColumnsAmount = 0
 
-	data.split("\n").forEach((line) => {
+	for (const line of data.split("\n")) {
 		const numbers = line.replace(/\-/g, " -").trim().split(/\s+/)
 
 		if (numbers.length <= 1) {
 			shiftToNext += previousColumnsAmount
-			return
+			continue
 		}
 
 		previousColumnsAmount = numbers.length + 1
 
-		numbers.forEach((n, i) => {
+		for (let i = 0; i < numbers.length; i++) {
+			const n = numbers[i]
+			if (n === undefined) throw new Error("Undefined number")
 			const satellite = res[i + shiftToNext]
 			if (!satellite) res[i + shiftToNext] = []
-			if (Number.isNaN(n)) return
+			if (Number.isNaN(n)) continue
 			res[i + shiftToNext]?.push(+n)
-		})
-	})
+		}
+	}
 
 	res = res.filter((x) => x)
 
 	const dic = new Map<number, number[]>()
 
-	res.forEach((nums) => {
-		dic.set(nums[0]!, nums.splice(1))
-	})
+	for (const nums of res) {
+		const key = nums[0]
+		if (key === undefined) throw new Error("Undefined key")
+		dic.set(key, nums.splice(1))
+	}
 
 	return dic
 }
@@ -147,7 +151,7 @@ const Settings = () => {
 	const changeLatitude = useStore((state) => state.changeLatitude)
 	const changeLongitude = useStore((state) => state.changeLongitude)
 
-	const isValidLatitude = (value) => {
+	const isValidLatitude = (value: string) => {
 		const sanitizedValue = value.replace(/\s+/g, "")
 
 		if (
@@ -159,17 +163,33 @@ const Settings = () => {
 				const parts = sanitizedValue.match(
 					/([-NnSs]?)(\d{1,2})°(\d{1,2})'(\d{1,2}(\.\d+)?)/
 				)
+
+				if (parts === null) return false
+
+				const third = parts[2]
+				const fourth = parts[3]
+				const fifth = parts[4]
+
+				if (third === undefined || fourth === undefined || fifth === undefined) return false
+
 				if (parts) {
-					const degrees = parseFloat(parts[2])
-					const minutes = parseFloat(parts[3]) / 60
-					const seconds = parseFloat(parts[4]) / 3600
+					const degrees = parseFloat(third)
+					const minutes = parseFloat(fourth) / 60
+					const seconds = parseFloat(fifth) / 3600
 					const totalDegrees = degrees + minutes + seconds
 					return totalDegrees <= 90
 				}
 			} else {
 				const parts = sanitizedValue.match(/([-NnSs]?)(\d+(\.\d+)?)/)
+
+				if (parts === null) return false
+
+				const third = parts[2]
+
+				if (third === undefined) return false
+
 				if (parts) {
-					const value = parseFloat(parts[2])
+					const value = parseFloat(third)
 					return value <= 90
 				}
 			}
@@ -177,7 +197,7 @@ const Settings = () => {
 		return false
 	}
 
-	const isValidLongitude = (value) => {
+	const isValidLongitude = (value: string) => {
 		const sanitizedValue = value.replace(/\s+/g, "")
 
 		if (
@@ -190,17 +210,28 @@ const Settings = () => {
 					/([-EeWw]?)(\d{1,3})°(\d{1,2})'(\d{1,2}(\.\d+)?)/
 				)
 				if (parts) {
-					const degrees = parseFloat(parts[2])
-					const minutes = parseFloat(parts[3]) / 60
-					const seconds = parseFloat(parts[4]) / 3600
+					const third = parts[2]
+					const fourth = parts[3]
+					const fifth = parts[4]
+
+					if (third === undefined || fourth === undefined || fifth === undefined) return false
+
+					const degrees = parseFloat(third)
+					const minutes = parseFloat(fourth) / 60
+					const seconds = parseFloat(fifth) / 3600
 					const totalDegrees = degrees + minutes + seconds
 					return totalDegrees <= 180 && totalDegrees >= -180
 				}
 			} else {
 				const parts = sanitizedValue.match(/([-EeWw]?)(\d{1,3}(\.\d+)?)/)
 				if (parts) {
-					const value = parseFloat(parts[2])
-					const sign = /^-|W|w/.test(parts[1]) ? -1 : 1
+					const second = parts[1]
+					const third = parts[2]
+
+					if (second === undefined || third === undefined) return false
+
+					const value = parseFloat(third)
+					const sign = /^-|W|w/.test(second) ? -1 : 1
 					const totalDegrees = sign * value
 					return totalDegrees <= 180 && totalDegrees >= -180
 				}
@@ -209,7 +240,7 @@ const Settings = () => {
 		return false
 	}
 
-	const parseLatitude = (value) => {
+	const parseLatitude = (value: string) => {
 		const sanitizedValue = value.replace(/\s+/g, "")
 		if (
 			/^[-NnSs]?\s?\d{1,2}°\s?\d{1,2}'\s?\d{1,2}(\.\d+)?$/.test(sanitizedValue)
@@ -219,10 +250,13 @@ const Settings = () => {
 					/([-NnSs]?)\s?(\d{1,2})°\s?(\d{1,2})'\s?(\d{1,2}(\.\d+)?)?/
 				)
 				if (parts) {
-					const degrees = parseFloat(parts[2])
+					const second = parts[1]
+					const third = parts[2]
+					if (second === undefined || third === undefined) return NaN
+					const degrees = parseFloat(third)
 					const minutes = parts[3] ? parseFloat(parts[3]) / 60 : 0
 					const seconds = parts[4] ? parseFloat(parts[4]) / 3600 : 0
-					const sign = /^-|S|s/.test(parts[1]) ? -1 : 1
+					const sign = /^-|S|s/.test(second) ? -1 : 1
 					return sign * (degrees + minutes + seconds)
 				}
 			}
@@ -232,14 +266,17 @@ const Settings = () => {
 		) {
 			const parts = sanitizedValue.match(/([-NnSs]?)\s?(\d+(\.\d+)?)/)
 			if (parts) {
-				const sign = /^-|S|s/.test(parts[1]) ? -1 : 1
-				return sign * parseFloat(parts[2])
+				const second = parts[1]
+				const third = parts[2]
+				if (second === undefined || third === undefined) return NaN
+				const sign = /^-|S|s/.test(second) ? -1 : 1
+				return sign * parseFloat(third)
 			}
 		}
 		return NaN
 	}
 
-	const parseLongitude = (value) => {
+	const parseLongitude = (value: string) => {
 		const sanitizedValue = value.replace(/\s+/g, "")
 
 		if (
@@ -252,18 +289,24 @@ const Settings = () => {
 					/([-EeWw]?)(\d{1,3})°(\d{1,2})'(\d{1,2}(\.\d+)?)?/
 				)
 				if (parts) {
-					const degrees = parseFloat(parts[2])
+					const second = parts[1]
+					const third = parts[2]
+					if (second === undefined || third === undefined) return NaN
+					const degrees = parseFloat(third)
 					const minutes = parts[3] ? parseFloat(parts[3]) / 60 : 0
 					const seconds = parts[4] ? parseFloat(parts[4]) / 3600 : 0
-					const sign = /^-|W|w/.test(parts[1]) ? -1 : 1
+					const sign = /^-|W|w/.test(second) ? -1 : 1
 					const totalDegrees = sign * (degrees + minutes + seconds)
 					return Math.max(Math.min(totalDegrees, 180), -180)
 				}
 			} else {
 				const parts = sanitizedValue.match(/([-EeWw]?)(\d{1,3}(\.\d+)?)/)
 				if (parts) {
-					const sign = /^-|W|w/.test(parts[1]) ? -1 : 1
-					const value = parseFloat(parts[2])
+					const second = parts[1]
+					const third = parts[2]
+					if (second === undefined || third === undefined) return NaN
+					const sign = /^-|W|w/.test(second) ? -1 : 1
+					const value = parseFloat(third)
 					return Math.max(Math.min(sign * value, 180), -180)
 				}
 			}
@@ -271,7 +314,7 @@ const Settings = () => {
 		return NaN
 	}
 
-	const handleLatitudeChange = (e) => {
+	const handleLatitudeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const newValue = e.target.value
 		setLatitudeValue(newValue)
 
@@ -280,7 +323,7 @@ const Settings = () => {
 		}
 	}
 
-	const handleLongitudeChange = (e) => {
+	const handleLongitudeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const newValue = e.target.value
 		setLongitudeValue(newValue)
 
