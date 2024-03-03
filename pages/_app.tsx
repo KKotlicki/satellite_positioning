@@ -79,7 +79,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
   const handleSliderChange = (_event: Event, newValue: number | number[]) => {
     if (Array.isArray(newValue)) throw new Error('MUI Slider value return: Expected a number');
-    if (newValue == 144) {
+    if (newValue === 144) {
       const newDate = sliderDateDraft.add(1, 'day');
       setSliderDate(newDate)
     }
@@ -124,7 +124,7 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
 
       <ThemeProvider theme={theme}>
-        <CssBaseline></CssBaseline>
+        <CssBaseline />
         <main className={roboto.className}>
           <AppBar position="relative" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
             <Container maxWidth="xl">
@@ -249,7 +249,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   </CardHeader>
                   <CardContent>
                     <Typography gutterBottom>
-                      {sliderDateDraft.format('DD/MM/YYYY') + " " + sliderValueToTime(time).format('HH:mm')}
+                      {`${sliderDateDraft.format('DD/MM/YYYY')} ${sliderValueToTime(time).format('HH:mm')}`}
                     </Typography>
                     <Slider
                       aria-label="Local Time"
@@ -274,7 +274,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   margin: '1rem',
                 }} variant="outlined">
                   <CardHeader title='Satellite Selection'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }} />
                   <CardContent>    <FormGroup>
                     <FormControlLabel control={<Checkbox defaultChecked sx={{ color: green[800], '&.Mui-checked': { color: green[600], } }} />} label="GPS" />
                     <FormControlLabel control={<Checkbox defaultChecked sx={{ color: red[800], '&.Mui-checked': { color: red[600], } }} />} label="GLONASS" />
@@ -288,7 +288,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   margin: '1rem',
                 }} variant="outlined">
                   <CardHeader title='My Settings'
-                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+                    style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }} />
                   <CardContent>
                     <Box component="ul" sx={{
                       m: 0, p: 0, pl: 1

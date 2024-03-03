@@ -53,7 +53,7 @@ function meanAnomalyOfOrbit(M0: number, n: number, tk: number) {
   return M0 + n * tk
 }
 
-function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk, iteration: number = 0): number {
+function eccentricAnomalyOfOrbit(e: number, Mk: number, E: number = Mk, iteration = 0): number {
   if (Math.abs(E - Mk) < 1e-12) {
     return E;
   }

@@ -7,7 +7,7 @@ import { FC, useState } from "react";
 
 
 function parseAlmFile(input: string): Map<number, number[]> {
-  let data: string = input
+  const data: string = input
 
   let res = [] as number[][]
 
@@ -29,7 +29,7 @@ function parseAlmFile(input: string): Map<number, number[]> {
       const satellite = res[i + shiftToNext]
       if (!satellite) res[i + shiftToNext] = []
       if (Number.isNaN(n)) return
-      res[i + shiftToNext]!.push(+n)
+      res[i + shiftToNext]?.push(+n)
     })
   })
 
@@ -81,7 +81,7 @@ const UploadZone: FC<UploadZoneProps> = ({ onFilesDropped }) => {
     fileInput.multiple = true;
     fileInput.onchange = async (e: Event) => {
       const target = e.target as HTMLInputElement;
-      if (target && target.files) {
+      if (target?.files) {
         const files = Array.from(target.files);
         const text = await files[0]?.text()
         if (!files[0]?.name) { throw new Error("No file name") }
@@ -262,7 +262,7 @@ const Settings = () => {
   const maxDate = dayjs('2099-12-31');
 
   const isValidDate = (date: dayjs.Dayjs) => {
-    return date && date.isValid() && date.isAfter(minDate) && date.isBefore(maxDate);
+    return date?.isValid() && date.isAfter(minDate) && date.isBefore(maxDate);
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
@@ -289,7 +289,7 @@ const Settings = () => {
         transform: 'translateX(-50%)'
       }} variant="outlined">
         <CardHeader title='Settings'
-          style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }}></CardHeader>
+          style={{ borderBottom: `1px solid ${theme.palette.divider}`, backgroundColor: theme.palette.divider }} />
         <CardContent>
           <TextField
             label="Latitude"
