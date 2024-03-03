@@ -322,6 +322,7 @@ const Settings = () => {
             margin="normal"
             placeholder="480"
             type="number"
+
             onChange={(e) => { changeHeight(Number(e.target.value)) }}
             InputProps={{
               endAdornment: <InputAdornment position="end">m</InputAdornment>,
