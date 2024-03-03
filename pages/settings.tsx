@@ -336,7 +336,7 @@ const Settings = () => {
 	const changeDate = useStore((state) => state.changeDate)
 
 	const minDate = dayjs("2024-02-19")
-	const maxDate = dayjs("2099-12-31")
+	const maxDate = dayjs("2100-01-01")
 
 	const isValidDate = (date: dayjs.Dayjs) => {
 		return date?.isValid() && date.isAfter(minDate) && date.isBefore(maxDate)
@@ -439,7 +439,7 @@ const Settings = () => {
 							value={localDate}
 							onChange={handleDateChange}
 							minDate={minDate}
-							maxDate={maxDate}
+							maxDate={maxDate.subtract(1, 'day')}
 						/>
 					</LocalizationProvider>
 					<div style={{ position: "relative", width: "100%" }}>
