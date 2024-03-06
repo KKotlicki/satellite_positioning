@@ -4,12 +4,13 @@ import {
   TextField
 } from "@mui/material";
 import { ChangeEvent, useState } from "react";
+import { useZustand } from "use-zustand";
 
 
 const LatitudePicker = () => {
   const [latitudeValue, setLatitudeValue] = useState("N 0° 0' 0.0")
 
-  const changeLatitude = useStore((state) => state.changeLatitude)
+  const changeLatitude = useZustand(useStore, (state) => state.changeLatitude)
 
   const isValidLatitude = (value: string) => {
     const sanitizedValue = value.replace(/\s+/g, "")

@@ -10,15 +10,17 @@ import IconButton from "@mui/material/IconButton"
 import Typography from "@mui/material/Typography"
 import dayjs from "dayjs"
 import utc from 'dayjs/plugin/utc'
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useZustand } from "use-zustand"
+import { useInterval } from 'usehooks-ts'
 
 dayjs.extend(utc);
 
 
 const TimeSlider = () => {
-  const date = useStore((state) => state.date)
-  const time = useStore((state) => state.time)
-  const changeTime = useStore((state) => state.changeTime)
+  const date = useZustand(useStore, (state) => state.date)
+  const time = useZustand(useStore, (state) => state.time)
+  const changeTime = useZustand(useStore, (state) => state.changeTime)
 
   const [sliderDateDraft, setSliderDate] = useState(date)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -45,33 +47,18 @@ const TimeSlider = () => {
     changeTime(newValue)
   }
 
-  useEffect(() => {
-    if (time === 144) {
-      setSliderDate(date.add(1, "day"))
-    } else {
-      setSliderDate(date)
-    }
-  }, [date, time])
-
-  useEffect(() => {
-    if (isPlaying) {
-      const interval = setInterval(() => {
-        if (time === 144) {
-          changeTime(0)
-          setSliderDate(sliderDateDraft.add(1, "day"))
-        } else {
-          changeTime(time + 1)
-        }
-      }, 10)
-      return () => {
-        clearInterval(interval)
+    useInterval(() => {
+      if (time === 144) {
+        changeTime(0)
+        setSliderDate(sliderDateDraft.add(1, "day"))
+      } else {
+        changeTime(time + 1)
       }
-    }
-    return
-  }, [isPlaying, time, changeTime, sliderDateDraft.add])
+    }, isPlaying ? 10 : null)
+
   return (
     <CardContent>
-      <Typography gutterBottom>
+            <Typography gutterBottom>
         {`${sliderDateDraft.format(
           "DD/MM/YYYY"
         )} ${sliderValueToTime(time).format("HH:mm")}`}

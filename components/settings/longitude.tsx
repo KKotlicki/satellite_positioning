@@ -4,12 +4,13 @@ import {
 	TextField
 } from "@mui/material";
 import { ChangeEvent, useState } from "react";
+import { useZustand } from "use-zustand";
 
 
 const LongitudePicker = () => {
 	const [longitudeValue, setLongitudeValue] = useState("E 0° 0' 0.0")
 
-	const changeLongitude = useStore((state) => state.changeLongitude)
+	const changeLongitude = useZustand(useStore, (state) => state.changeLongitude)
 
 	const isValidLongitude = (value: string) => {
 		const sanitizedValue = value.replace(/\s+/g, "")

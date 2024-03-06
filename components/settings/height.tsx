@@ -3,11 +3,12 @@ import {
 	InputAdornment,
 	TextField
 } from "@mui/material";
+import { useZustand } from "use-zustand";
 
 
 const HeightPicker = () => {
-	const height = useStore((state) => state.height)
-	const changeHeight = useStore((state) => state.changeHeight)
+	const height = useZustand(useStore, (state) => state.height)
+	const changeHeight = useZustand(useStore, (state) => state.changeHeight)
 
 	return (
 		<TextField

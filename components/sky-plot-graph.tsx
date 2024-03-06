@@ -4,6 +4,7 @@ import { useTheme } from "@mui/material/styles";
 import { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
+import { useZustand } from "use-zustand";
 
 function generateData(
 	sky: Map<number, Map<number, [number, number]>>,
@@ -79,9 +80,9 @@ const SkyPlotGraph = () => {
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
-	const elevationCutoff = useStore((state) => state.elevationCutoff)
-	const sky = useStore((state) => state.sky)
-	const time = useStore((state) => state.time)
+	const elevationCutoff = useZustand(useStore,(state) => state.elevationCutoff)
+	const sky = useZustand(useStore,(state) => state.sky)
+	const time = useZustand(useStore, (state) => state.time)
 
 	useEffect(() => {
 		const handleResize = () => {

@@ -2,6 +2,7 @@ import useStore from "@/store/store"
 import { Box, useTheme } from "@mui/material"
 import Typography from "@mui/material/Typography"
 import { useState } from "react"
+import { useZustand } from "use-zustand"
 
 
 const UploadZone = () => {
@@ -49,7 +50,7 @@ const UploadZone = () => {
 
 	const [isDragging, setIsDragging] = useState<boolean>(false)
 	const theme = useTheme()
-	const changeAlmanacName = useStore((state) => state.changeAlmanacName)
+	const changeAlmanacName = useZustand(useStore, (state) => state.changeAlmanacName)
 
 	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -94,7 +95,7 @@ const UploadZone = () => {
 		}
 		fileInput.click()
 	}
-	const changeAlmanac = useStore((state) => state.changeAlmanac)
+	const changeAlmanac = useZustand(useStore, (state) => state.changeAlmanac)
 	const handleFilesDropped = (content: string | ArrayBuffer | null) => {
 		const almanac = new Map<number, number[]>()
 		parseAlmFile(content as string).forEach((value, key) => {

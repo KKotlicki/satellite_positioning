@@ -1,14 +1,15 @@
 import useStore from "@/store/store";
 import Box from "@mui/material/Box";
+import { useZustand } from "use-zustand";
 
 
 const SettingsView = () => {
-  const latitude = useStore((state) => state.latitude)
-  const longitude = useStore((state) => state.longitude)
-  const height = useStore((state) => state.height)
-  const elevationCutoff = useStore((state) => state.elevationCutoff)
-  const date = useStore((state) => state.date)
-  const almanacName = useStore((state) => state.almanacName)
+  const latitude = useZustand(useStore,(state) => state.latitude)
+  const longitude = useZustand(useStore,(state) => state.longitude)
+  const height = useZustand(useStore,(state) => state.height)
+  const elevationCutoff = useZustand(useStore,(state) => state.elevationCutoff)
+  const date = useZustand(useStore,(state) => state.date)
+  const almanacName = useZustand(useStore,(state) => state.almanacName)
 
   return (
     <Box

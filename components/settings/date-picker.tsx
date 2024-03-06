@@ -5,6 +5,7 @@ import dayjs, { Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useState } from "react";
+import { useZustand } from "use-zustand";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -12,7 +13,7 @@ dayjs.tz.setDefault("UTC")
 
 const DatePicker = () => {
   const [localDate, setLocalDate] = useState(dayjs())
-  const changeDate = useStore((state) => state.changeDate)
+  const changeDate = useZustand(useStore,(state) => state.changeDate)
 
   const minDate = dayjs("2024-02-19")
   const maxDate = dayjs("2100-01-01")

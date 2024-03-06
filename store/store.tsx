@@ -1,7 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { create } from "zustand";
+import { createStore } from 'zustand/vanilla';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -220,7 +220,7 @@ type Store = {
 	changeDate: (newDate: Dayjs) => void
 	time: number
 	changeTime: (newTime: number) => void
-	almanacName: string
+		almanacName: string
 	changeAlmanacName: (newAlmanacName: string) => void
 	almanac: Map<number, number[]>
 	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
@@ -228,7 +228,7 @@ type Store = {
 	sky: SkyPath
 }
 
-const useStore = create<Store>((set) => ({
+const useStore = createStore<Store>((set) => ({
 	date: dayjs().startOf("day"),
 	almanacName: "",
 	almanac: new Map<number, number[]>(),
@@ -342,6 +342,6 @@ const useStore = create<Store>((set) => ({
 		),
 
 	changeTime: (newTime) => set(() => ({ time: newTime })),
-}))
+	}))
 
 export default useStore
