@@ -1,9 +1,6 @@
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import next from "next";
-import { NextFetchEvent } from "next/server";
-import { sep } from "path";
 import { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
@@ -58,11 +55,9 @@ function generateData(
 		})
 	}
 
-	// const path: Array<[number, number]> = []
 	const separatePath: Array<[number, number]> = []
 
 	satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
-		// if (timeIncrement === 93) debugger
 		let [elevation, azimuth] = value
 		if (elevation === undefined) {
 			elevation = 0
@@ -80,7 +75,7 @@ function generateData(
 			separatePath.length = 0
 		}
 		else if (elevation >= elevationCutoff) {
-		separatePath.push([elevation, azimuth])
+			separatePath.push([elevation, azimuth])
 		}
 		else if (separatePath.length > 0) {
 			separatePath.push([elevation, azimuth])
