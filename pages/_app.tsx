@@ -1,8 +1,7 @@
-import useStore from "@/store/store"
+import SettingsView from "@/components/settings-view"
+import TimeSlider from "@/components/slider"
 import AdbIcon from "@mui/icons-material/Adb"
 import MenuIcon from "@mui/icons-material/Menu"
-import PauseIcon from "@mui/icons-material/Pause"
-import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import {
 	Card,
 	CardContent,
@@ -10,8 +9,7 @@ import {
 	Checkbox,
 	CssBaseline,
 	FormControlLabel,
-	FormGroup,
-	Slider
+	FormGroup
 } from "@mui/material"
 import AppBar from "@mui/material/AppBar"
 import Box from "@mui/material/Box"
@@ -33,11 +31,18 @@ import {
 } from "@mui/material/colors"
 import { ThemeProvider, createTheme } from "@mui/material/styles"
 import dayjs from "dayjs"
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import type { AppProps } from "next/app"
 import { Roboto } from "next/font/google"
 import Head from "next/head"
 import Link from "next/link"
-import { MouseEvent, useEffect, useState } from "react"
+import { MouseEvent, useState } from "react"
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("UTC")
+
 
 const project = "GNSS Planning"
 
@@ -69,65 +74,6 @@ export default function App({ Component, pageProps }: AppProps) {
 	const handleCloseNavMenu = () => {
 		setAnchorElNav(null)
 	}
-
-	const latitude = useStore((state) => state.latitude)
-	const longitude = useStore((state) => state.longitude)
-	const height = useStore((state) => state.height)
-	const elevationCutoff = useStore((state) => state.elevationCutoff)
-	const date = useStore((state) => state.date)
-	const time = useStore((state) => state.time)
-	const changeTime = useStore((state) => state.changeTime)
-	const almanacName = useStore((state) => state.almanacName)
-
-	const [sliderDateDraft, setSliderDate] = useState(date)
-	const [isPlaying, setIsPlaying] = useState(false)
-
-	const handlePlayPause = () => {
-		setIsPlaying(!isPlaying)
-	}
-
-	const sliderValueToTime = (value: number) => {
-		return dayjs(new Date())
-			.startOf("day")
-			.add(value * 10, "minute")
-	}
-
-	const handleSliderChange = (_event: Event, newValue: number | number[]) => {
-		if (Array.isArray(newValue))
-			throw new Error("MUI Slider value return: Expected a number")
-		if (newValue === 144) {
-			const newDate = sliderDateDraft.add(1, "day")
-			setSliderDate(newDate)
-		} else {
-			setSliderDate(date)
-		}
-		changeTime(newValue)
-	}
-
-	useEffect(() => {
-		if (time === 144) {
-			setSliderDate(date.add(1, "day"))
-		} else {
-			setSliderDate(date)
-		}
-	}, [date, time])
-
-	useEffect(() => {
-		if (isPlaying) {
-			const interval = setInterval(() => {
-				if (time === 144) {
-					changeTime(0)
-					setSliderDate(sliderDateDraft.add(1, "day"))
-				} else {
-					changeTime(time + 1)
-				}
-			}, 100)
-			return () => {
-				clearInterval(interval)
-			}
-		}
-		return
-	}, [isPlaying, time, changeTime, sliderDateDraft.add])
 
 	return (
 		<>
@@ -270,40 +216,7 @@ export default function App({ Component, pageProps }: AppProps) {
 											backgroundColor: theme.palette.divider
 										}}
 									/>
-									<CardContent>
-										<Typography gutterBottom>
-											{`${sliderDateDraft.format(
-												"DD/MM/YYYY"
-											)} ${sliderValueToTime(time).format("HH:mm")}`}
-										</Typography>
-										<Slider
-											aria-label='Local Time'
-											value={time}
-											getAriaValueText={(value: number) =>
-												sliderValueToTime(value).format("HH:mm")
-											}
-											valueLabelDisplay='off'
-											step={1}
-											marks
-											min={0}
-											max={144}
-											onChange={handleSliderChange}
-											onMouseDown={() => setIsPlaying(false)}
-											onTouchStart={() => setIsPlaying(false)}
-										/>
-										<Box
-											display='flex'
-											justifyContent='center'
-											style={{ marginBottom: "-16px" }}
-										>
-											<IconButton
-												aria-label='play/pause'
-												onClick={handlePlayPause}
-											>
-												{isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-											</IconButton>
-										</Box>
-									</CardContent>
+									<TimeSlider />
 								</Card>
 								<Card
 									sx={{
@@ -399,21 +312,7 @@ export default function App({ Component, pageProps }: AppProps) {
 										}}
 									/>
 									<CardContent>
-										<Box
-											component='ul'
-											sx={{
-												m: 0,
-												p: 0,
-												pl: 1
-											}}
-										>
-											<li>Latitude: {latitude}</li>
-											<li>Longitude: {longitude}</li>
-											<li>Height: {height}</li>
-											<li>Elevation cutoff: {elevationCutoff}</li>
-											<li>Date: {date.format("MM/DD/YYYY")}</li>
-											<li>Almanac: {almanacName}</li>
-										</Box>
+										<SettingsView />
 									</CardContent>
 								</Card>
 							</Box>

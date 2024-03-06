@@ -1,8 +1,9 @@
-import useStore from "@/store/store"
-import { useTheme } from "@mui/material/styles"
-import { Data } from "plotly.js"
-import { useEffect, useRef, useState } from "react"
-import Plot from "react-plotly.js"
+import useStore from "@/store/store";
+import { Box } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import { Data } from "plotly.js";
+import { useEffect, useRef, useState } from "react";
+import Plot from "react-plotly.js";
 
 function generateData(
 	sky: Map<number, Map<number, [number, number]>>,
@@ -26,7 +27,7 @@ function generateData(
 		line: { color: "cyan", width: 2 }
 	})
 
-	const satelliteNumber: number = 39
+	const satelliteNumber: number = 2
 
 	const satelliteMap = sky.get(satelliteNumber)
 	if (!satelliteMap) return data
@@ -116,14 +117,12 @@ const SkyPlotGraph = () => {
 		}
 	})
 	return (
-		<div
+		<Box
 			ref={containerRef}
-			style={{
-				display: "flex",
-				justifyContent: "center",
-				width: "100%",
-				height: "100%"
-			}}
+			display="flex"
+			justifyContent="center"
+			width="100%"
+			height="100%"
 		>
 			<Plot
 				data={generateData(sky, time, elevationCutoff)}
@@ -166,7 +165,7 @@ const SkyPlotGraph = () => {
 				}}
 				useResizeHandler={true}
 			/>
-		</div>
+		</Box>
 	)
 }
 

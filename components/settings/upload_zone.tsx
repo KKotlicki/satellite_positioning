@@ -1,0 +1,135 @@
+import useStore from "@/store/store"
+import { Box, useTheme } from "@mui/material"
+import Typography from "@mui/material/Typography"
+import { useState } from "react"
+
+
+const UploadZone = () => {
+	function parseAlmFile(input: string): Map<number, number[]> {
+		const data: string = input
+
+		let res = [] as number[][]
+
+		let shiftToNext = 0
+
+		let previousColumnsAmount = 0
+
+		for (const line of data.split("\n")) {
+			const numbers = line.replace(/\-/g, " -").trim().split(/\s+/)
+
+			if (numbers.length <= 1) {
+				shiftToNext += previousColumnsAmount
+				continue
+			}
+
+			previousColumnsAmount = numbers.length + 1
+
+			for (let i = 0; i < numbers.length; i++) {
+				const n = numbers[i]
+				if (n === undefined) throw new Error("Undefined number")
+				const satellite = res[i + shiftToNext]
+				if (!satellite) res[i + shiftToNext] = []
+				if (Number.isNaN(n)) continue
+				res[i + shiftToNext]?.push(+n)
+			}
+		}
+
+		res = res.filter((x) => x)
+
+		const dic = new Map<number, number[]>()
+
+		for (const nums of res) {
+			const key = nums[0]
+			if (key === undefined) throw new Error("Undefined key")
+			dic.set(key, nums.splice(1))
+		}
+
+		return dic
+	}
+
+	const [isDragging, setIsDragging] = useState<boolean>(false)
+	const theme = useTheme()
+	const changeAlmanacName = useStore((state) => state.changeAlmanacName)
+
+	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		setIsDragging(true)
+	}
+
+	const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		setIsDragging(false)
+	}
+
+	const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+		e.preventDefault()
+		setIsDragging(false)
+		const files = Array.from(e.dataTransfer.files)
+		const text = await files[0]?.text()
+		if (!files[0]?.name) {
+			throw new Error("No file name")
+		}
+		changeAlmanacName(files[0]?.name)
+
+		handleFilesDropped(text ?? "")
+	}
+
+	const handleChooseFile = () => {
+		const fileInput = document.createElement("input")
+		fileInput.type = "file"
+		fileInput.accept = ".alm"
+		fileInput.multiple = true
+		fileInput.onchange = async (e: Event) => {
+			const target = e.target as HTMLInputElement
+			if (target?.files) {
+				const files = Array.from(target.files)
+				const text = await files[0]?.text()
+				if (!files[0]?.name) {
+					throw new Error("No file name")
+				}
+				changeAlmanacName(files[0]?.name)
+
+				handleFilesDropped(text ?? "")
+			}
+		}
+		fileInput.click()
+	}
+	const changeAlmanac = useStore((state) => state.changeAlmanac)
+	const handleFilesDropped = (content: string | ArrayBuffer | null) => {
+		const almanac = new Map<number, number[]>()
+		parseAlmFile(content as string).forEach((value, key) => {
+			almanac.set(key, value)
+		})
+		changeAlmanac(almanac)
+	}
+
+	return (
+		<Box
+			onDragEnter={handleDragEnter}
+			onDragOver={handleDragEnter}
+			onDragLeave={handleDragLeave}
+			onDrop={handleDrop}
+			onClick={handleChooseFile}
+			border={isDragging ? "2px dashed blue" : "2px dashed grey"}
+			borderRadius="10px"
+			padding="1rem"
+			display="flex"
+			justifyContent="center"
+			alignItems="center"
+			height="100px"
+			margin="1rem 0"
+			color={isDragging ? "white" : "inherit"}
+			position="relative"
+			width="100%"
+			sx={{
+				cursor: "pointer",
+				backgroundColor: isDragging ? "primary.light" : "inherit",
+				transition: "all 0.3s ease-in-out"
+			}}
+		>
+			<Typography textAlign="center">Drag and drop Almanac</Typography>
+		</Box>
+	)
+}
+
+export default UploadZone
