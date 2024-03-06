@@ -8,15 +8,7 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault("UTC")
 
 type SatellitePath = Map<number, [number, number, number][]>
-type SkyPath = Map<number, Map<number, [number, number]>>
-
-// const GPS = {
-//     1: [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-// } as const satisfies SatellitePath
-
-// const sky = {
-//     1: [[0, 0], [0, 0], [0, 0], [0, 0]],
-// } as const satisfies SkyPath
+type SkyPath = Map<number, [number | undefined, number][]>
 
 const mi = 3.986005e14
 const wE = 7.2921151467e-5 * 180 / Math.PI
@@ -150,7 +142,7 @@ function calculateSatellitePositions(
 		}
 		output.set(satellite, positions)
 	}
-	return output
+	return output;
 }
 
 function calculateSkyPositions(
@@ -158,9 +150,8 @@ function calculateSkyPositions(
 	latitude: number,
 	longitude: number,
 	height: number,
-	elevationCutoff: number
 ) {
-	const output = new Map<number, Map<number, [number, number]>>()
+	const output = new Map<number, [number | undefined, number][]>()
 
 	// Constants for WGS84
 	const a = 6378137
@@ -179,33 +170,41 @@ function calculateSkyPositions(
 	const zObserver = ((1 - eSquared) * N + height) * Math.sin(latitudeRad)
 
 	GNSS.forEach((satelliteData, satellite) => {
-		const positions = new Map<number, [number, number]>()
-
-		satelliteData.forEach(([x, y, z], timeIncrement) => {
-			const xGeocentric = x - xObserver
-			const yGeocentric = y - yObserver
-			const zGeocentric = z - zObserver
+		const positions: [number | undefined, number][] = []
+		for (const [x, y, z] of satelliteData) {
+			const xGeocentric = x - xObserver;
+			const yGeocentric = y - yObserver;
+			const zGeocentric = z - zObserver;
 
 			const rGeocentric = Math.sqrt(
 				xGeocentric ** 2 + yGeocentric ** 2 + zGeocentric ** 2
-			)
-			const xTopocentric = -xGeocentric * Math.sin(latitudeRad) * Math.cos(longitudeRad) - yGeocentric * Math.sin(latitudeRad) * Math.sin(longitudeRad) + zGeocentric * Math.cos(latitudeRad)
-			const yTopocentric = -xGeocentric * Math.sin(longitudeRad) + yGeocentric * Math.cos(longitudeRad)
-			const zTopocentric = xGeocentric * Math.cos(latitudeRad) * Math.cos(longitudeRad) + yGeocentric * Math.cos(latitudeRad) * Math.sin(longitudeRad) + zGeocentric * Math.sin(latitudeRad)
-
-			const elevation = (Math.asin(zTopocentric / rGeocentric) * 180) / Math.PI
-			const azimuth = ((Math.atan2(yTopocentric, xTopocentric) * 180) / Math.PI + 360) % 360
-
-			if (elevation > elevationCutoff) {
-				positions.set(timeIncrement, [elevation, azimuth])
+			);
+			if (rGeocentric === 0) {
+				positions.push([undefined, 0]);
 			}
-		})
+			const xTopocentric =
+				-xGeocentric * Math.sin(latitudeRad) * Math.cos(longitudeRad) -
+				yGeocentric * Math.sin(latitudeRad) * Math.sin(longitudeRad) +
+				zGeocentric * Math.cos(latitudeRad);
+			const yTopocentric =
+				-xGeocentric * Math.sin(longitudeRad) + yGeocentric * Math.cos(longitudeRad);
+			const zTopocentric =
+				xGeocentric * Math.cos(latitudeRad) * Math.cos(longitudeRad) +
+				yGeocentric * Math.cos(latitudeRad) * Math.sin(longitudeRad) +
+				zGeocentric * Math.sin(latitudeRad);
 
-		output.set(satellite, positions)
-	})
+			const elevation = (Math.asin(zTopocentric / rGeocentric) * 180) / Math.PI;
+			const azimuth =
+				((Math.atan2(yTopocentric, xTopocentric) * 180) / Math.PI + 360) % 360;
+			positions.push([elevation, azimuth]);
+		}
 
-	return output
+		output.set(satellite, positions);
+	});
+
+	return output;
 }
+
 
 type Store = {
 	latitude: number
@@ -220,7 +219,7 @@ type Store = {
 	changeDate: (newDate: Dayjs) => void
 	time: number
 	changeTime: (newTime: number) => void
-		almanacName: string
+	almanacName: string
 	changeAlmanacName: (newAlmanacName: string) => void
 	almanac: Map<number, number[]>
 	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
@@ -237,11 +236,11 @@ const useStore = createStore<Store>((set) => ({
 	longitude: 0,
 	height: 480,
 	elevationCutoff: 7,
-	sky: new Map<number, Map<number, [number, number]>>(),
+	sky: new Map<number, [number | undefined, number][]>(),
 	time: 72,
 
 	changeDate: (newDate) =>
-		set(({ almanac, latitude, longitude, height, elevationCutoff }) => {
+		set(({ almanac, latitude, longitude, height }) => {
 
 			const GNSS = calculateSatellitePositions(almanac, newDate)
 
@@ -252,10 +251,9 @@ const useStore = createStore<Store>((set) => ({
 					GNSS,
 					latitude,
 					longitude,
-					height,
-					elevationCutoff
+					height
 				)
-			}
+			};
 		}
 		),
 
@@ -263,7 +261,7 @@ const useStore = createStore<Store>((set) => ({
 		set(() => ({ almanacName: newAlmanacName })),
 
 	changeAlmanac: (newAlmanac) =>
-		set(({ date, latitude, longitude, height, elevationCutoff }) => {
+		set(({ date, latitude, longitude, height }) => {
 
 			const GNSS = calculateSatellitePositions(newAlmanac, date)
 
@@ -274,55 +272,51 @@ const useStore = createStore<Store>((set) => ({
 					GNSS,
 					latitude,
 					longitude,
-					height,
-					elevationCutoff
+					height
 				)
-			}
+			};
 		}
 		),
 
 	changeLatitude: (newLatitude) =>
-		set(({ GNSS, longitude, height, elevationCutoff }) => {
+		set(({ GNSS, longitude, height }) => {
 			return {
 				latitude: newLatitude,
 				sky: calculateSkyPositions(
 					GNSS,
 					newLatitude,
 					longitude,
-					height,
-					elevationCutoff
+					height
 				)
-			}
+			};
 		}
 		),
 
 	changeLongitude: (newLongitude) =>
-		set(({ GNSS, latitude, height, elevationCutoff }) => {
+		set(({ GNSS, latitude, height }) => {
 			return {
 				longitude: newLongitude,
 				sky: calculateSkyPositions(
 					GNSS,
 					latitude,
 					newLongitude,
-					height,
-					elevationCutoff
+					height
 				)
-			}
+			};
 		}
 		),
 
 	changeHeight: (newHeight) =>
-		set(({ GNSS, latitude, longitude, elevationCutoff }) => {
+		set(({ GNSS, latitude, longitude }) => {
 			return {
 				height: newHeight,
 				sky: calculateSkyPositions(
 					GNSS,
 					latitude,
 					longitude,
-					newHeight,
-					elevationCutoff
+					newHeight
 				)
-			}
+			};
 		}
 		),
 
@@ -334,14 +328,13 @@ const useStore = createStore<Store>((set) => ({
 					GNSS,
 					latitude,
 					longitude,
-					height,
-					newElevationCutoff
+					height
 				)
-			}
+			};
 		}
 		),
 
 	changeTime: (newTime) => set(() => ({ time: newTime })),
-	}))
+}))
 
 export default useStore

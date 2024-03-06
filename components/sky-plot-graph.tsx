@@ -1,13 +1,16 @@
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import next from "next";
+import { NextFetchEvent } from "next/server";
+import { sep } from "path";
 import { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
 function generateData(
-	sky: Map<number, Map<number, [number, number]>>,
+	sky: Map<number, [number | undefined, number][]>,
 	time: number,
 	elevationCutoff: number
 ): Array<Data> {
@@ -33,8 +36,12 @@ function generateData(
 	const satelliteMap = sky.get(satelliteNumber)
 	if (!satelliteMap) return data
 
-	if (satelliteMap.has(time)) {
-		const [elevation, azimuth] = satelliteMap.get(time) as [number, number]
+	const satellitePoint = satelliteMap[time]
+	if (satellitePoint === undefined) return data
+	if (satellitePoint[0] === undefined) satellitePoint[0] = 0
+
+	if (satellitePoint[0] >= elevationCutoff) {
+		const [elevation, azimuth] = satelliteMap[time] as [number, number]
 		data.push({
 			type: "scatterpolar",
 			r: [elevation],
@@ -51,15 +58,17 @@ function generateData(
 		})
 	}
 
-	const path: Array<[number, number]> = []
+	// const path: Array<[number, number]> = []
 	const separatePath: Array<[number, number]> = []
 
-	satelliteMap.forEach((value: [number, number], timeIncrement: number) => {
-		const [elevation, azimuth] = value
-		path.push([elevation, azimuth])
-		if (satelliteMap.get(timeIncrement + 1)) {
-			separatePath.push([elevation, azimuth])
-		} else if (separatePath.length > 0) {
+	satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
+		// if (timeIncrement === 93) debugger
+		let [elevation, azimuth] = value
+		if (elevation === undefined) {
+			elevation = 0
+		}
+
+		if (timeIncrement === satelliteMap.length - 1) {
 			separatePath.push([elevation, azimuth])
 			data.push({
 				type: "scatterpolar",
@@ -68,6 +77,23 @@ function generateData(
 				mode: "lines",
 				line: { color: "green", width: 2 }
 			})
+			separatePath.length = 0
+		}
+		else if (elevation >= elevationCutoff) {
+		separatePath.push([elevation, azimuth])
+		}
+		else if (separatePath.length > 0) {
+			separatePath.push([elevation, azimuth])
+			data.push({
+				type: "scatterpolar",
+				r: separatePath.map((point) => point[0]),
+				theta: separatePath.map((point) => point[1]),
+				mode: "lines",
+				line: { color: "green", width: 2 }
+			})
+			separatePath.length = 0
+		}
+		else {
 			separatePath.length = 0
 		}
 	})
@@ -80,8 +106,8 @@ const SkyPlotGraph = () => {
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
-	const elevationCutoff = useZustand(useStore,(state) => state.elevationCutoff)
-	const sky = useZustand(useStore,(state) => state.sky)
+	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
+	const sky = useZustand(useStore, (state) => state.sky)
 	const time = useZustand(useStore, (state) => state.time)
 
 	useEffect(() => {
