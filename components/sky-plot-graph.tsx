@@ -64,7 +64,9 @@ function generateData(
 		}
 
 		if (timeIncrement === satelliteMap.length - 1) {
+			if (elevation >= elevationCutoff && separatePath.length > 0) {
 			separatePath.push([elevation, azimuth])
+			}
 			data.push({
 				type: "scatterpolar",
 				r: separatePath.map((point) => point[0]),
@@ -78,7 +80,6 @@ function generateData(
 			separatePath.push([elevation, azimuth])
 		}
 		else if (separatePath.length > 0) {
-			separatePath.push([elevation, azimuth])
 			data.push({
 				type: "scatterpolar",
 				r: separatePath.map((point) => point[0]),
