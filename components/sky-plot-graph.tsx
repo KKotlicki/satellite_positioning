@@ -45,7 +45,7 @@ function generateData(
 			theta: [azimuth],
 			mode: "text+markers",
 			marker: { size: 16, color: "green" },
-			text: ["G39"],
+			text: "G02",
 			textposition: "top center",
 			textfont: {
 				color: "green",
@@ -65,7 +65,7 @@ function generateData(
 
 		if (timeIncrement === satelliteMap.length - 1) {
 			if (elevation >= elevationCutoff && separatePath.length > 0) {
-			separatePath.push([elevation, azimuth])
+				separatePath.push([elevation, azimuth])
 			}
 			data.push({
 				type: "scatterpolar",
