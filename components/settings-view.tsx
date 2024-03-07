@@ -10,6 +10,21 @@ const SettingsView = () => {
   const elevationCutoff = useZustand(useStore,(state) => state.elevationCutoff)
   const date = useZustand(useStore,(state) => state.date)
   const almanacName = useZustand(useStore,(state) => state.almanacName)
+  function parseLatitude(latitude: number) {
+    const direction = latitude < 0 ? "S" : "N"
+    const absolute = Math.abs(latitude)
+    const degrees = Math.floor(absolute)
+    const minutes = (absolute - degrees) * 60
+    return `${degrees}° ${minutes.toFixed(2)}' ${direction}`
+  }
+
+  function parseLongitude(longitude: number) {
+    const direction = longitude < 0 ? "W" : "E"
+    const absolute = Math.abs(longitude)
+    const degrees = Math.floor(absolute)
+    const minutes = (absolute - degrees) * 60
+    return `${degrees}° ${minutes.toFixed(2)}' ${direction}`
+  }
 
   return (
     <Box
@@ -20,12 +35,13 @@ const SettingsView = () => {
         pl: 1
       }}
     >
-      <li>Latitude: {latitude}</li>
-      <li>Longitude: {longitude}</li>
-      <li>Height: {height}</li>
-      <li>Elevation cutoff: {elevationCutoff}</li>
+      <li>{parseLatitude(latitude)}</li>
+      <li>{parseLongitude(longitude)}</li>
+
+      <li>Height: {height} m</li>
+      <li>Elevation cutoff: {elevationCutoff}°</li>
       <li>Date: {date.format("MM/DD/YYYY")}</li>
-      <li>Almanac: {almanacName}</li>
+      <li>Almanac:{`\n${almanacName}`}</li>
     </Box>
   )
 }
