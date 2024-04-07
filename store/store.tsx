@@ -206,7 +206,8 @@ function calculateSkyPositions(
 	return output;
 }
 
-function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number) {
+function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number, selectedSatellites: number[]) {
+	if (selectedSatellites.length < 5) return []
 	const intervals = 145
 	const GNSS_DOP: [number, number, number, number][] = []
 
@@ -229,8 +230,7 @@ function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, 
 		let A = math.matrix([[]]);
 		A.resize([1, 4]);
 
-
-		for (let satelliteNumber = 2; satelliteNumber <= 32; satelliteNumber++) {
+		for (const satelliteNumber of selectedSatellites) {
 			if (!GNSS.has(satelliteNumber)) continue
 			const satelliteData = GNSS.get(satelliteNumber)
 			if (satelliteData === undefined) continue
@@ -267,6 +267,7 @@ function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, 
 		}
 		const sizeOfA = A.size()
 		if (!sizeOfA[0]) continue
+		if (sizeOfA[0] < 5) continue
 		A = math.subset(A, math.index(math.range(1, sizeOfA[0]), math.range(0, 4)))
 		const Atranspose = math.transpose(A)
 		const QnotInverted = math.multiply(Atranspose, A)
@@ -336,7 +337,7 @@ const useStore = createStore<Store>((set) => ({
 	time: 72,
 
 	changeDate: (newDate) =>
-		set(({ almanac, latitude, longitude, height, elevationCutoff }) => {
+		set(({ almanac, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
 
 			const GNSS = calculateSatellitePositions(almanac, newDate)
 			const sky = calculateSkyPositions(
@@ -345,7 +346,7 @@ const useStore = createStore<Store>((set) => ({
 				longitude,
 				height
 			)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
 
 			return {
 				date: newDate,
@@ -360,7 +361,7 @@ const useStore = createStore<Store>((set) => ({
 		set(() => ({ almanacName: newAlmanacName })),
 
 	changeAlmanac: (newAlmanac) =>
-		set(({ date, latitude, longitude, height, elevationCutoff }) => {
+		set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
 
 			const GNSS = calculateSatellitePositions(newAlmanac, date)
 			const sky = calculateSkyPositions(
@@ -369,7 +370,7 @@ const useStore = createStore<Store>((set) => ({
 				longitude,
 				height
 			)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
 			return {
 				almanac: newAlmanac,
 				GNSS,
@@ -380,14 +381,14 @@ const useStore = createStore<Store>((set) => ({
 		),
 
 	changeLatitude: (newLatitude) =>
-		set(({ GNSS, longitude, height, elevationCutoff }) => {
+		set(({ GNSS, longitude, height, elevationCutoff, selectedSatellites }) => {
 			const sky = calculateSkyPositions(
 				GNSS,
 				newLatitude,
 				longitude,
 				height
 			)
-			const DOP = calculateDOP(GNSS, sky, newLatitude, longitude, height, elevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, newLatitude, longitude, height, elevationCutoff, selectedSatellites)
 			return {
 				latitude: newLatitude,
 				sky,
@@ -397,14 +398,14 @@ const useStore = createStore<Store>((set) => ({
 		),
 
 	changeLongitude: (newLongitude) =>
-		set(({ GNSS, latitude, height, elevationCutoff }) => {
+		set(({ GNSS, latitude, height, elevationCutoff, selectedSatellites }) => {
 			const sky = calculateSkyPositions(
 				GNSS,
 				latitude,
 				newLongitude,
 				height
 			)
-			const DOP = calculateDOP(GNSS, sky, latitude, newLongitude, height, elevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, latitude, newLongitude, height, elevationCutoff, selectedSatellites)
 			return {
 				longitude: newLongitude,
 				sky,
@@ -414,14 +415,14 @@ const useStore = createStore<Store>((set) => ({
 		),
 
 	changeHeight: (newHeight) =>
-		set(({ GNSS, latitude, longitude, elevationCutoff }) => {
+		set(({ GNSS, latitude, longitude, elevationCutoff, selectedSatellites }) => {
 			const sky = calculateSkyPositions(
 				GNSS,
 				latitude,
 				longitude,
 				newHeight
 			)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, newHeight, elevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, newHeight, elevationCutoff, selectedSatellites)
 			return {
 				height: newHeight,
 				sky,
@@ -431,14 +432,14 @@ const useStore = createStore<Store>((set) => ({
 		),
 
 	changeElevationCutoff: (newElevationCutoff) =>
-		set(({ GNSS, latitude, longitude, height }) => {
+		set(({ GNSS, latitude, longitude, height, selectedSatellites }) => {
 			const sky = calculateSkyPositions(
 				GNSS,
 				latitude,
 				longitude,
 				height
 			)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, newElevationCutoff)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, newElevationCutoff, selectedSatellites)
 			return {
 				elevationCutoff: newElevationCutoff,
 				sky,
@@ -449,8 +450,21 @@ const useStore = createStore<Store>((set) => ({
 
 	changeTime: (newTime) => set(() => ({ time: newTime })),
 
-	changeSelectedSatellites: (newSelectedSatellites) => set(() => ({ selectedSatellites: newSelectedSatellites
-	})),
+	changeSelectedSatellites: (newSelectedSatellites) =>
+		set(({ GNSS, latitude, longitude, height, elevationCutoff }) => {
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				longitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, newSelectedSatellites)
+			return {
+				selectedSatellites: newSelectedSatellites,
+				sky,
+				DOP
+			}
+	}),
 
 	}))
 

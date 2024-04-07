@@ -6,10 +6,21 @@ import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
+function generateColorPalette(numColors: number, cycles = 7): string[] {
+	const colors = [];
+	for (let i = 0; i < numColors; i++) {
+		const hue = (360 * i * cycles / numColors) % 360;
+		colors.push(`hsl(${hue}, 100%, 50%)`);
+	}
+	return colors;
+}
+
+
 function generateData(
 	sky: Map<number, [number | undefined, number][]>,
 	time: number,
-	elevationCutoff: number
+	elevationCutoff: number,
+	selectedSatellites: number[]
 ): Array<Data> {
 	const data: Array<Data> = []
 
@@ -28,72 +39,80 @@ function generateData(
 		line: { color: "cyan", width: 2 }
 	})
 
-	const satelliteNumber: number = 2
+	const colors = generateColorPalette(155);
 
-	const satelliteMap = sky.get(satelliteNumber)
-	if (!satelliteMap) return data
+	for (const satelliteNumber of selectedSatellites) {
 
-	const satellitePoint = satelliteMap[time]
-	if (satellitePoint === undefined) return data
-	if (satellitePoint[0] === undefined) satellitePoint[0] = 0
+		const satelliteMap = sky.get(satelliteNumber)
+		if (!satelliteMap) return data
 
-	if (satellitePoint[0] >= elevationCutoff) {
-		const [elevation, azimuth] = satelliteMap[time] as [number, number]
-		data.push({
-			type: "scatterpolar",
-			r: [elevation],
-			theta: [azimuth],
-			mode: "text+markers",
-			marker: { size: 16, color: "green" },
-			text: "G02",
-			textposition: "top center",
-			textfont: {
-				color: "green",
-				family: "Roboto Bold, Roboto, sans-serif",
-				size: 16
+		const satellitePoint = satelliteMap[time]
+		if (satellitePoint === undefined) return data
+		if (satellitePoint[0] === undefined) satellitePoint[0] = 0
+
+		const colorIndex = (satelliteNumber - 1) % colors.length;
+		let color = colors[colorIndex];
+		if (color === undefined) {
+			color = "white"
+		}
+
+		if (satellitePoint[0] >= elevationCutoff) {
+			const [elevation, azimuth] = satelliteMap[time] as [number, number]
+			data.push({
+				type: "scatterpolar",
+				r: [elevation],
+				theta: [azimuth],
+				mode: "text+markers",
+				marker: { size: 16, color: color },
+				text: [satelliteNumber.toString()],
+				textposition: "top center",
+				textfont: {
+					color: color,
+					family: "Roboto Bold, Roboto, sans-serif",
+					size: 16
+				}
+			})
+		}
+
+		const separatePath: Array<[number, number]> = []
+
+		satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
+			let [elevation, azimuth] = value
+			if (elevation === undefined) {
+				elevation = 0
+			}
+
+			if (timeIncrement === satelliteMap.length - 1) {
+				if (elevation >= elevationCutoff && separatePath.length > 0) {
+					separatePath.push([elevation, azimuth])
+				}
+				data.push({
+					type: "scatterpolar",
+					r: separatePath.map((point) => point[0]),
+					theta: separatePath.map((point) => point[1]),
+					mode: "lines",
+					line: { color: color, width: 2 }
+				})
+				separatePath.length = 0
+			}
+			else if (elevation >= elevationCutoff) {
+				separatePath.push([elevation, azimuth])
+			}
+			else if (separatePath.length > 0) {
+				data.push({
+					type: "scatterpolar",
+					r: separatePath.map((point) => point[0]),
+					theta: separatePath.map((point) => point[1]),
+					mode: "lines",
+					line: { color: color, width: 2 }
+				})
+				separatePath.length = 0
+			}
+			else {
+				separatePath.length = 0
 			}
 		})
 	}
-
-	const separatePath: Array<[number, number]> = []
-
-	satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
-		let [elevation, azimuth] = value
-		if (elevation === undefined) {
-			elevation = 0
-		}
-
-		if (timeIncrement === satelliteMap.length - 1) {
-			if (elevation >= elevationCutoff && separatePath.length > 0) {
-				separatePath.push([elevation, azimuth])
-			}
-			data.push({
-				type: "scatterpolar",
-				r: separatePath.map((point) => point[0]),
-				theta: separatePath.map((point) => point[1]),
-				mode: "lines",
-				line: { color: "green", width: 2 }
-			})
-			separatePath.length = 0
-		}
-		else if (elevation >= elevationCutoff) {
-			separatePath.push([elevation, azimuth])
-		}
-		else if (separatePath.length > 0) {
-			data.push({
-				type: "scatterpolar",
-				r: separatePath.map((point) => point[0]),
-				theta: separatePath.map((point) => point[1]),
-				mode: "lines",
-				line: { color: "green", width: 2 }
-			})
-			separatePath.length = 0
-		}
-		else {
-			separatePath.length = 0
-		}
-	})
-
 	return data
 }
 
@@ -105,6 +124,7 @@ const SkyPlotGraph = () => {
 	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
 	const sky = useZustand(useStore, (state) => state.sky)
 	const time = useZustand(useStore, (state) => state.time)
+	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -148,7 +168,7 @@ const SkyPlotGraph = () => {
 			height="100%"
 		>
 			<Plot
-				data={generateData(sky, time, elevationCutoff)}
+				data={generateData(sky, time, elevationCutoff, selectedSatellites)}
 				layout={{
 					width: size,
 					height: size,

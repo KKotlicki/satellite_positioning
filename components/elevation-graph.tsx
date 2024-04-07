@@ -5,6 +5,15 @@ import { Data } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
+function generateColorPalette(numColors: number, cycles = 7): string[] {
+	const colors = [];
+	for (let i = 0; i < numColors; i++) {
+		const hue = (360 * i * cycles / numColors) % 360;
+		colors.push(`hsl(${hue}, 100%, 50%)`);
+	}
+	return colors;
+}
+
 function generateTimeLabels() {
 	const timeLabels: string[] = [];
 	for (let i = 0; i < 144; i++) {
@@ -19,28 +28,15 @@ function generateTimeLabels() {
 function generateData(
 	sky: Map<number, [number | undefined, number][]>,
 	time: number,
-	elevationCutoff: number
+	elevationCutoff: number,
+	selectedSatellites: number[]
 ): Array<Data> {
-	const satelliteId = 2;
-	const satelliteData = sky.get(satelliteId);
-	if (!satelliteData) {
-		return [];
-	}
-	for (let i = 0; i < satelliteData.length; i++) {
-		let satellitePosition = satelliteData[i];
-		if (satellitePosition === undefined) {
-			satellitePosition = [0, 0];
-		}
-		if (satellitePosition[0] === undefined) {
-			satellitePosition[0] = 0;
-		}
-	}
 	const timeLabels = generateTimeLabels();
-
-
+	const plotData: Array<Data> = [];
+	const colors = generateColorPalette(155);
 	const cutoffLine = {
 		x: timeLabels,
-		y: Array(satelliteData.length).fill(elevationCutoff),
+		y: Array(144).fill(elevationCutoff),
 		mode: 'lines',
 		line: {
 			color: 'cyan',
@@ -50,53 +46,71 @@ function generateData(
 		showlegend: false,
 	};
 
-	let specificTimeData = satelliteData[time];
-	if (specificTimeData === undefined) {
-		specificTimeData = [0, 0];
+	for (const satelliteId of selectedSatellites) {
+		const satelliteData = sky.get(satelliteId);
+		if (!satelliteData) {
+			return [];
+		}
+
+		for (let i = 0; i < satelliteData.length; i++) {
+			let satellitePosition = satelliteData[i];
+			if (satellitePosition === undefined) {
+				satellitePosition = [0, 0];
+			}
+			if (satellitePosition[0] === undefined) {
+				satellitePosition[0] = 0;
+			}
+		}
+		let color = colors[satelliteId % colors.length];
+		if (color === undefined) {
+			color = "white";
+		}
+
+		let specificTimeData = satelliteData[time];
+		if (specificTimeData === undefined) {
+			specificTimeData = [0, 0];
+		}
+		let specificTimeElevation = specificTimeData[0];
+		if (specificTimeElevation === undefined) {
+			specificTimeElevation = 0;
+		}
+
+
+		const specificTimePoint = {
+			x: [time],
+			y: [specificTimeElevation],
+			type: 'scatter' as const,
+			mode: 'text+markers' as const,
+			marker: {
+				color: color,
+				size: 8
+			},
+			text: [satelliteId.toString()],
+			textposition: "top center" as const,
+			textfont: {
+				color: color,
+				family: "Roboto Bold, Roboto, sans-serif",
+				size: 16
+			},
+			name: `${satelliteId}`,
+		};
+
+		const lineData = {
+			x: Array.from(Array(145).keys()),
+			y: satelliteData.map(entry => entry ? entry[0] : 0),
+			mode: 'lines',
+			line: {
+				color: color,
+				width: 2
+			},
+			showlegend: false,
+		};
+
+		plotData.push(specificTimePoint);
+		plotData.push(lineData);
+
 	}
-	let specificTimeElevation = specificTimeData[0];
-	if (specificTimeElevation === undefined) {
-		specificTimeElevation = 0;
-	}
-	let specificTimeLabel = timeLabels[time];
-	if (specificTimeLabel === undefined) {
-		specificTimeLabel = "00:00";
-	}
-
-
-	const specificTimePoint = {
-		x: [specificTimeLabel],
-		y: [specificTimeElevation],
-		type: 'scatter' as const,
-		mode: 'text+markers' as const,
-		marker: {
-			color: 'green',
-			size: 8
-		},
-		text: `G${satelliteId.toString().padStart(2, '0')}`,
-		textposition: "top center" as const,
-		textfont: {
-			color: "green",
-			family: "Roboto Bold, Roboto, sans-serif",
-			size: 16
-		},
-		name: `G${satelliteId.toString().padStart(2, '0')}`,
-	};
-
-	const lineData = {
-		x: timeLabels.slice(0, satelliteData.length),
-		y: satelliteData.map(entry => entry ? entry[0] : 0),
-		mode: 'lines',
-		line: {
-			color: 'green',
-			width: 2
-		},
-		name: `G${satelliteId.toString().padStart(2, '0')}`,
-		showlegend: false,
-	};
-
-	const plotData = [lineData, cutoffLine, specificTimePoint];
-
+	plotData.push(cutoffLine);
 	return plotData;
 }
 
@@ -106,12 +120,13 @@ const ElevationGraph = () => {
 	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
 	const sky = useZustand(useStore, (state) => state.sky)
 	const time = useZustand(useStore, (state) => state.time)
+	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
 
 	const timeLabels = generateTimeLabels();
 
 	return (
 		<Plot
-			data={generateData(sky, time, elevationCutoff)}
+			data={generateData(sky, time, elevationCutoff, selectedSatellites)}
 			layout={{
 				autosize: true,
 				margin: {
