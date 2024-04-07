@@ -314,6 +314,8 @@ type Store = {
 	changeAlmanacName: (newAlmanacName: string) => void
 	almanac: Map<number, number[]>
 	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
+	selectedSatellites: number[]
+	changeSelectedSatellites: (newSelectedSatellites: number[]) => void
 	GNSS: SatellitePath
 	sky: SkyPath
 	DOP: Array<[number, number, number, number]>
@@ -328,6 +330,7 @@ const useStore = createStore<Store>((set) => ({
 	longitude: 0,
 	height: 480,
 	elevationCutoff: 7,
+	selectedSatellites: [],
 	sky: new Map<number, [number | undefined, number][]>(),
 	DOP: new Array<[number, number, number, number]>(),
 	time: 72,
@@ -367,7 +370,7 @@ const useStore = createStore<Store>((set) => ({
 				height
 			)
 			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
-
+			// debugger
 			return {
 				almanac: newAlmanac,
 				GNSS,
@@ -446,6 +449,10 @@ const useStore = createStore<Store>((set) => ({
 		),
 
 	changeTime: (newTime) => set(() => ({ time: newTime })),
-}))
+
+	changeSelectedSatellites: (newSelectedSatellites) => set(() => ({ selectedSatellites: newSelectedSatellites
+	})),
+
+	}))
 
 export default useStore

@@ -1,12 +1,20 @@
-import SatelliteSellection from "@/components/satellite-selection";
-import { Box, Card, CardHeader, CardContent, useTheme } from "@mui/material";
+import SatelliteSelection from "@/components/satellite-selection";
+import { Box, Card, CardHeader, CardContent, useTheme, Tabs, Tab } from "@mui/material";
 import { useRef, useState, useEffect } from "react";
+import {
+	blue,
+	green,
+	orange,
+	pink,
+	red
+} from "@mui/material/colors"
 
 const Selection = () => {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
+	const [selectedTab, setSelectedTab] = useState(0);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -39,6 +47,10 @@ const Selection = () => {
 		}
 	})
 
+	const handleChangeTab = (event: React.ChangeEvent<unknown>, newValue: number) => {
+		setSelectedTab(newValue);
+	};
+
 
 	return (
 		<Box
@@ -48,26 +60,35 @@ const Selection = () => {
 			width="100%"
 			height="100%"
 			marginTop={margin / 16}
+			style={{ fontFamily: 'monospace' }}
 		>
 			<Card
 				sx={{
 					width: size,
 				}}
-				variant='outlined'
+				variant="outlined"
 			>
 				<CardHeader
-					title='Settings'
+					title={
+						<Tabs value={selectedTab} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
+							<Tab label={<b>GPS</b>} style={{ color: green[800] }} />
+							<Tab label={<b>GLONASS</b>} style={{ color: red[800] }} />
+							<Tab label={<b>Galileo</b>} style={{ color: blue[800] }} />
+							<Tab label={<b>Beidou</b>} style={{ color: orange[800] }} />
+							<Tab label={<b>QZSS</b>} style={{ color: pink[800] }} />
+						</Tabs>
+					}
 					style={{
 						borderBottom: `1px solid ${theme.palette.divider}`,
-						backgroundColor: theme.palette.divider
+						backgroundColor: theme.palette.divider, // Use a more appropriate color from the theme
 					}}
 				/>
 				<CardContent>
-					<SatelliteSellection />
+					<SatelliteSelection provider={selectedTab} />
 				</CardContent>
 			</Card>
 		</Box>
-	)
-}
+	);
+};
 
-export default Selection
+export default Selection;
