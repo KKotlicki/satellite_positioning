@@ -162,8 +162,14 @@ export default function App({ Component, pageProps }: AppProps) {
 
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<Stack component="main" className={roboto.className} height="100%">
-					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1 }} >
+				<Stack component="main" className={roboto.className} height="100%" display={"grid"} gridTemplateColumns={`${drawerWidth}px 1fr`} 
+				gridTemplateRows="auto 1fr"
+				gridTemplateAreas={`
+				"h h h"
+				"d c c"
+			`}
+		>
+					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1, gridArea: "h" }}>
 						<Container maxWidth='xl'>
 							<Toolbar disableGutters>
 								<SatelliteAltIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
@@ -263,8 +269,7 @@ export default function App({ Component, pageProps }: AppProps) {
 							</Toolbar>
 						</Container>
 					</AppBar>
-					<Box sx={{ display: "flex", overflowY: "auto" }}>
-						<Drawer
+					<Drawer
 							sx={{
 								width: drawerWidth,
 								flexShrink: 0,
@@ -398,6 +403,7 @@ export default function App({ Component, pageProps }: AppProps) {
 								</Card>
 							</Box>
 						</Drawer>
+					<Box sx={{ display: "flex", overflowY: "auto" }}>
 						<Component {...pageProps} />
 					</Box>
 				</Stack>

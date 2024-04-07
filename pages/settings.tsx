@@ -58,10 +58,9 @@ const Settings = () => {
 		<Box
 			ref={containerRef}
 			display="flex"
+			alignItems={'center'}
 			justifyContent="center"
 			width="100%"
-			height="100%"
-			marginTop={margin / 16}
 		>
 			<Card
 				sx={{

@@ -57,9 +57,9 @@ const Selection = () => {
 			ref={containerRef}
 			display="flex"
 			justifyContent="center"
+			alignItems={'center'}
 			width="100%"
-			height="100%"
-			marginTop={margin / 16}
+			marginTop={margin / 3}
 			style={{ fontFamily: 'monospace' }}
 		>
 			<Card
