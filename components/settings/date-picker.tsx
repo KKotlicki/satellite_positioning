@@ -13,7 +13,7 @@ dayjs.tz.setDefault("UTC")
 
 const DatePicker = () => {
   const [localDate, setLocalDate] = useState(dayjs())
-  const changeDate = useZustand(useStore,(state) => state.changeDate)
+  const changeDate = useZustand(useStore, (state) => state.changeDate)
 
   const minDate = dayjs("2024-02-19")
   const maxDate = dayjs("2100-01-01")

@@ -4,12 +4,12 @@ import { useZustand } from "use-zustand";
 
 
 const SettingsView = () => {
-  const latitude = useZustand(useStore,(state) => state.latitude)
-  const longitude = useZustand(useStore,(state) => state.longitude)
-  const height = useZustand(useStore,(state) => state.height)
-  const elevationCutoff = useZustand(useStore,(state) => state.elevationCutoff)
-  const date = useZustand(useStore,(state) => state.date)
-  const almanacName = useZustand(useStore,(state) => state.almanacName)
+  const latitude = useZustand(useStore, (state) => state.latitude)
+  const longitude = useZustand(useStore, (state) => state.longitude)
+  const height = useZustand(useStore, (state) => state.height)
+  const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
+  const date = useZustand(useStore, (state) => state.date)
+  const almanacName = useZustand(useStore, (state) => state.almanacName)
   function parseLatitude(latitude: number) {
     const direction = latitude < 0 ? "S" : "N"
     const absolute = Math.abs(latitude)

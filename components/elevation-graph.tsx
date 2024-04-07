@@ -110,42 +110,42 @@ const ElevationGraph = () => {
 	const timeLabels = generateTimeLabels();
 
 	return (
-			<Plot
-				data={generateData(sky, time, elevationCutoff)}
-				layout={{
-					autosize: true,
-					margin: {
-						pad: 0,
+		<Plot
+			data={generateData(sky, time, elevationCutoff)}
+			layout={{
+				autosize: true,
+				margin: {
+					pad: 0,
+				},
+				paper_bgcolor: theme.palette.background.default,
+				plot_bgcolor: theme.palette.background.default,
+				xaxis: {
+					title: "Time",
+					showline: true,
+					linecolor: theme.palette.text.primary,
+					tickfont: {
+						color: theme.palette.text.primary,
 					},
-					paper_bgcolor: theme.palette.background.default,
-					plot_bgcolor: theme.palette.background.default,
-					xaxis: {
-						title: "Time",
-						showline: true,
-						linecolor: theme.palette.text.primary,
-						tickfont: {
-							color: theme.palette.text.primary,
-						},
-						range: [0, 145],
-						tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
-						ticktext: timeLabels.filter((_, index) => index % 12 === 0),
+					range: [0, 145],
+					tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
+					ticktext: timeLabels.filter((_, index) => index % 12 === 0),
+				},
+				yaxis: {
+					title: "Elevation",
+					showline: true,
+					linecolor: theme.palette.text.primary,
+					tickfont: {
+						color: theme.palette.text.primary,
 					},
-					yaxis: {
-						title: "Elevation",
-						showline: true,
-						linecolor: theme.palette.text.primary,
-						tickfont: {
-							color: theme.palette.text.primary,
-						},
-						range: [-90, 90],
-					},
-					showlegend: true,
+					range: [-90, 90],
+				},
+				showlegend: true,
 
-				}}
-				config={{
-					displayModeBar: false,
-				}}
-			/>
+			}}
+			config={{
+				displayModeBar: false,
+			}}
+		/>
 	)
 }
 

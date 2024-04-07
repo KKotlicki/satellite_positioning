@@ -1,8 +1,6 @@
-import useStore from "@/store/store";
-import { Box, useTheme } from "@mui/material"
-import dynamic from "next/dynamic"
-import { useEffect, useRef, useState } from "react"
-import { useZustand } from "use-zustand"
+import { Box, useTheme } from "@mui/material";
+import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 
 const ElevationGraph = dynamic(() => import("../components/elevation-graph"), {
 	ssr: false

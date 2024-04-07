@@ -47,18 +47,18 @@ const TimeSlider = () => {
     changeTime(newValue)
   }
 
-    useInterval(() => {
-      if (time === 144) {
-        changeTime(0)
-        setSliderDate(sliderDateDraft.add(1, "day"))
-      } else {
-        changeTime(time + 1)
-      }
-    }, isPlaying ? 10 : null)
+  useInterval(() => {
+    if (time === 144) {
+      changeTime(0)
+      setSliderDate(sliderDateDraft.add(1, "day"))
+    } else {
+      changeTime(time + 1)
+    }
+  }, isPlaying ? 10 : null)
 
   return (
     <CardContent>
-            <Typography gutterBottom>
+      <Typography gutterBottom>
         {`${sliderDateDraft.format(
           "DD/MM/YYYY"
         )} ${sliderValueToTime(time).format("HH:mm")}`}

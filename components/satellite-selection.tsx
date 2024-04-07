@@ -1,27 +1,20 @@
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { get } from "http";
-import { e, number } from "mathjs";
-import { Data } from "plotly.js";
-import { useEffect, useRef, useState } from "react";
-import { useZustand } from "use-zustand";
-import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from "@mui/material/styles";
+import { useRef } from "react";
+import { useZustand } from "use-zustand";
 
 const GNSSPaper = styled(Paper)(({ theme }) => ({
-	flex: '1 0 30%', // Adjusts the basis for 3 items per row taking into account some margin
+	flex: '1 0 30%',
 	margin: theme.spacing(1),
 	padding: theme.spacing(2),
 	...theme.typography.body2,
 	textAlign: 'left',
-	// Ensuring the items do not grow too large, adjust as per design needs
-	maxWidth: '30%', // This controls the maximum width of each paper
+	maxWidth: '30%',
 }));
 
 function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
-	// get health of satellites and selection of satellites
 	const satelliteData: Map<number, number> = new Map();
 	let satelliteIdRange: [number, number]
 	switch (provider) {
@@ -63,13 +56,13 @@ const SatelliteSelection = ({ provider }: { provider: number }) => {
 	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites);
 
 	const handleCheckboxChange = (satelliteId: number) => {
-		const selectedSatellitesSet = new Set(selectedSatellites); // Convert array to Set for efficient lookup
+		const selectedSatellitesSet = new Set(selectedSatellites);
 		if (selectedSatellitesSet.has(satelliteId)) {
 			selectedSatellitesSet.delete(satelliteId);
 		} else {
 			selectedSatellitesSet.add(satelliteId);
 		}
-		changeSelectedSatellites(Array.from(selectedSatellitesSet)); // Convert back to array to update state
+		changeSelectedSatellites(Array.from(selectedSatellitesSet));
 	};
 
 	return (
@@ -77,37 +70,37 @@ const SatelliteSelection = ({ provider }: { provider: number }) => {
 			ref={containerRef}
 			display="flex"
 			justifyContent="left"
-			flexWrap="wrap" // This enables wrapping
+			flexWrap="wrap"
 			width="100%"
 			height="100%"
 		>
-{Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
-  const isHealthy = value === 0;
-  return (
-    <GNSSPaper key={index} variant="outlined">
-      <input
-        type="checkbox"
-        checked={new Set(selectedSatellites).has(index)}
-        onChange={() => handleCheckboxChange(index)}
-      />
-      {index}
-      <Paper
-        elevation={0} // Adjust elevation for flat or raised appearance
-        style={{
-          display: 'inline-block', // Makes the Paper inline for flow with text
-          backgroundColor: isHealthy ? 'green' : 'red',
-          color: 'white',
-          borderRadius: '20px', // Provides the rounded corners
-          padding: '2px 10px', // Adjust padding to control the size
-          marginLeft: '10px', // Adds some space between the text and the indicator
-          verticalAlign: 'middle', // Aligns with the surrounding text
-        }}
-      >
-        {isHealthy ? 'Healthy' : 'Unhealthy'}
-      </Paper>
-    </GNSSPaper>
-  );
-})}
+			{Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
+				const isHealthy = value === 0;
+				return (
+					<GNSSPaper key={index} variant="outlined">
+						<input
+							type="checkbox"
+							checked={new Set(selectedSatellites).has(index)}
+							onChange={() => handleCheckboxChange(index)}
+						/>
+						{index}
+						<Paper
+							elevation={0}
+							style={{
+								display: 'inline-block',
+								backgroundColor: isHealthy ? 'green' : 'red',
+								color: 'white',
+								borderRadius: '20px',
+								padding: '2px 10px',
+								marginLeft: '10px',
+								verticalAlign: 'middle',
+							}}
+						>
+							{isHealthy ? 'Healthy' : 'Unhealthy'}
+						</Paper>
+					</GNSSPaper>
+				);
+			})}
 		</Box>
 	)
 }

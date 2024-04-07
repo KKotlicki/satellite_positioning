@@ -1,7 +1,8 @@
-import SettingsView from "@/components/settings-view"
-import TimeSlider from "@/components/slider"
+import SettingsView from "@/components/settings-view";
+import TimeSlider from "@/components/slider";
+import useStore from "@/store/store";
+import MenuIcon from "@mui/icons-material/Menu";
 import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
-import MenuIcon from "@mui/icons-material/Menu"
 import {
 	Card,
 	CardContent,
@@ -11,17 +12,17 @@ import {
 	FormControlLabel,
 	FormGroup,
 	Stack
-} from "@mui/material"
-import AppBar from "@mui/material/AppBar"
-import Box from "@mui/material/Box"
-import Button from "@mui/material/Button"
-import Container from "@mui/material/Container"
-import Drawer from "@mui/material/Drawer"
-import IconButton from "@mui/material/IconButton"
-import Menu from "@mui/material/Menu"
-import MenuItem from "@mui/material/MenuItem"
-import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
+} from "@mui/material";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Drawer from "@mui/material/Drawer";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 import {
 	blue,
 	deepPurple,
@@ -29,16 +30,17 @@ import {
 	orange,
 	pink,
 	red
-} from "@mui/material/colors"
-import { ThemeProvider, createTheme } from "@mui/material/styles"
-import dayjs from "dayjs"
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
-import type { AppProps } from "next/app"
-import { Roboto } from "next/font/google"
-import Head from "next/head"
-import Link from "next/link"
-import { MouseEvent, useState } from "react"
+} from "@mui/material/colors";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import dayjs from "dayjs";
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+import type { AppProps } from "next/app";
+import { Roboto } from "next/font/google";
+import Head from "next/head";
+import Link from "next/link";
+import { MouseEvent, useState } from "react";
+import { useZustand } from "use-zustand";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -60,14 +62,14 @@ const theme = createTheme({
 		mode: "dark"
 	},
 	components: {
-    MuiCssBaseline: {
-      styleOverrides: `
+		MuiCssBaseline: {
+			styleOverrides: `
         html, body, #__next {
 					height: 100%;
         }
       `,
-    },
-  },
+		},
+	},
 
 })
 
@@ -77,6 +79,10 @@ const drawerWidth = 240
 
 export default function App({ Component, pageProps }: AppProps) {
 	const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
+	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
+
+	const almanac = useZustand(useStore, (state) => state.almanac)
+	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites);
 
 	const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
 		setAnchorElNav(event.currentTarget)
@@ -84,6 +90,65 @@ export default function App({ Component, pageProps }: AppProps) {
 
 	const handleCloseNavMenu = () => {
 		setAnchorElNav(null)
+	}
+
+	function setSatellites(provider: number, turnOn: boolean) {
+		const satelliteIdRange: [number, number] = (() => {
+			switch (provider) {
+				case 0:
+					return [1, 37]
+				case 1:
+					return [38, 64]
+				case 2:
+					return [201, 263]
+				case 3:
+					return [264, 283]
+				case 4:
+					return [111, 118]
+				default:
+					throw new Error("Invalid provider")
+			}
+		})()
+		const selectedSatellitesSet = new Set(selectedSatellites)
+		for (let i = satelliteIdRange[0]; i <= satelliteIdRange[1]; i++) {
+			if (almanac.get(i) === undefined) continue
+			if (turnOn) {
+				selectedSatellitesSet.add(i)
+			} else {
+				selectedSatellitesSet.delete(i)
+			}
+		}
+		changeSelectedSatellites(Array.from(selectedSatellitesSet))
+	}
+
+
+	const setSatelliteSelection = (provider: number, turnOn: boolean) => {
+		const satelliteIdRange: [number, number] = (() => {
+			switch (provider) {
+				case 0:
+					return [1, 37]
+				case 1:
+					return [38, 64]
+				case 2:
+					return [201, 263]
+				case 3:
+					return [264, 283]
+				case 4:
+					return [111, 118]
+				default:
+					throw new Error("Invalid provider")
+			}
+		})()
+		const selectedSatellitesSet = new Set(selectedSatellites)
+		for (let i = satelliteIdRange[0]; i <= satelliteIdRange[1]; i++) {
+			if (almanac.get(i) === undefined) continue
+			if (turnOn) {
+				selectedSatellitesSet.add(i)
+			} else {
+				selectedSatellitesSet.delete(i)
+			}
+		}
+		changeSelectedSatellites(Array.from(selectedSatellitesSet))
 	}
 
 	return (
@@ -253,6 +318,7 @@ export default function App({ Component, pageProps }: AppProps) {
 															color: green[800],
 															"&.Mui-checked": { color: green[600] }
 														}}
+														onChange={(e) => setSatelliteSelection(0, e.target.checked)}
 													/>
 												}
 												label='GPS'
@@ -265,6 +331,7 @@ export default function App({ Component, pageProps }: AppProps) {
 															color: red[800],
 															"&.Mui-checked": { color: red[600] }
 														}}
+														onChange={(e) => setSatelliteSelection(1, e.target.checked)}
 													/>
 												}
 												label='GLONASS'
@@ -277,6 +344,7 @@ export default function App({ Component, pageProps }: AppProps) {
 															color: blue[800],
 															"&.Mui-checked": { color: blue[600] }
 														}}
+														onChange={(e) => setSatelliteSelection(2, e.target.checked)}
 													/>
 												}
 												label='Galileo'
@@ -289,6 +357,7 @@ export default function App({ Component, pageProps }: AppProps) {
 															color: orange[800],
 															"&.Mui-checked": { color: orange[600] }
 														}}
+														onChange={(e) => setSatelliteSelection(3, e.target.checked)}
 													/>
 												}
 												label='Beidou'
@@ -301,6 +370,7 @@ export default function App({ Component, pageProps }: AppProps) {
 															color: pink[800],
 															"&.Mui-checked": { color: pink[600] }
 														}}
+														onChange={(e) => setSatelliteSelection(4, e.target.checked)}
 													/>
 												}
 												label='QZSS'

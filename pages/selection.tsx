@@ -1,13 +1,13 @@
 import SatelliteSelection from "@/components/satellite-selection";
-import { Box, Card, CardHeader, CardContent, useTheme, Tabs, Tab } from "@mui/material";
-import { useRef, useState, useEffect } from "react";
+import { Box, Card, CardContent, CardHeader, Tab, Tabs, useTheme } from "@mui/material";
 import {
 	blue,
 	green,
 	orange,
 	pink,
 	red
-} from "@mui/material/colors"
+} from "@mui/material/colors";
+import { useEffect, useRef, useState } from "react";
 
 const Selection = () => {
 	const theme = useTheme()
@@ -80,7 +80,7 @@ const Selection = () => {
 					}
 					style={{
 						borderBottom: `1px solid ${theme.palette.divider}`,
-						backgroundColor: theme.palette.divider, // Use a more appropriate color from the theme
+						backgroundColor: theme.palette.divider,
 					}}
 				/>
 				<CardContent>

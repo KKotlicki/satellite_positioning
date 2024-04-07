@@ -36,13 +36,13 @@ function generateData(
 		if (DOPDataAtTime === undefined) {
 			DOPDataAtTime = [0, 0, 0, 0];
 		}
-		const GDOPAtTime = math.sqrt(DOPDataAtTime[0]**2 + DOPDataAtTime[1]**2);
+		const GDOPAtTime = math.sqrt(DOPDataAtTime[0] ** 2 + DOPDataAtTime[1] ** 2);
 		if (GDOPAtTime === undefined) GDOPData.push(0);
 		else GDOPData.push(GDOPAtTime as number);
 		TDOPData.push(DOPDataAtTime[0]);
 		PDOPData.push(DOPDataAtTime[1]);
 		HDOPData.push(DOPDataAtTime[2]);
-		VDOPData.push(DOPDataAtTime[3]);	
+		VDOPData.push(DOPDataAtTime[3]);
 	}
 
 	const specificTimeGDOP = GDOPData[time];
@@ -182,7 +182,7 @@ function generateData(
 		showlegend: false,
 	};
 
-	return [GDOPLine, TDOPLine, PDOPLine, HDOPLine, VDOPLine, specificTimeLine, specificTimeGDOPPoint, specificTimeTDOPPoint, specificTimePDOPPoint, specificTimeHDOPPoint, specificTimeVDOPPoint];	
+	return [GDOPLine, TDOPLine, PDOPLine, HDOPLine, VDOPLine, specificTimeLine, specificTimeGDOPPoint, specificTimeTDOPPoint, specificTimePDOPPoint, specificTimeHDOPPoint, specificTimeVDOPPoint];
 }
 
 

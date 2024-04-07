@@ -370,7 +370,6 @@ const useStore = createStore<Store>((set) => ({
 				height
 			)
 			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
-			// debugger
 			return {
 				almanac: newAlmanac,
 				GNSS,
