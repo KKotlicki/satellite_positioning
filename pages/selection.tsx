@@ -1,17 +1,8 @@
-import useStore from "@/store/store";
-import { Box, useTheme } from "@mui/material"
-import dynamic from "next/dynamic"
-import { useEffect, useRef, useState } from "react"
-import { useZustand } from "use-zustand"
+import SatelliteSellection from "@/components/satellite-selection";
+import { Box, Card, CardHeader, CardContent, useTheme } from "@mui/material";
+import { useRef, useState, useEffect } from "react";
 
-const ElevationGraph = dynamic(() => import("../components/elevation-graph"), {
-	ssr: false
-})
-const DOPGraph = dynamic(() => import("../components/dop-graph"), {
-	ssr: false
-})
-
-const Charts = () => {
+const Selection = () => {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
@@ -19,15 +10,12 @@ const Charts = () => {
 
 	useEffect(() => {
 		const handleResize = () => {
-			const navbar = document.querySelector(".MuiAppBar-root") as HTMLElement
-			const navbarHeight = navbar ? navbar.offsetHeight : 0
-			const availableHeight = window.innerHeight - navbarHeight
 			const drawer = document.querySelector(".MuiDrawer-root") as HTMLElement
 			const drawerWidth = drawer ? drawer.offsetWidth : 0
 			const availableWidth = window.innerWidth - drawerWidth
 
-			const targetSize = Math.min(availableWidth, availableHeight) * 0.8
-			const targetMargin = Math.min(availableWidth, availableHeight) * 0.1
+			const targetSize = availableWidth * 0.5
+			const targetMargin = availableWidth * 0.05
 
 			if (containerRef.current) {
 				setSize(targetSize)
@@ -51,17 +39,35 @@ const Charts = () => {
 		}
 	})
 
+
 	return (
 		<Box
 			ref={containerRef}
 			display="flex"
 			justifyContent="center"
-			flexWrap={'wrap'}
+			width="100%"
+			height="100%"
+			marginTop={margin / 16}
 		>
-			<ElevationGraph />
-			<DOPGraph />
+			<Card
+				sx={{
+					width: size,
+				}}
+				variant='outlined'
+			>
+				<CardHeader
+					title='Settings'
+					style={{
+						borderBottom: `1px solid ${theme.palette.divider}`,
+						backgroundColor: theme.palette.divider
+					}}
+				/>
+				<CardContent>
+					<SatelliteSellection />
+				</CardContent>
+			</Card>
 		</Box>
 	)
 }
 
-export default Charts
+export default Selection

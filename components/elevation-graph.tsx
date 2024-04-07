@@ -1,9 +1,7 @@
 import useStore from "@/store/store";
-import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import { Data } from "plotly.js";
-import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
@@ -75,7 +73,7 @@ function generateData(
 			color: 'green',
 			size: 8
 		},
-		text: 'G02',
+		text: `G${satelliteId.toString().padStart(2, '0')}`,
 		textposition: "top center" as const,
 		textfont: {
 			color: "green",
@@ -105,66 +103,18 @@ function generateData(
 
 const ElevationGraph = () => {
 	const theme = useTheme()
-	const containerRef = useRef(null)
-	const [size, setSize] = useState(0)
-	const [margin, setMargin] = useState(0)
 	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
 	const sky = useZustand(useStore, (state) => state.sky)
 	const time = useZustand(useStore, (state) => state.time)
 
 	const timeLabels = generateTimeLabels();
 
-	useEffect(() => {
-		const handleResize = () => {
-			const navbar = document.querySelector(".MuiAppBar-root") as HTMLElement
-			const navbarHeight = navbar ? navbar.offsetHeight : 0
-			const availableHeight = window.innerHeight - navbarHeight
-			const drawer = document.querySelector(".MuiDrawer-root") as HTMLElement
-			const drawerWidth = drawer ? drawer.offsetWidth : 0
-			const availableWidth = window.innerWidth - drawerWidth
-
-			const targetSize = Math.min(availableWidth, availableHeight) * 0.8
-			const targetMargin = Math.min(availableWidth, availableHeight) * 0.1
-
-			if (containerRef.current) {
-				setSize(targetSize)
-				setMargin(targetMargin)
-			}
-		}
-
-		handleResize()
-		window.addEventListener("resize", handleResize)
-
-		const resizeObserver = new ResizeObserver(handleResize)
-		if (containerRef.current) {
-			resizeObserver.observe(containerRef.current)
-		}
-
-		return () => {
-			window.removeEventListener("resize", handleResize)
-			if (containerRef.current) {
-				resizeObserver.unobserve(containerRef.current)
-			}
-		}
-	})
 	return (
-		<Box
-			ref={containerRef}
-			display="flex"
-			justifyContent="center"
-			width="100%"
-			height="100%"
-		>
-			{/* draw elevation in time plot for satellite number 2. use generateData to aquire data to draw */}
 			<Plot
 				data={generateData(sky, time, elevationCutoff)}
 				layout={{
 					autosize: true,
 					margin: {
-						l: margin,
-						r: margin,
-						b: margin,
-						t: margin,
 						pad: 0,
 					},
 					paper_bgcolor: theme.palette.background.default,
@@ -195,14 +145,7 @@ const ElevationGraph = () => {
 				config={{
 					displayModeBar: false,
 				}}
-				useResizeHandler
-				style={{
-					width: size,
-					height: size,
-				}}
 			/>
-
-		</Box>
 	)
 }
 

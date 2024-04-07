@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import * as math from 'mathjs';
 import { createStore } from 'zustand/vanilla';
 
 dayjs.extend(utc);
@@ -83,7 +84,7 @@ function positionInECEF(
 function calculateSatellitePositions(
 	almanac: Map<number, number[]>,
 	date: dayjs.Dayjs
-) {
+): SatellitePath {
 	const output = new Map<number, [number, number, number][]>()
 	const intervals = 145
 	const intervalMinutes = 10
@@ -150,7 +151,7 @@ function calculateSkyPositions(
 	latitude: number,
 	longitude: number,
 	height: number,
-) {
+): SkyPath {
 	const output = new Map<number, [number | undefined, number][]>()
 
 	// Constants for WGS84
@@ -205,6 +206,96 @@ function calculateSkyPositions(
 	return output;
 }
 
+function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number) {
+	const intervals = 145
+	const GNSS_DOP: [number, number, number, number][] = []
+
+
+	for (let timeIncrement = 0; timeIncrement < intervals; timeIncrement++) {
+
+		const a = 6378137
+		const b = 6356752.3142
+		const eSquared = 1 - (b * b) / (a * a)
+
+		const latitudeRad = latitude * Math.PI / 180
+		const longitudeRad = longitude * Math.PI / 180
+
+		const N = a / Math.sqrt(1 - eSquared * Math.sin(latitudeRad) * Math.sin(latitudeRad))
+
+		const xObserver = (N + height) * Math.cos(latitudeRad) * Math.cos(longitudeRad)
+		const yObserver = (N + height) * Math.cos(latitudeRad) * Math.sin(longitudeRad)
+		const zObserver = ((1 - eSquared) * (N + height)) * Math.sin(latitudeRad)
+
+		let A = math.matrix([[]]);
+		A.resize([1, 4]);
+
+
+		for (let satelliteNumber = 2; satelliteNumber <= 32; satelliteNumber++) {
+			if (!GNSS.has(satelliteNumber)) continue
+			const satelliteData = GNSS.get(satelliteNumber)
+			if (satelliteData === undefined) continue
+			const satellitePosition = satelliteData[timeIncrement]
+			if (satellitePosition === undefined) continue
+			const [x, y, z] = satellitePosition
+			if (x === undefined || y === undefined || z === undefined) continue
+			const skyPositions = skyTrace.get(satelliteNumber)
+			if (skyPositions === undefined) continue
+			const skyLocation = skyPositions[timeIncrement]
+			if (skyLocation === undefined) continue
+			if (skyLocation[0] === undefined) continue
+			const elevation = skyLocation[0]
+			if (elevation < elevationCutoff) continue
+
+
+			const xGeocentric = x - xObserver;
+			const yGeocentric = y - yObserver;
+			const zGeocentric = z - zObserver;
+
+			const rGeocentric = Math.sqrt(
+				xGeocentric ** 2 + yGeocentric ** 2 + zGeocentric ** 2
+			);
+			if (rGeocentric === 0) continue
+
+			const distanceToObserver = Math.sqrt(
+				xGeocentric ** 2 + yGeocentric ** 2 + zGeocentric ** 2
+			);
+			if (distanceToObserver === 0) continue
+
+			const newRow = math.matrix([[-(xGeocentric / distanceToObserver), -(yGeocentric / distanceToObserver), -(zGeocentric / distanceToObserver), 1]]);
+			newRow.resize([1, 4])
+			A = math.concat(A, newRow, 0) as math.Matrix;
+		}
+		const sizeOfA = A.size()
+		if (!sizeOfA[0]) continue
+		A = math.subset(A, math.index(math.range(1, sizeOfA[0]), math.range(0, 4)))
+		const Atranspose = math.transpose(A)
+		const QnotInverted = math.multiply(Atranspose, A)
+
+		const Q = math.inv(QnotInverted)
+
+		const qx = Q.get([0, 0])
+		const qy = Q.get([1, 1])
+		const qz = Q.get([2, 2])
+		const qt = Q.get([3, 3])
+
+		const PDOP = Math.sqrt(qx + qy + qz)
+		const TDOP = Math.sqrt(qt)
+
+		Q.resize([3, 3])
+
+		const Rneu = math.matrix([[-(math.sin(latitudeRad) * math.cos(longitudeRad)), -(math.sin(latitudeRad) * math.sin(longitudeRad)), math.cos(latitudeRad)], [-(math.sin(longitudeRad)), math.cos(longitudeRad), 0], [-(math.cos(latitudeRad) * math.cos(longitudeRad)), -(math.cos(latitudeRad) * math.sin(longitudeRad)), -math.sin(latitudeRad)]])
+		const Qneu = math.multiply(math.multiply(math.transpose(Rneu), Q), Rneu)
+		const qn = Qneu.get([0, 0])
+		const qe = Qneu.get([1, 1])
+		const qu = Qneu.get([2, 2])
+
+		const HDOP = Math.sqrt(qn + qe)
+		const VDOP = Math.sqrt(qu)
+		GNSS_DOP.push([TDOP, PDOP, VDOP, HDOP])
+	}
+	return GNSS_DOP
+}
+
 
 type Store = {
 	latitude: number
@@ -225,6 +316,7 @@ type Store = {
 	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
 	GNSS: SatellitePath
 	sky: SkyPath
+	DOP: Array<[number, number, number, number]>
 }
 
 const useStore = createStore<Store>((set) => ({
@@ -237,22 +329,26 @@ const useStore = createStore<Store>((set) => ({
 	height: 480,
 	elevationCutoff: 7,
 	sky: new Map<number, [number | undefined, number][]>(),
+	DOP: new Array<[number, number, number, number]>(),
 	time: 72,
 
 	changeDate: (newDate) =>
-		set(({ almanac, latitude, longitude, height }) => {
+		set(({ almanac, latitude, longitude, height, elevationCutoff }) => {
 
 			const GNSS = calculateSatellitePositions(almanac, newDate)
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				longitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
 
 			return {
 				date: newDate,
 				GNSS,
-				sky: calculateSkyPositions(
-					GNSS,
-					latitude,
-					longitude,
-					height
-				)
+				sky,
+				DOP
 			};
 		}
 		),
@@ -261,75 +357,90 @@ const useStore = createStore<Store>((set) => ({
 		set(() => ({ almanacName: newAlmanacName })),
 
 	changeAlmanac: (newAlmanac) =>
-		set(({ date, latitude, longitude, height }) => {
+		set(({ date, latitude, longitude, height, elevationCutoff }) => {
 
 			const GNSS = calculateSatellitePositions(newAlmanac, date)
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				longitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff)
 
 			return {
 				almanac: newAlmanac,
 				GNSS,
-				sky: calculateSkyPositions(
-					GNSS,
-					latitude,
-					longitude,
-					height
-				)
+				sky,
+				DOP
 			};
 		}
 		),
 
 	changeLatitude: (newLatitude) =>
-		set(({ GNSS, longitude, height }) => {
+		set(({ GNSS, longitude, height, elevationCutoff }) => {
+			const sky = calculateSkyPositions(
+				GNSS,
+				newLatitude,
+				longitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, newLatitude, longitude, height, elevationCutoff)
 			return {
 				latitude: newLatitude,
-				sky: calculateSkyPositions(
-					GNSS,
-					newLatitude,
-					longitude,
-					height
-				)
+				sky,
+				DOP
 			};
 		}
 		),
 
 	changeLongitude: (newLongitude) =>
-		set(({ GNSS, latitude, height }) => {
+		set(({ GNSS, latitude, height, elevationCutoff }) => {
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				newLongitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, newLongitude, height, elevationCutoff)
 			return {
 				longitude: newLongitude,
-				sky: calculateSkyPositions(
-					GNSS,
-					latitude,
-					newLongitude,
-					height
-				)
+				sky,
+				DOP
 			};
 		}
 		),
 
 	changeHeight: (newHeight) =>
-		set(({ GNSS, latitude, longitude }) => {
+		set(({ GNSS, latitude, longitude, elevationCutoff }) => {
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				longitude,
+				newHeight
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, newHeight, elevationCutoff)
 			return {
 				height: newHeight,
-				sky: calculateSkyPositions(
-					GNSS,
-					latitude,
-					longitude,
-					newHeight
-				)
+				sky,
+				DOP
 			};
 		}
 		),
 
 	changeElevationCutoff: (newElevationCutoff) =>
 		set(({ GNSS, latitude, longitude, height }) => {
+			const sky = calculateSkyPositions(
+				GNSS,
+				latitude,
+				longitude,
+				height
+			)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, newElevationCutoff)
 			return {
 				elevationCutoff: newElevationCutoff,
-				sky: calculateSkyPositions(
-					GNSS,
-					latitude,
-					longitude,
-					height
-				)
+				sky,
+				DOP
 			};
 		}
 		),

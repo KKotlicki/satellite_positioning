@@ -1,6 +1,6 @@
 import SettingsView from "@/components/settings-view"
 import TimeSlider from "@/components/slider"
-import AdbIcon from "@mui/icons-material/Adb"
+import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
 import MenuIcon from "@mui/icons-material/Menu"
 import {
 	Card,
@@ -9,7 +9,8 @@ import {
 	Checkbox,
 	CssBaseline,
 	FormControlLabel,
-	FormGroup
+	FormGroup,
+	Stack
 } from "@mui/material"
 import AppBar from "@mui/material/AppBar"
 import Box from "@mui/material/Box"
@@ -57,10 +58,20 @@ const theme = createTheme({
 			main: deepPurple[300]
 		},
 		mode: "dark"
-	}
+	},
+	components: {
+    MuiCssBaseline: {
+      styleOverrides: `
+        html, body, #__next {
+					height: 100%;
+        }
+      `,
+    },
+  },
+
 })
 
-const pages = ["Settings", "Charts", "Sky Plot", "World View"] as const
+const pages = ["Settings", "Selection", "Charts", "Sky Plot", "World View"] as const
 
 const drawerWidth = 240
 
@@ -86,11 +97,11 @@ export default function App({ Component, pageProps }: AppProps) {
 
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<main className={roboto.className}>
-					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+				<Stack component="main" className={roboto.className} height="100%">
+					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1 }} >
 						<Container maxWidth='xl'>
 							<Toolbar disableGutters>
-								<AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+								<SatelliteAltIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
 								<Typography
 									color={theme.palette.mode === "dark" ? "primary" : "inherit"}
 									variant='h6'
@@ -150,7 +161,7 @@ export default function App({ Component, pageProps }: AppProps) {
 										))}
 									</Menu>
 								</Box>
-								<AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+								<SatelliteAltIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
 								<Typography
 									color={theme.palette.mode === "dark" ? "primary" : "inherit"}
 									variant='h5'
@@ -187,7 +198,7 @@ export default function App({ Component, pageProps }: AppProps) {
 							</Toolbar>
 						</Container>
 					</AppBar>
-					<Box sx={{ display: "flex" }}>
+					<Box sx={{ display: "flex", overflowY: "auto" }}>
 						<Drawer
 							sx={{
 								width: drawerWidth,
@@ -319,7 +330,7 @@ export default function App({ Component, pageProps }: AppProps) {
 						</Drawer>
 						<Component {...pageProps} />
 					</Box>
-				</main>
+				</Stack>
 			</ThemeProvider>
 		</>
 	)
