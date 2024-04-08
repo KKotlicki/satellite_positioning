@@ -171,7 +171,7 @@ function generateData(
 
 	const specificTimeLine = {
 		x: [timeLabels[time], timeLabels[time]],
-		y: [0, 4],
+		y: [0, 6],
 
 		mode: 'lines',
 		marker: {
@@ -222,7 +222,7 @@ const DOPGraph = () => {
 					tickfont: {
 						color: theme.palette.text.primary,
 					},
-					range: [0.25, 3],
+					range: [0.25, 5],
 					fixedrange: true,
 				},
 				showlegend: true,
