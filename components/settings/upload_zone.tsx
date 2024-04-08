@@ -1,5 +1,5 @@
 import useStore from "@/store/store"
-import { Box, useTheme } from "@mui/material"
+import { Box } from "@mui/material"
 import Typography from "@mui/material/Typography"
 import { useState } from "react"
 import { useZustand } from "use-zustand"
@@ -49,7 +49,6 @@ const UploadZone = () => {
 	}
 
 	const [isDragging, setIsDragging] = useState<boolean>(false)
-	const theme = useTheme()
 	const changeAlmanacName = useZustand(useStore, (state) => state.changeAlmanacName)
 
 	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {

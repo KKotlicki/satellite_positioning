@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import * as math from 'mathjs';
@@ -9,6 +9,7 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault("UTC")
 
 type SatellitePath = Map<number, [number, number, number][]>
+type SatellitePathGeocentric = Map<number, [number, number][]>
 type SkyPath = Map<number, [number | undefined, number][]>
 
 const mi = 3.986005e14
@@ -144,6 +145,22 @@ function calculateSatellitePositions(
 		output.set(satellite, positions)
 	}
 	return output;
+}
+
+function calculateSatellitePositionsGeocentric(
+	GNSS: SatellitePath): SatellitePathGeocentric {
+	const output = new Map<number, [number, number][]>()
+	GNSS.forEach((satelliteData, satellite) => {
+		const positions: [number, number][] = []
+		for (const [x, y, z] of satelliteData) {
+			const r = Math.sqrt(x ** 2 + y ** 2 + z ** 2)
+			const latitude = Math.asin(z / r) * 180 / Math.PI
+			const longitude = Math.atan2(y, x) * 180 / Math.PI
+			positions.push([latitude, longitude])
+		}
+		output.set(satellite, positions)
+	})
+	return output
 }
 
 function calculateSkyPositions(
@@ -318,6 +335,7 @@ type Store = {
 	selectedSatellites: number[]
 	changeSelectedSatellites: (newSelectedSatellites: number[]) => void
 	GNSS: SatellitePath
+	GNSSGeocentric: SatellitePathGeocentric
 	sky: SkyPath
 	DOP: Array<[number, number, number, number]>
 }
@@ -327,6 +345,7 @@ const useStore = createStore<Store>((set) => ({
 	almanacName: "",
 	almanac: new Map<number, number[]>(),
 	GNSS: new Map<number, [number, number, number][]>(),
+	GNSSGeocentric: new Map<number, [number, number][]>(),
 	latitude: 0,
 	longitude: 0,
 	height: 480,
@@ -340,6 +359,7 @@ const useStore = createStore<Store>((set) => ({
 		set(({ almanac, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
 
 			const GNSS = calculateSatellitePositions(almanac, newDate)
+			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
 			const sky = calculateSkyPositions(
 				GNSS,
 				latitude,
@@ -351,6 +371,7 @@ const useStore = createStore<Store>((set) => ({
 			return {
 				date: newDate,
 				GNSS,
+				GNSSGeocentric,
 				sky,
 				DOP
 			};
@@ -364,6 +385,7 @@ const useStore = createStore<Store>((set) => ({
 		set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
 
 			const GNSS = calculateSatellitePositions(newAlmanac, date)
+			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
 			const sky = calculateSkyPositions(
 				GNSS,
 				latitude,
@@ -374,6 +396,7 @@ const useStore = createStore<Store>((set) => ({
 			return {
 				almanac: newAlmanac,
 				GNSS,
+				GNSSGeocentric,
 				sky,
 				DOP
 			};
@@ -464,8 +487,8 @@ const useStore = createStore<Store>((set) => ({
 				sky,
 				DOP
 			}
-	}),
+		}),
 
-	}))
+}))
 
 export default useStore

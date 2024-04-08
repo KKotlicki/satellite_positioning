@@ -21,7 +21,7 @@ const Settings = () => {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
-	const [margin, setMargin] = useState(0)
+	const [, setMargin] = useState(0)
 
 	useEffect(() => {
 		const handleResize = () => {

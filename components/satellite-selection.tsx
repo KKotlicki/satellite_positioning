@@ -1,7 +1,7 @@
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
 import Paper from '@mui/material/Paper';
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
 
@@ -49,7 +49,6 @@ function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
 
 
 const SatelliteSelection = ({ provider }: { provider: number }) => {
-	const theme = useTheme()
 	const containerRef = useRef(null)
 	const almanac = useZustand(useStore, (state) => state.almanac)
 	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)

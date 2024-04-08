@@ -39,7 +39,7 @@ import type { AppProps } from "next/app";
 import { Roboto } from "next/font/google";
 import Head from "next/head";
 import Link from "next/link";
-import { MouseEvent, useState } from "react";
+import { type MouseEvent, useState } from "react";
 import { useZustand } from "use-zustand";
 
 dayjs.extend(utc);
@@ -92,36 +92,6 @@ export default function App({ Component, pageProps }: AppProps) {
 		setAnchorElNav(null)
 	}
 
-	function setSatellites(provider: number, turnOn: boolean) {
-		const satelliteIdRange: [number, number] = (() => {
-			switch (provider) {
-				case 0:
-					return [1, 37]
-				case 1:
-					return [38, 64]
-				case 2:
-					return [201, 263]
-				case 3:
-					return [264, 283]
-				case 4:
-					return [111, 118]
-				default:
-					throw new Error("Invalid provider")
-			}
-		})()
-		const selectedSatellitesSet = new Set(selectedSatellites)
-		for (let i = satelliteIdRange[0]; i <= satelliteIdRange[1]; i++) {
-			if (almanac.get(i) === undefined) continue
-			if (turnOn) {
-				selectedSatellitesSet.add(i)
-			} else {
-				selectedSatellitesSet.delete(i)
-			}
-		}
-		changeSelectedSatellites(Array.from(selectedSatellitesSet))
-	}
-
-
 	const setSatelliteSelection = (provider: number, turnOn: boolean) => {
 		const satelliteIdRange: [number, number] = (() => {
 			switch (provider) {
@@ -162,13 +132,13 @@ export default function App({ Component, pageProps }: AppProps) {
 
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<Stack component="main" className={roboto.className} height="100%" display={"grid"} gridTemplateColumns={`${drawerWidth}px 1fr`} 
-				gridTemplateRows="auto 1fr"
-				gridTemplateAreas={`
+				<Stack component="main" className={roboto.className} height="100%" display={"grid"} gridTemplateColumns={`${drawerWidth}px 1fr`}
+					gridTemplateRows="auto 1fr"
+					gridTemplateAreas={`
 				"h h h"
 				"d c c"
 			`}
-		>
+				>
 					<AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1, gridArea: "h" }}>
 						<Container maxWidth='xl'>
 							<Toolbar disableGutters>
@@ -270,139 +240,139 @@ export default function App({ Component, pageProps }: AppProps) {
 						</Container>
 					</AppBar>
 					<Drawer
-							sx={{
+						sx={{
+							width: drawerWidth,
+							flexShrink: 0,
+							"& .MuiDrawer-paper": {
 								width: drawerWidth,
-								flexShrink: 0,
-								"& .MuiDrawer-paper": {
-									width: drawerWidth,
-									boxSizing: "border-box"
-								}
-							}}
-							variant='permanent'
-							anchor='left'
-						>
-							<Toolbar />
-							<Box sx={{ overflow: "auto" }}>
-								<Card
-									sx={{
-										width: "full-width",
-										margin: "1rem"
+								boxSizing: "border-box"
+							}
+						}}
+						variant='permanent'
+						anchor='left'
+					>
+						<Toolbar />
+						<Box sx={{ overflow: "auto" }}>
+							<Card
+								sx={{
+									width: "full-width",
+									margin: "1rem"
+								}}
+								variant='outlined'
+							>
+								<CardHeader
+									title='Local Time'
+									style={{
+										borderBottom: `1px solid ${theme.palette.divider}`,
+										backgroundColor: theme.palette.divider
 									}}
-									variant='outlined'
-								>
-									<CardHeader
-										title='Local Time'
-										style={{
-											borderBottom: `1px solid ${theme.palette.divider}`,
-											backgroundColor: theme.palette.divider
-										}}
-									/>
-									<TimeSlider />
-								</Card>
-								<Card
-									sx={{
-										width: "full-width",
-										margin: "1rem"
+								/>
+								<TimeSlider />
+							</Card>
+							<Card
+								sx={{
+									width: "full-width",
+									margin: "1rem"
+								}}
+								variant='outlined'
+							>
+								<CardHeader
+									title='Satellite Selection'
+									style={{
+										borderBottom: `1px solid ${theme.palette.divider}`,
+										backgroundColor: theme.palette.divider
 									}}
-									variant='outlined'
-								>
-									<CardHeader
-										title='Satellite Selection'
-										style={{
-											borderBottom: `1px solid ${theme.palette.divider}`,
-											backgroundColor: theme.palette.divider
-										}}
-									/>
-									<CardContent>
-										<FormGroup>
-											<FormControlLabel
-												control={
-													<Checkbox
-														defaultChecked
-														sx={{
-															color: green[800],
-															"&.Mui-checked": { color: green[600] }
-														}}
-														onChange={(e) => setSatelliteSelection(0, e.target.checked)}
-													/>
-												}
-												label='GPS'
-											/>
-											<FormControlLabel
-												control={
-													<Checkbox
-														defaultChecked
-														sx={{
-															color: red[800],
-															"&.Mui-checked": { color: red[600] }
-														}}
-														onChange={(e) => setSatelliteSelection(1, e.target.checked)}
-													/>
-												}
-												label='GLONASS'
-											/>
-											<FormControlLabel
-												control={
-													<Checkbox
-														defaultChecked
-														sx={{
-															color: blue[800],
-															"&.Mui-checked": { color: blue[600] }
-														}}
-														onChange={(e) => setSatelliteSelection(2, e.target.checked)}
-													/>
-												}
-												label='Galileo'
-											/>
-											<FormControlLabel
-												control={
-													<Checkbox
-														defaultChecked
-														sx={{
-															color: orange[800],
-															"&.Mui-checked": { color: orange[600] }
-														}}
-														onChange={(e) => setSatelliteSelection(3, e.target.checked)}
-													/>
-												}
-												label='Beidou'
-											/>
-											<FormControlLabel
-												control={
-													<Checkbox
-														defaultChecked
-														sx={{
-															color: pink[800],
-															"&.Mui-checked": { color: pink[600] }
-														}}
-														onChange={(e) => setSatelliteSelection(4, e.target.checked)}
-													/>
-												}
-												label='QZSS'
-											/>
-										</FormGroup>
-									</CardContent>
-								</Card>
-								<Card
-									sx={{
-										width: "full-width",
-										margin: "1rem"
+								/>
+								<CardContent>
+									<FormGroup>
+										<FormControlLabel
+											control={
+												<Checkbox
+													defaultChecked
+													sx={{
+														color: green[800],
+														"&.Mui-checked": { color: green[600] }
+													}}
+													onChange={(e) => setSatelliteSelection(0, e.target.checked)}
+												/>
+											}
+											label='GPS'
+										/>
+										<FormControlLabel
+											control={
+												<Checkbox
+													defaultChecked
+													sx={{
+														color: red[800],
+														"&.Mui-checked": { color: red[600] }
+													}}
+													onChange={(e) => setSatelliteSelection(1, e.target.checked)}
+												/>
+											}
+											label='GLONASS'
+										/>
+										<FormControlLabel
+											control={
+												<Checkbox
+													defaultChecked
+													sx={{
+														color: blue[800],
+														"&.Mui-checked": { color: blue[600] }
+													}}
+													onChange={(e) => setSatelliteSelection(2, e.target.checked)}
+												/>
+											}
+											label='Galileo'
+										/>
+										<FormControlLabel
+											control={
+												<Checkbox
+													defaultChecked
+													sx={{
+														color: orange[800],
+														"&.Mui-checked": { color: orange[600] }
+													}}
+													onChange={(e) => setSatelliteSelection(3, e.target.checked)}
+												/>
+											}
+											label='Beidou'
+										/>
+										<FormControlLabel
+											control={
+												<Checkbox
+													defaultChecked
+													sx={{
+														color: pink[800],
+														"&.Mui-checked": { color: pink[600] }
+													}}
+													onChange={(e) => setSatelliteSelection(4, e.target.checked)}
+												/>
+											}
+											label='QZSS'
+										/>
+									</FormGroup>
+								</CardContent>
+							</Card>
+							<Card
+								sx={{
+									width: "full-width",
+									margin: "1rem"
+								}}
+								variant='outlined'
+							>
+								<CardHeader
+									title='My Settings'
+									style={{
+										borderBottom: `1px solid ${theme.palette.divider}`,
+										backgroundColor: theme.palette.divider
 									}}
-									variant='outlined'
-								>
-									<CardHeader
-										title='My Settings'
-										style={{
-											borderBottom: `1px solid ${theme.palette.divider}`,
-											backgroundColor: theme.palette.divider
-										}}
-									/>
-									<CardContent>
-										<SettingsView />
-									</CardContent>
-								</Card>
-							</Box>
-						</Drawer>
+								/>
+								<CardContent>
+									<SettingsView />
+								</CardContent>
+							</Card>
+						</Box>
+					</Drawer>
 					<Box sx={{ display: "flex", overflowY: "auto" }}>
 						<Component {...pageProps} />
 					</Box>

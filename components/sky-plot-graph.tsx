@@ -1,7 +1,7 @@
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Data } from "plotly.js";
+import type { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";

@@ -1,5 +1,5 @@
 import SatelliteSelection from "@/components/satellite-selection";
-import { Box, Card, CardContent, CardHeader, Tab, Tabs, useTheme } from "@mui/material";
+import { Box, Card, CardContent, CardHeader, Tab, Tabs } from "@mui/material";
 import {
 	blue,
 	green,
@@ -10,7 +10,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 const Selection = () => {
-	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
@@ -47,7 +46,7 @@ const Selection = () => {
 		}
 	})
 
-	const handleChangeTab = (event: React.ChangeEvent<unknown>, newValue: number) => {
+	const handleChangeTab = (_event: React.ChangeEvent<unknown>, newValue: number) => {
 		setSelectedTab(newValue);
 	};
 
@@ -57,9 +56,9 @@ const Selection = () => {
 			ref={containerRef}
 			display="flex"
 			justifyContent="center"
-			alignItems={'center'}
+			alignItems={'start'}
 			width="100%"
-			marginTop={margin / 3}
+			marginTop={margin / 16}
 			style={{ fontFamily: 'monospace' }}
 		>
 			<Card
@@ -70,7 +69,14 @@ const Selection = () => {
 			>
 				<CardHeader
 					title={
-						<Tabs value={selectedTab} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
+						<Tabs value={selectedTab} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto"
+							sx={{
+								'.MuiTabs-flexContainer': {
+									justifyContent: 'center',
+								},
+								width: '100%',
+							}}
+						>
 							<Tab label={<b>GPS</b>} style={{ color: green[800] }} />
 							<Tab label={<b>GLONASS</b>} style={{ color: red[800] }} />
 							<Tab label={<b>Galileo</b>} style={{ color: blue[800] }} />
@@ -78,11 +84,16 @@ const Selection = () => {
 							<Tab label={<b>QZSS</b>} style={{ color: pink[800] }} />
 						</Tabs>
 					}
-					style={{
-						borderBottom: `1px solid ${theme.palette.divider}`,
-						backgroundColor: theme.palette.divider,
+					sx={{
+						borderBottom: 1,
+						borderColor: 'divider',
+						backgroundColor: 'divider',
+						display: 'flex',
+						justifyContent: 'center',
+						width: '100%',
 					}}
 				/>
+
 				<CardContent>
 					<SatelliteSelection provider={selectedTab} />
 				</CardContent>

@@ -3,7 +3,7 @@ import {
 	InputAdornment,
 	TextField
 } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { useZustand } from "use-zustand";
 
 
@@ -31,9 +31,9 @@ const LongitudePicker = () => {
 
 					if (third === undefined || fourth === undefined || fifth === undefined) return false
 
-					const degrees = parseFloat(third)
-					const minutes = parseFloat(fourth) / 60
-					const seconds = parseFloat(fifth) / 3600
+					const degrees = Number.parseFloat(third)
+					const minutes = Number.parseFloat(fourth) / 60
+					const seconds = Number.parseFloat(fifth) / 3600
 					const totalDegrees = degrees + minutes + seconds
 					return totalDegrees <= 180 && totalDegrees >= -180
 				}
@@ -45,7 +45,7 @@ const LongitudePicker = () => {
 
 					if (second === undefined || third === undefined) return false
 
-					const value = parseFloat(third)
+					const value = Number.parseFloat(third)
 					const sign = /^-|W|w/.test(second) ? -1 : 1
 					const totalDegrees = sign * value
 					return totalDegrees <= 180 && totalDegrees >= -180
@@ -70,10 +70,10 @@ const LongitudePicker = () => {
 				if (parts) {
 					const second = parts[1]
 					const third = parts[2]
-					if (second === undefined || third === undefined) return NaN
-					const degrees = parseFloat(third)
-					const minutes = parts[3] ? parseFloat(parts[3]) / 60 : 0
-					const seconds = parts[4] ? parseFloat(parts[4]) / 3600 : 0
+					if (second === undefined || third === undefined) return Number.NaN
+					const degrees = Number.parseFloat(third)
+					const minutes = parts[3] ? Number.parseFloat(parts[3]) / 60 : 0
+					const seconds = parts[4] ? Number.parseFloat(parts[4]) / 3600 : 0
 					const sign = /^-|W|w/.test(second) ? -1 : 1
 					const totalDegrees = sign * (degrees + minutes + seconds)
 					return Math.max(Math.min(totalDegrees, 180), -180)
@@ -83,14 +83,14 @@ const LongitudePicker = () => {
 				if (parts) {
 					const second = parts[1]
 					const third = parts[2]
-					if (second === undefined || third === undefined) return NaN
+					if (second === undefined || third === undefined) return Number.NaN
 					const sign = /^-|W|w/.test(second) ? -1 : 1
-					const value = parseFloat(third)
+					const value = Number.parseFloat(third)
 					return Math.max(Math.min(sign * value, 180), -180)
 				}
 			}
 		}
-		return NaN
+		return Number.NaN
 	}
 
 	const handleLongitudeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

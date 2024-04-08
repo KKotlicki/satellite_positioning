@@ -3,7 +3,7 @@ import {
   InputAdornment,
   TextField
 } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { type ChangeEvent, useState } from "react";
 import { useZustand } from "use-zustand";
 
 
@@ -34,9 +34,9 @@ const LatitudePicker = () => {
         if (third === undefined || fourth === undefined || fifth === undefined) return false
 
         if (parts) {
-          const degrees = parseFloat(third)
-          const minutes = parseFloat(fourth) / 60
-          const seconds = parseFloat(fifth) / 3600
+          const degrees = Number.parseFloat(third)
+          const minutes = Number.parseFloat(fourth) / 60
+          const seconds = Number.parseFloat(fifth) / 3600
           const totalDegrees = degrees + minutes + seconds
           return totalDegrees <= 90
         }
@@ -50,7 +50,7 @@ const LatitudePicker = () => {
         if (third === undefined) return false
 
         if (parts) {
-          const value = parseFloat(third)
+          const value = Number.parseFloat(third)
           return value <= 90
         }
       }
@@ -70,10 +70,10 @@ const LatitudePicker = () => {
         if (parts) {
           const second = parts[1]
           const third = parts[2]
-          if (second === undefined || third === undefined) return NaN
-          const degrees = parseFloat(third)
-          const minutes = parts[3] ? parseFloat(parts[3]) / 60 : 0
-          const seconds = parts[4] ? parseFloat(parts[4]) / 3600 : 0
+          if (second === undefined || third === undefined) return Number.NaN
+          const degrees = Number.parseFloat(third)
+          const minutes = parts[3] ? Number.parseFloat(parts[3]) / 60 : 0
+          const seconds = parts[4] ? Number.parseFloat(parts[4]) / 3600 : 0
           const sign = /^-|S|s/.test(second) ? -1 : 1
           return sign * (degrees + minutes + seconds)
         }
@@ -86,12 +86,12 @@ const LatitudePicker = () => {
       if (parts) {
         const second = parts[1]
         const third = parts[2]
-        if (second === undefined || third === undefined) return NaN
+        if (second === undefined || third === undefined) return Number.NaN
         const sign = /^-|S|s/.test(second) ? -1 : 1
-        return sign * parseFloat(third)
+        return sign * Number.parseFloat(third)
       }
     }
-    return NaN
+    return Number.NaN
   }
 
   const handleLatitudeChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

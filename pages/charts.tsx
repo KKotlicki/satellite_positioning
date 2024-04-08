@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,10 +10,9 @@ const DOPGraph = dynamic(() => import("../components/dop-graph"), {
 })
 
 const Charts = () => {
-	const theme = useTheme()
 	const containerRef = useRef(null)
-	const [size, setSize] = useState(0)
-	const [margin, setMargin] = useState(0)
+	const [, setSize] = useState(0)
+	const [, setMargin] = useState(0)
 
 	useEffect(() => {
 		const handleResize = () => {

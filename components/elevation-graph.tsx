@@ -1,7 +1,7 @@
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
-import { Data } from "plotly.js";
+import type { Data } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
