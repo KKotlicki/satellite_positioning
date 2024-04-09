@@ -40,7 +40,7 @@ const SettingsView = () => {
 
       <li>Height: {height} m</li>
       <li>Elevation cutoff: {elevationCutoff}°</li>
-      <li>Date: {date.format("MM/DD/YYYY")}</li>
+      <li>Date: {date.format("DD/MM/YYYY")}</li>
       <li>Almanac:{`\n${almanacName}`}</li>
     </Box>
   )

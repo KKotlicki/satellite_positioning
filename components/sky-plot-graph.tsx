@@ -74,44 +74,45 @@ function generateData(
 			})
 		}
 
-		const separatePath: Array<[number, number]> = []
+		// 	const separatePath: Array<[number, number]> = []
 
-		satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
-			let [elevation, azimuth] = value
-			if (elevation === undefined) {
-				elevation = 0
-			}
+		// 	satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
+		// 		let [elevation, azimuth] = value
+		// 		if (elevation === undefined) {
+		// 			elevation = 0
+		// 		}
 
-			if (timeIncrement === satelliteMap.length - 1) {
-				if (elevation >= elevationCutoff && separatePath.length > 0) {
-					separatePath.push([elevation, azimuth])
-				}
-				data.push({
-					type: "scatterpolar",
-					r: separatePath.map((point) => point[0]),
-					theta: separatePath.map((point) => point[1]),
-					mode: "lines",
-					line: { color: color, width: 2 }
-				})
-				separatePath.length = 0
-			}
-			else if (elevation >= elevationCutoff) {
-				separatePath.push([elevation, azimuth])
-			}
-			else if (separatePath.length > 0) {
-				data.push({
-					type: "scatterpolar",
-					r: separatePath.map((point) => point[0]),
-					theta: separatePath.map((point) => point[1]),
-					mode: "lines",
-					line: { color: color, width: 2 }
-				})
-				separatePath.length = 0
-			}
-			else {
-				separatePath.length = 0
-			}
-		})
+		// 		if (timeIncrement === satelliteMap.length - 1) {
+		// 			if (elevation >= elevationCutoff && separatePath.length > 0) {
+		// 				separatePath.push([elevation, azimuth])
+		// 			}
+		// 			data.push({
+		// 				type: "scatterpolar",
+		// 				r: separatePath.map((point) => point[0]),
+		// 				theta: separatePath.map((point) => point[1]),
+		// 				mode: "lines",
+		// 				line: { color: color, width: 2 }
+		// 			})
+		// 			separatePath.length = 0
+		// 		}
+		// 		else if (elevation >= elevationCutoff) {
+		// 			separatePath.push([elevation, azimuth])
+		// 		}
+		// 		else if (separatePath.length > 0) {
+		// 			data.push({
+		// 				type: "scatterpolar",
+		// 				r: separatePath.map((point) => point[0]),
+		// 				theta: separatePath.map((point) => point[1]),
+		// 				mode: "lines",
+		// 				line: { color: color, width: 2 }
+		// 			})
+		// 			separatePath.length = 0
+		// 		}
+		// 		else {
+		// 			separatePath.length = 0
+		// 		}
+		// 	}
+		// )
 	}
 	return data
 }

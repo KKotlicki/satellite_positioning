@@ -288,7 +288,6 @@ export default function App({ Component, pageProps }: AppProps) {
 										<FormControlLabel
 											control={
 												<Checkbox
-													defaultChecked
 													sx={{
 														color: green[800],
 														"&.Mui-checked": { color: green[600] }
@@ -301,7 +300,6 @@ export default function App({ Component, pageProps }: AppProps) {
 										<FormControlLabel
 											control={
 												<Checkbox
-													defaultChecked
 													sx={{
 														color: red[800],
 														"&.Mui-checked": { color: red[600] }
@@ -314,7 +312,6 @@ export default function App({ Component, pageProps }: AppProps) {
 										<FormControlLabel
 											control={
 												<Checkbox
-													defaultChecked
 													sx={{
 														color: blue[800],
 														"&.Mui-checked": { color: blue[600] }
@@ -327,7 +324,6 @@ export default function App({ Component, pageProps }: AppProps) {
 										<FormControlLabel
 											control={
 												<Checkbox
-													defaultChecked
 													sx={{
 														color: orange[800],
 														"&.Mui-checked": { color: orange[600] }
@@ -340,7 +336,6 @@ export default function App({ Component, pageProps }: AppProps) {
 										<FormControlLabel
 											control={
 												<Checkbox
-													defaultChecked
 													sx={{
 														color: pink[800],
 														"&.Mui-checked": { color: pink[600] }

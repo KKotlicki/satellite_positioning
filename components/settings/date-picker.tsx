@@ -40,8 +40,6 @@ const DatePicker = () => {
         }}
         value={localDate}
         onChange={handleDateChange}
-        minDate={minDate}
-        maxDate={maxDate.subtract(1, 'day')}
         timezone="UTC"
       />
     </LocalizationProvider>

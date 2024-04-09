@@ -54,13 +54,6 @@ function generateData(
 			color: 'blue',
 			size: 10,
 		},
-		text: 'GDOP',
-		textposition: "top center" as const,
-		textfont: {
-			color: "green",
-			family: "Roboto Bold, Roboto, sans-serif",
-			size: 16
-		},
 		name: 'GDOP',
 		showlegend: true,
 	};
@@ -223,7 +216,7 @@ const DOPGraph = () => {
 						color: theme.palette.text.primary,
 					},
 					range: [0.25, 5],
-					fixedrange: true,
+					fixedrange: false,
 				},
 				showlegend: true,
 

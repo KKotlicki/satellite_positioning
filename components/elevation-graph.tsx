@@ -1,7 +1,7 @@
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
-import type { Data } from "plotly.js";
+import type { Data, LegendClickEvent } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
@@ -44,7 +44,23 @@ function generateData(
 		},
 		name: 'Elevation Cutoff',
 		showlegend: false,
+		hoverinfo: 'none',
 	};
+	const specificTimeLine = {
+		x: [timeLabels[time], timeLabels[time]],
+		y: [elevationCutoff, 90],
+
+		mode: 'lines',
+		marker: {
+			color: 'yellow',
+			size: 10,
+		},
+		name: 'Specific Time',
+		showlegend: false,
+		hoverinfo: 'none',
+	};
+
+
 
 	for (const satelliteId of selectedSatellites) {
 		const satelliteData = sky.get(satelliteId);
@@ -66,20 +82,47 @@ function generateData(
 			color = "white";
 		}
 
-		let specificTimeData = satelliteData[time];
+		const specificTimeData = satelliteData[time];
 		if (specificTimeData === undefined) {
-			specificTimeData = [0, 0];
+			continue;
 		}
 		let specificTimeElevation = specificTimeData[0];
 		if (specificTimeElevation === undefined) {
-			specificTimeElevation = 0;
+			continue;
 		}
 
+		const lineYValues = satelliteData.map(entry => {
+			if (entry && entry[0] !== undefined) {
+				if (entry[0] >= elevationCutoff) {
+					return entry[0];
+				}
+				return elevationCutoff;
+			}
+			return undefined;
+		});
 
-		const specificTimePoint = {
-			x: [time],
+		const lineData = {
+			x: timeLabels,
+			y: lineYValues,
+			mode: 'lines',
+			line: {
+				color: color,
+				width: 2
+			},
+			showlegend: false,
+			legendgroup: `${satelliteId}`,
+		};
+		plotData.push(lineData);
+
+		if (specificTimeElevation < elevationCutoff) {
+			specificTimeElevation = 91;
+		}
+
+		const specificTime = timeLabels[time]
+		if (!specificTime) throw new Error('x is undefined')
+		const specificTimePoint: Data = {
+			x: [specificTime],
 			y: [specificTimeElevation],
-			type: 'scatter' as const,
 			mode: 'text+markers' as const,
 			marker: {
 				color: color,
@@ -92,25 +135,16 @@ function generateData(
 				family: "Roboto Bold, Roboto, sans-serif",
 				size: 16
 			},
+			showlegend: true,
 			name: `${satelliteId}`,
+			legendgroup: `${satelliteId}`,
 		};
-
-		const lineData = {
-			x: Array.from(Array(145).keys()),
-			y: satelliteData.map(entry => entry ? entry[0] : 0),
-			mode: 'lines',
-			line: {
-				color: color,
-				width: 2
-			},
-			showlegend: false,
-		};
-
 		plotData.push(specificTimePoint);
-		plotData.push(lineData);
 
 	}
+
 	plotData.push(cutoffLine);
+	plotData.push(specificTimeLine);
 	return plotData;
 }
 
@@ -121,8 +155,17 @@ const ElevationGraph = () => {
 	const sky = useZustand(useStore, (state) => state.sky)
 	const time = useZustand(useStore, (state) => state.time)
 	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
+	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites)
 
 	const timeLabels = generateTimeLabels();
+
+	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
+		const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
+		console.log(clickedSatelliteId);
+		const updatedSelectedSatellites = selectedSatellites.filter(id => id !== clickedSatelliteId);
+		changeSelectedSatellites(updatedSelectedSatellites);
+		return false;
+	}
 
 	return (
 		<Plot
@@ -142,6 +185,7 @@ const ElevationGraph = () => {
 						color: theme.palette.text.primary,
 					},
 					range: [0, 145],
+					fixedrange: true,
 					tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
 					ticktext: timeLabels.filter((_, index) => index % 12 === 0),
 				},
@@ -152,14 +196,21 @@ const ElevationGraph = () => {
 					tickfont: {
 						color: theme.palette.text.primary,
 					},
-					range: [-90, 90],
+					range: [0, 90],
+					fixedrange: true,
+					rangemode: "nonnegative"
 				},
 				showlegend: true,
+				legend: {
+
+					tracegroupgap: 0
+				}
 
 			}}
 			config={{
 				displayModeBar: false,
 			}}
+			onLegendClick={handleLegendClick}
 		/>
 	)
 }

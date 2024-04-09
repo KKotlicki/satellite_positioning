@@ -94,8 +94,6 @@ function calculateSatellitePositions(
 
 	for (const [satellite, satelliteData] of entries) {
 		const positions: [number, number, number][] = []
-
-		const health = satelliteData[0]
 		const e = satelliteData[1]
 		const sqrtA = satelliteData[2]
 		const Omega0 = satelliteData[3]
@@ -106,7 +104,6 @@ function calculateSatellitePositions(
 		const Omega = satelliteData[8]
 
 		if (
-			health === undefined ||
 			e === undefined ||
 			toa === undefined ||
 			inc === undefined ||
@@ -119,28 +116,26 @@ function calculateSatellitePositions(
 			continue
 		}
 
-		if (health === 0) {
-			for (let i = 0; i < intervals; i++) {
-				const t = date
-					.add(i * intervalMinutes, "minute").diff(dayjs("2024-02-18").startOf("day"), "second")
-				const tk = timeSinceAlmanac(t, toa)
-				const n = meanMotionOfOrbit(sqrtA)
-				const Mk = meanAnomalyOfOrbit(M0, n, tk)
-				const E = eccentricAnomalyOfOrbit(e, Mk * Math.PI / 180) * 180 / Math.PI
-				const vk = trueAnomalyOfOrbit(e, E)
-				const psi = argumentOfPerigeeOfOrbit(vk, omega)
-				const rk = radiusOfOrbit(sqrtA, e, E)
-				const [xk, yk] = positionInOrbit(rk, psi)
-				const OmegaK = ascendingNodeOfOrbit(
-					Omega0,
-					Omega / 1000,
-					tk,
-					toa
-				)
-				const [x, y, z] = positionInECEF(xk, yk, OmegaK, 54 + inc)
+		for (let i = 0; i < intervals; i++) {
+			const t = date
+				.add(i * intervalMinutes, "minute").diff(dayjs("2024-02-18").startOf("day"), "second")
+			const tk = timeSinceAlmanac(t, toa)
+			const n = meanMotionOfOrbit(sqrtA)
+			const Mk = meanAnomalyOfOrbit(M0, n, tk)
+			const E = eccentricAnomalyOfOrbit(e, Mk * Math.PI / 180) * 180 / Math.PI
+			const vk = trueAnomalyOfOrbit(e, E)
+			const psi = argumentOfPerigeeOfOrbit(vk, omega)
+			const rk = radiusOfOrbit(sqrtA, e, E)
+			const [xk, yk] = positionInOrbit(rk, psi)
+			const OmegaK = ascendingNodeOfOrbit(
+				Omega0,
+				Omega / 1000,
+				tk,
+				toa
+			)
+			const [x, y, z] = positionInECEF(xk, yk, OmegaK, 54 + inc)
 
-				positions.push([x, y, z])
-			}
+			positions.push([x, y, z])
 		}
 		output.set(satellite, positions)
 	}
