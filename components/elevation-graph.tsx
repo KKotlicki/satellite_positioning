@@ -1,37 +1,18 @@
+import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
-import dayjs from "dayjs";
 import type { Data, LegendClickEvent } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
-
-function generateColorPalette(numColors: number, cycles = 7): string[] {
-	const colors = [];
-	for (let i = 0; i < numColors; i++) {
-		const hue = (360 * i * cycles / numColors) % 360;
-		colors.push(`hsl(${hue}, 100%, 50%)`);
-	}
-	return colors;
-}
-
-function generateTimeLabels() {
-	const timeLabels: string[] = [];
-	for (let i = 0; i < 144; i++) {
-		const timeIncrement = i * 10;
-		const timeLabel = dayjs().startOf('day').add(timeIncrement, 'minute').format('HH:mm');
-		timeLabels.push(timeLabel);
-	}
-	timeLabels.push("24:00");
-	return timeLabels;
-}
 
 function generateData(
 	sky: Map<number, [number | undefined, number][]>,
 	time: number,
 	elevationCutoff: number,
-	selectedSatellites: number[]
+	selectedSatellites: number[],
+	timeLabels: string[]
 ): Array<Data> {
-	const timeLabels = generateTimeLabels();
+	if (!timeLabels[time]) throw new Error('timeLabels is undefined')
 	const plotData: Array<Data> = [];
 	const colors = generateColorPalette(155);
 	const cutoffLine = {
@@ -46,19 +27,7 @@ function generateData(
 		showlegend: false,
 		hoverinfo: 'none',
 	};
-	const specificTimeLine = {
-		x: [timeLabels[time], timeLabels[time]],
-		y: [elevationCutoff, 90],
-
-		mode: 'lines',
-		marker: {
-			color: 'yellow',
-			size: 10,
-		},
-		name: 'Specific Time',
-		showlegend: false,
-		hoverinfo: 'none',
-	};
+	const specificTimeLine = generateSpecificTimeLine(timeLabels[time], elevationCutoff, 90);
 
 
 
@@ -161,15 +130,14 @@ const ElevationGraph = () => {
 
 	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
 		const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
-		console.log(clickedSatelliteId);
 		const updatedSelectedSatellites = selectedSatellites.filter(id => id !== clickedSatelliteId);
 		changeSelectedSatellites(updatedSelectedSatellites);
 		return false;
 	}
-
+console.log(generateData(sky, time, elevationCutoff, selectedSatellites, timeLabels))
 	return (
 		<Plot
-			data={generateData(sky, time, elevationCutoff, selectedSatellites)}
+			data={generateData(sky, time, elevationCutoff, selectedSatellites, timeLabels)}
 			layout={{
 				autosize: true,
 				margin: {
@@ -184,7 +152,7 @@ const ElevationGraph = () => {
 					tickfont: {
 						color: theme.palette.text.primary,
 					},
-					range: [0, 145],
+					range: [0, 144],
 					fixedrange: true,
 					tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
 					ticktext: timeLabels.filter((_, index) => index % 12 === 0),
@@ -202,10 +170,8 @@ const ElevationGraph = () => {
 				},
 				showlegend: true,
 				legend: {
-
 					tracegroupgap: 0
 				}
-
 			}}
 			config={{
 				displayModeBar: false,

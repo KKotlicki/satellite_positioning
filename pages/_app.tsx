@@ -1,5 +1,5 @@
 import SettingsView from "@/components/settings-view";
-import TimeSlider from "@/components/slider";
+import TimeSlider from "@/components/timeSlider";
 import useStore from "@/store/store";
 import MenuIcon from "@mui/icons-material/Menu";
 import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';

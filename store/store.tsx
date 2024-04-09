@@ -219,7 +219,7 @@ function calculateSkyPositions(
 }
 
 function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number, selectedSatellites: number[]) {
-	if (selectedSatellites.length < 5) return []
+	if (selectedSatellites.length < 4) return []
 	const intervals = 145
 	const GNSS_DOP: [number, number, number, number][] = []
 
@@ -274,15 +274,25 @@ function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, 
 			if (distanceToObserver === 0) continue
 
 			const newRow = math.matrix([[-(xGeocentric / distanceToObserver), -(yGeocentric / distanceToObserver), -(zGeocentric / distanceToObserver), 1]]);
-			newRow.resize([1, 4])
 			A = math.concat(A, newRow, 0) as math.Matrix;
 		}
 		const sizeOfA = A.size()
-		if (!sizeOfA[0]) continue
-		if (sizeOfA[0] < 5) continue
+		if (!sizeOfA[0]) {
+			GNSS_DOP.push([-1, -1, -1, -1])
+			continue
+		}
+		if (sizeOfA[0] < 5) {
+			GNSS_DOP.push([-1, -1, -1, -1])
+			continue
+		}
 		A = math.subset(A, math.index(math.range(1, sizeOfA[0]), math.range(0, 4)))
 		const Atranspose = math.transpose(A)
 		const QnotInverted = math.multiply(Atranspose, A)
+
+		const det = math.det(QnotInverted)
+		if (det === 0) {
+			throw new Error("Determinant of A is zero, yet matrix has 4x4 dimensions. This should not happen.")
+		}
 
 		const Q = math.inv(QnotInverted)
 
@@ -304,6 +314,14 @@ function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, 
 
 		const HDOP = Math.sqrt(qn + qe)
 		const VDOP = Math.sqrt(qu)
+		if (PDOP === undefined || TDOP === undefined || HDOP === undefined || VDOP === undefined) {
+			GNSS_DOP.push([-1, -1, -1, -1])
+			continue
+		}
+		if (PDOP > 100 && TDOP > 100 && HDOP > 100 && VDOP > 100) {
+			GNSS_DOP.push([-1, -1, -1, -1])
+			continue
+		}
 		GNSS_DOP.push([TDOP, PDOP, VDOP, HDOP])
 	}
 	return GNSS_DOP

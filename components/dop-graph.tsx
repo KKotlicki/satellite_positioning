@@ -1,181 +1,78 @@
+import { generateSpecificTimeLine, generateTimeLabels } from "@/services/graphUtilites";
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
-import dayjs from "dayjs";
 import * as math from "mathjs";
 import type { Data } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
-function generateTimeLabels() {
-	const timeLabels: string[] = [];
-	for (let i = 0; i < 144; i++) {
-		const timeIncrement = i * 10;
-		const timeLabel = dayjs().startOf('day').add(timeIncrement, 'minute').format('HH:mm');
-		timeLabels.push(timeLabel);
+function generateSpecificTimeData(DOP: Array<number>, timeLabels: string[], color: string, name: string, time = -1): Data {
+	let timeDrawn = timeLabels;
+	let specificDOP = DOP;
+	let mode = 'line'
+	let showLegend = false
+	let size = 2
+
+	if (time !== -1) {
+		if (!timeLabels[time]) throw new Error('timeLabels is undefined')
+		timeDrawn = [timeLabels[time]]
+		if (!DOP[time]) {
+			throw new Error(`DOP is undefined at parameters\ntime:\n${time}\nDOP:\n${DOP}\nname:\n${name}`)
+		}
+		specificDOP = [DOP[time]];
+		mode = 'markers'
+		showLegend = true
+		size = 10
 	}
-	timeLabels.push("24:00");
-	return timeLabels;
+
+	const specificTimePoint = {
+		x: timeDrawn,
+		y: specificDOP,
+		mode: mode,
+		marker: {
+			color: color,
+			size: 10,
+		},
+		name: name,
+		showlegend: showLegend,
+		legendgroup: `${name}`,
+	};
+	return specificTimePoint;
 }
 
 function generateData(
-	DOP: Array<[number, number, number, number]>,
-	time: number
+	fullDOP: {
+		GDOP: ['blue', number[]],
+		TDOP: ['red', number[]],
+		PDOP: ['green', number[]],
+		HDOP: ['purple', number[]],
+		VDOP: ['orange', number[]],
+	},
+	time: number,
+	timeLabels: string[],
+	maxDOP: number
 ): Array<Data> {
-	const timeLabels = generateTimeLabels();
-	if (!DOP) {
-		return [];
-	}
-	const GDOPData: number[] = [];
-	const TDOPData: number[] = [];
-	const PDOPData: number[] = [];
-	const HDOPData: number[] = [];
-	const VDOPData: number[] = [];
+	if (!timeLabels[time]) throw new Error('timeLabels is undefined')
+	const plotData: Array<Data> = [];
 
-	for (let i = 0; i < DOP.length; i++) {
-		let DOPDataAtTime = DOP[i];
-		if (DOPDataAtTime === undefined) {
-			DOPDataAtTime = [0, 0, 0, 0];
-		}
-		const GDOPAtTime = math.sqrt(DOPDataAtTime[0] ** 2 + DOPDataAtTime[1] ** 2);
-		if (GDOPAtTime === undefined) GDOPData.push(0);
-		else GDOPData.push(GDOPAtTime as number);
-		TDOPData.push(DOPDataAtTime[0]);
-		PDOPData.push(DOPDataAtTime[1]);
-		HDOPData.push(DOPDataAtTime[2]);
-		VDOPData.push(DOPDataAtTime[3]);
+	if (!fullDOP || !fullDOP.GDOP || !fullDOP.TDOP || !fullDOP.PDOP || !fullDOP.HDOP || !fullDOP.VDOP
+		|| fullDOP.GDOP[1].length === 0 || fullDOP.TDOP[1].length === 0 || fullDOP.PDOP[1].length === 0
+	) {
+		const specificTimeLine = generateSpecificTimeLine(String(time), 0, maxDOP);
+		plotData.push(specificTimeLine);
+		return plotData;
 	}
 
-	const specificTimeGDOP = GDOPData[time];
-	const specificTimeGDOPPoint = {
-		x: [timeLabels[time]],
-		y: [specificTimeGDOP],
-		mode: 'markers',
-		marker: {
-			color: 'blue',
-			size: 10,
-		},
-		name: 'GDOP',
-		showlegend: true,
-	};
-	const specificTimeTDOP = TDOPData[time];
-	const specificTimeTDOPPoint = {
-		x: [timeLabels[time]],
-		y: [specificTimeTDOP],
-		mode: 'markers',
-		marker: {
-			color: 'red',
-			size: 10,
-		},
-		name: 'TDOP',
-		showlegend: true,
-	};
-	const specificTimePDOP = PDOPData[time];
-	const specificTimePDOPPoint = {
-		x: [timeLabels[time]],
-		y: [specificTimePDOP],
-		mode: 'markers',
-		marker: {
-			color: 'green',
-			size: 10,
-		},
-		name: 'PDOP',
-		showlegend: true,
-	};
-	const specificTimeHDOP = HDOPData[time];
-	const specificTimeHDOPPoint = {
-		x: [timeLabels[time]],
-		y: [specificTimeHDOP],
-		mode: 'markers',
-		marker: {
-			color: 'purple',
-			size: 10,
-		},
-		name: 'HDOP',
-		showlegend: true,
-	};
-	const specificTimeVDOP = VDOPData[time];
-	const specificTimeVDOPPoint = {
-		x: [timeLabels[time]],
-		y: [specificTimeVDOP],
-		mode: 'markers',
-		marker: {
-			color: 'orange',
-			size: 10,
-		},
-		name: 'VDOP',
-		showlegend: true,
-	};
+	for (const [name, [color, DOPData]] of Object.entries(fullDOP)) {
+		plotData.push(generateSpecificTimeData(DOPData, timeLabels, color, name));
+	}
+	const specificTimeLine = generateSpecificTimeLine(timeLabels[time], 0, maxDOP);
+	plotData.push(specificTimeLine);
+	for (const [name, [color, DOPData]] of Object.entries(fullDOP)) {
+		plotData.push(generateSpecificTimeData(DOPData, timeLabels, color, name, time));
+	}
 
-	const GDOPLine = {
-		x: timeLabels,
-		y: GDOPData,
-		mode: 'lines',
-		line: {
-			color: 'blue',
-			width: 2
-		},
-		name: 'GDOP',
-		showlegend: false,
-	};
-	const TDOPLine = {
-		x: timeLabels,
-		y: TDOPData,
-		mode: 'lines',
-		line: {
-			color: 'red',
-			width: 2
-		},
-		name: 'TDOP',
-		showlegend: false,
-	};
-	const PDOPLine = {
-		x: timeLabels,
-		y: PDOPData,
-		mode: 'lines',
-		line: {
-			color: 'green',
-			width: 2
-		},
-		name: 'PDOP',
-		showlegend: false,
-	};
-	const HDOPLine = {
-		x: timeLabels,
-		y: HDOPData,
-		mode: 'lines',
-		line: {
-			color: 'purple',
-			width: 2
-		},
-		name: 'HDOP',
-		showlegend: false,
-	};
-	const VDOPLine = {
-		x: timeLabels,
-		y: VDOPData,
-		mode: 'lines',
-		line: {
-			color: 'orange',
-			width: 2
-		},
-		name: 'VDOP',
-		showlegend: false,
-	};
-
-	const specificTimeLine = {
-		x: [timeLabels[time], timeLabels[time]],
-		y: [0, 6],
-
-		mode: 'lines',
-		marker: {
-			color: 'yellow',
-			size: 10,
-		},
-		name: 'Specific Time',
-		showlegend: false,
-	};
-
-	return [GDOPLine, TDOPLine, PDOPLine, HDOPLine, VDOPLine, specificTimeLine, specificTimeGDOPPoint, specificTimeTDOPPoint, specificTimePDOPPoint, specificTimeHDOPPoint, specificTimeVDOPPoint];
+	return plotData;
 }
 
 
@@ -184,11 +81,53 @@ const DOPGraph = () => {
 	const DOP = useZustand(useStore, (state) => state.DOP)
 	const time = useZustand(useStore, (state) => state.time)
 
-	const timeLabels = generateTimeLabels();
+	let maxDOP = 0;
+	const fullDOP: {
+		GDOP: ['blue', number[]],
+		TDOP: ['red', number[]],
+		PDOP: ['green', number[]],
+		HDOP: ['purple', number[]],
+		VDOP: ['orange', number[]],
+	} = {
+		GDOP: ['blue', []],
+		TDOP: ['red', []],
+		PDOP: ['green', []],
+		HDOP: ['purple', []],
+		VDOP: ['orange', []],
+	}
 
+	for (let i = 0; i < DOP.length; i++) {
+		const GDOP: number[] = [];
+		const DOPDataAtTime = DOP[i];
+		if (DOPDataAtTime === undefined) {
+			throw new Error('DOPDataAtTime is undefined')
+		}
+		if (DOPDataAtTime[0] === -1 || DOPDataAtTime[2] === -1) GDOP.push(-1);
+		else {
+			const GDOPAtTime = math.sqrt(DOPDataAtTime[0] ** 2 + DOPDataAtTime[1] ** 2);
+			if (GDOPAtTime === undefined) GDOP.push(-1);
+			else GDOP.push(GDOPAtTime as number);
+		}
+		if (!GDOP[0]) throw new Error('GDOP is undefined')
+		fullDOP.GDOP[1].push(GDOP[0]);
+		fullDOP.TDOP[1].push(DOPDataAtTime[2]);
+		fullDOP.PDOP[1].push(DOPDataAtTime[3]);
+		fullDOP.HDOP[1].push(DOPDataAtTime[1]);
+		fullDOP.VDOP[1].push(DOPDataAtTime[0]);
+		if (GDOP[0] === -1) continue;
+		if (GDOP[0] > maxDOP) maxDOP = GDOP[0];
+		if (DOPDataAtTime[2] > maxDOP) maxDOP = DOPDataAtTime[2];
+		if (DOPDataAtTime[3] > maxDOP) maxDOP = DOPDataAtTime[3];
+		if (DOPDataAtTime[1] > maxDOP) maxDOP = DOPDataAtTime[1];
+		if (DOPDataAtTime[0] > maxDOP) maxDOP = DOPDataAtTime[0];
+	}
+	maxDOP += 1;
+
+	const timeLabels = generateTimeLabels();
+	console.log(generateData(fullDOP, time, timeLabels, maxDOP))
 	return (
 		<Plot
-			data={generateData(DOP, time)}
+			data={generateData(fullDOP, time, timeLabels, maxDOP)}
 			layout={{
 				autosize: true,
 				margin: {
@@ -203,7 +142,7 @@ const DOPGraph = () => {
 					tickfont: {
 						color: theme.palette.text.primary,
 					},
-					range: [0, 145],
+					range: [0, 144],
 					fixedrange: true,
 					tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
 					ticktext: timeLabels.filter((_, index) => index % 12 === 0),
@@ -215,11 +154,14 @@ const DOPGraph = () => {
 					tickfont: {
 						color: theme.palette.text.primary,
 					},
-					range: [0.25, 5],
+					range: [0, Math.min(20, maxDOP)],
 					fixedrange: false,
+					rangemode: "nonnegative"
 				},
 				showlegend: true,
-
+				legend: {
+					tracegroupgap: 0
+				}
 			}}
 			config={{
 				displayModeBar: false,
