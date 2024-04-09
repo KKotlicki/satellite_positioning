@@ -107,6 +107,8 @@ function generateData(
 const MapComponent = () => {
   const GNSSGeocentric = useZustand(useStore, (state) => state.GNSSGeocentric)
   const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
+  const lat = useZustand(useStore, (state) => state.latitude)
+  const lon = useZustand(useStore, (state) => state.longitude)
   const time = useZustand(useStore, (state) => state.time)
 
   const polylineElements = generateData(GNSSGeocentric, time, selectedSatellites);
@@ -119,6 +121,11 @@ const MapComponent = () => {
       />
 
       {polylineElements}
+      <CircleMarker center={[lat, lon]} pathOptions={{ fillColor: 'red', color: 'red' }} radius={5}>
+        <Tooltip direction="top">
+          Your Location
+        </Tooltip>
+      </CircleMarker>
 
     </MapContainer>
   );
