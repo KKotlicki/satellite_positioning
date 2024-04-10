@@ -162,7 +162,6 @@ export function calculateSkyPositions(
 ): SkyPath {
   const output = new Map<number, [number | undefined, number][]>()
 
-  // Constants for WGS84
   const a = WGS84_EARTH_RADIUS_MAJOR
   const b = WGS84_EARTH_RADIUS_MINOR
   const eSquared = 1 - (b * b) / (a * a)

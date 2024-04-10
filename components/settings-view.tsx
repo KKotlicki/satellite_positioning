@@ -1,5 +1,6 @@
+import { theme } from "@/constants/constants";
 import useStore from "@/store/store";
-import { Paper } from "@mui/material";
+import { Card, CardContent, CardHeader, Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 import { useZustand } from "use-zustand";
@@ -53,23 +54,40 @@ export default function SettingsView(): JSX.Element {
   }
 
   return (
-    <Box
-      component='ul'
+    <Card
       sx={{
-        m: 0,
-        p: 0,
-        pl: 1
+        width: "full-width",
+        margin: "1rem"
       }}
+      variant='outlined'
     >
-      <li>{parseLatitude(latitude)}</li>
-      <li>{parseLongitude(longitude)}</li>
+      <CardHeader
+        title='My Settings'
+        style={{
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.divider
+        }}
+      />
+      <CardContent>
+        <Box
+          component='ul'
+          sx={{
+            m: 0,
+            p: 0,
+            pl: 1
+          }}
+        >
+          <li>{parseLatitude(latitude)}</li>
+          <li>{parseLongitude(longitude)}</li>
 
-      <li>Height: {height} m</li>
-      <li>Elevation cutoff: {elevationCutoff}°</li>
-      <li>Date: {date.format("DD/MM/YYYY")}</li>
-      <AlmanacPaper color={almanacName ? 'green' : 'red'}>
-        {formatAlmanacName(almanacName) || "No Almanac"}
-      </AlmanacPaper>
-    </Box>
+          <li>Height: {height} m</li>
+          <li>Elevation cutoff: {elevationCutoff}°</li>
+          <li>Date: {date.format("DD/MM/YYYY")}</li>
+          <AlmanacPaper color={almanacName ? 'green' : 'red'}>
+            {formatAlmanacName(almanacName) || "No Almanac"}
+          </AlmanacPaper>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

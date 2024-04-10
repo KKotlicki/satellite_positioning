@@ -1,7 +1,11 @@
+'use client'
+
+import { theme } from "@/constants/constants";
 import useStore from "@/store/store";
 import { Box, Typography } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import { styled } from "@mui/material/styles";
+import { useRouter } from 'next/navigation';
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
 
@@ -48,8 +52,8 @@ function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
 	return satelliteData
 }
 
-
 export default function SatelliteSelection({ provider }: { provider: number }) {
+	const router = useRouter()
 	const containerRef = useRef(null)
 	const almanac = useZustand(useStore, (state) => state.almanac)
 	const almanacName = useZustand(useStore, (state) => state.almanacName)
@@ -70,11 +74,11 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 		<Box
 			ref={containerRef}
 			display="flex"
-			justifyContent="center"
+			justifyContent={!almanacName ? "center" : "left"}
 			flexWrap="wrap"
 			width="100%"
 			height="100%"
-			alignItems={selectedSatellites.length === 0 ? "center" : "flex-start"}
+			alignItems={!almanacName ? "center" : "flex-start"}
 		>
 			{!almanacName ? (
 				<Paper variant="outlined"
@@ -88,7 +92,7 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 							cursor: 'pointer',
 						},
 					}}
-					onClick={() => { window.location.href = "/settings"; }}
+					onClick={() => { router.push('/settings') }}
 				>
 					<Typography variant="body1" component="span" style={{ color: '#bd93f9' }}>
 						No Almanac
@@ -98,13 +102,17 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 				Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
 					const isHealthy = value === 0;
 					return (
-						<GNSSPaper key={index} variant="outlined">
-							<input
-								type="checkbox"
-								checked={new Set(selectedSatellites).has(index)}
-								onChange={() => handleCheckboxChange(index)}
-							/>
-							{index}
+						<GNSSPaper
+							key={index}
+							variant="outlined"
+							onClick={() => handleCheckboxChange(index)}
+							style={{
+								backgroundColor: new Set(selectedSatellites).has(index) ? theme.palette.divider : theme.palette.background.default,
+							}}
+						>
+							<Typography variant="body1" component="span">
+								{index}
+							</Typography>
 							<Paper
 								elevation={0}
 								style={{
