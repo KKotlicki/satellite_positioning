@@ -26,22 +26,44 @@ export function generateColorPalette(numColors: number, cycles = 7): string[] {
 }
 
 export function generateSpecificTimeLine(
-	formattedTime: string,
+	formattedTime: string | number,
 	minVal: number,
 	maxVal: number
 ): PlotXYObjectData {
-	const specificTimeLine = {
-		x: [formattedTime, formattedTime],
-		y: [minVal, maxVal],
+	let xStrValues: string[];
+	let xNumValues: number[];
+	let specificTimeLine: PlotXYObjectData;
 
-		mode: "lines" as const,
-		marker: {
-			color: "yellow",
-			size: 10
-		},
-		name: "Specific Time",
-		showlegend: false,
-		hoverinfo: "none"
+
+	if (typeof formattedTime === "string") {
+		xStrValues = [formattedTime, formattedTime] as Array<string>;
+		specificTimeLine = {
+			x: xStrValues,
+			y: [minVal, maxVal],
+			mode: "lines",
+			marker: {
+				color: "yellow",
+				size: 10
+			},
+			name: "Specific Time",
+			showlegend: false,
+			hoverinfo: "none"
+		};
+	} else {
+		xNumValues = [formattedTime, formattedTime] as Array<number>;
+		specificTimeLine = {
+			x: xNumValues,
+			y: [minVal, maxVal],
+			mode: "lines",
+			marker: {
+				color: "yellow",
+				size: 10
+			},
+			name: "Specific Time",
+			showlegend: false,
+			hoverinfo: "none"
+		};
 	}
-	return specificTimeLine
+
+	return specificTimeLine;
 }

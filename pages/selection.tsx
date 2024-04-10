@@ -1,4 +1,6 @@
 import SatelliteSelection from "@/components/satellite-selection";
+import VisibilityGraph from "@/components/visibility-graph";
+import useStore from "@/store/store";
 import { Box, Card, CardContent, CardHeader, Tab, Tabs } from "@mui/material";
 import {
 	blue,
@@ -8,10 +10,12 @@ import {
 	red
 } from "@mui/material/colors";
 import { useEffect, useRef, useState } from "react";
+import { useZustand } from "use-zustand";
 
 
 export default function Selection() {
 	const containerRef = useRef(null)
+	const almanacName = useZustand(useStore, (state) => state.almanacName)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -98,6 +102,7 @@ export default function Selection() {
 					<SatelliteSelection provider={selectedTab} />
 				</CardContent>
 			</Card>
+			{almanacName ? <VisibilityGraph /> : null}
 		</Box>
 	);
 };

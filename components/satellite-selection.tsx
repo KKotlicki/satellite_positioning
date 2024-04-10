@@ -2,7 +2,6 @@ import useStore from "@/store/store";
 import { Box, Typography } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import { styled } from "@mui/material/styles";
-import Link from "next/link";
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
 
@@ -53,6 +52,7 @@ function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
 export default function SatelliteSelection({ provider }: { provider: number }) {
 	const containerRef = useRef(null)
 	const almanac = useZustand(useStore, (state) => state.almanac)
+	const almanacName = useZustand(useStore, (state) => state.almanacName)
 	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
 	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites);
 
@@ -76,7 +76,7 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 			height="100%"
 			alignItems={selectedSatellites.length === 0 ? "center" : "flex-start"}
 		>
-			{Array.from(getSatelliteData(provider, almanac)).length === 0 ? (
+			{!almanacName ? (
 				<Paper variant="outlined"
 					sx={{
 						flex: '1 0 30%',
@@ -85,14 +85,14 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 						backgroundColor: '#282a36',
 						cursor: 'pointer',
 						'&:hover': {
-								cursor: 'pointer',
+							cursor: 'pointer',
 						},
 					}}
 					onClick={() => { window.location.href = "/settings"; }}
 				>
-						<Typography variant="body1" component="span" style={{ color: '#bd93f9' }}>
-							No Almanac
-						</Typography>
+					<Typography variant="body1" component="span" style={{ color: '#bd93f9' }}>
+						No Almanac
+					</Typography>
 				</Paper>
 			) : (
 				Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
