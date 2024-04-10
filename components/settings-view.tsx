@@ -1,8 +1,4 @@
 import useStore from "@/store/store";
-<<<<<<< HEAD
-=======
-import { styled } from "@mui/material/styles";
->>>>>>> ed6805091868351ffa8dab2521a86d5e81f45e00
 import { Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
@@ -31,11 +27,6 @@ const formatAlmanacName = (name: string): string => {
 };
 
 export default function SettingsView(): JSX.Element {
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> ed6805091868351ffa8dab2521a86d5e81f45e00
   const { latitude, longitude, height, elevationCutoff, date, almanacName } = useZustand(useStore, (state) => ({
     latitude: state.latitude,
     longitude: state.longitude,
