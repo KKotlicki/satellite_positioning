@@ -1,23 +1,17 @@
 import useStore from "@/store/store"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import {
-  CardContent,
-  Slider
-} from "@mui/material"
+import { CardContent, Slider } from "@mui/material"
 import Box from "@mui/material/Box"
 import IconButton from "@mui/material/IconButton"
 import Typography from "@mui/material/Typography"
 import dayjs from "dayjs"
-import utc from 'dayjs/plugin/utc'
 import { useState } from "react"
 import { useZustand } from "use-zustand"
 import { useInterval } from 'usehooks-ts'
 
-dayjs.extend(utc);
 
-
-const TimeSlider = () => {
+export default function TimeSlider() {
   const date = useZustand(useStore, (state) => state.date)
   const time = useZustand(useStore, (state) => state.time)
   const changeTime = useZustand(useStore, (state) => state.changeTime)
@@ -98,5 +92,3 @@ const TimeSlider = () => {
     </CardContent>
   )
 }
-
-export default TimeSlider

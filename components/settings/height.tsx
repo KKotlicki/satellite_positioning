@@ -1,12 +1,9 @@
 import useStore from "@/store/store";
-import {
-	InputAdornment,
-	TextField
-} from "@mui/material";
+import { InputAdornment, TextField } from "@mui/material";
 import { useZustand } from "use-zustand";
 
 
-const HeightPicker = () => {
+export default function HeightPicker() {
 	const height = useZustand(useStore, (state) => state.height)
 	const changeHeight = useZustand(useStore, (state) => state.changeHeight)
 
@@ -27,5 +24,3 @@ const HeightPicker = () => {
 		/>
 	)
 }
-
-export default HeightPicker

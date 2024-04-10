@@ -1,13 +1,10 @@
 import useStore from "@/store/store";
-import {
-  InputAdornment,
-  TextField
-} from "@mui/material";
+import { InputAdornment, TextField } from "@mui/material";
 import { type ChangeEvent, useState } from "react";
 import { useZustand } from "use-zustand";
 
 
-const LatitudePicker = () => {
+export default function LatitudePicker() {
   const [latitudeValue, setLatitudeValue] = useState("N 0° 0' 0.0")
 
   const changeLatitude = useZustand(useStore, (state) => state.changeLatitude)
@@ -103,7 +100,6 @@ const LatitudePicker = () => {
     }
   }
 
-
   return (
     <TextField
       label='Latitude'
@@ -119,5 +115,3 @@ const LatitudePicker = () => {
     />
   )
 }
-
-export default LatitudePicker

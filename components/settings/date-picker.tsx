@@ -1,5 +1,5 @@
 import useStore from "@/store/store";
-import { DatePicker as MUIDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { LocalizationProvider, DatePicker as MUIDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { type Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
@@ -11,16 +11,12 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("UTC")
 
-const DatePicker = () => {
+
+export default function DatePicker() {
   const [localDate, setLocalDate] = useState(dayjs())
   const changeDate = useZustand(useStore, (state) => state.changeDate)
 
-  const minDate = dayjs("2024-02-19")
-  const maxDate = dayjs("2100-01-01")
-
-  const isValidDate = (date: dayjs.Dayjs) => {
-    return date?.isValid() && date.isAfter(minDate) && date.isBefore(maxDate)
-  }
+  const isValidDate = (date: dayjs.Dayjs) => { return date?.isValid() }
 
   const handleDateChange = (newValue: Dayjs | null) => {
     const newDate = dayjs(newValue)
@@ -45,5 +41,3 @@ const DatePicker = () => {
     </LocalizationProvider>
   )
 }
-
-export default DatePicker

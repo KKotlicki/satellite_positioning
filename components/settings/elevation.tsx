@@ -1,12 +1,9 @@
 import useStore from "@/store/store";
-import {
-	InputAdornment,
-	TextField
-} from "@mui/material";
+import { InputAdornment, TextField } from "@mui/material";
 import { useZustand } from "use-zustand";
 
 
-const ElevationPicker = () => {
+export default function ElevationPicker() {
 	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
 	const changeElevationCutoff = useZustand(useStore, (state) => state.changeElevationCutoff)
 
@@ -28,5 +25,3 @@ const ElevationPicker = () => {
 		/>
 	)
 }
-
-export default ElevationPicker

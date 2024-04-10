@@ -5,14 +5,12 @@ import { useState } from "react"
 import { useZustand } from "use-zustand"
 
 
-const UploadZone = () => {
+export default function UploadZone() {
 	function parseAlmFile(input: string): Map<number, number[]> {
 		const data: string = input
 
 		let res = [] as number[][]
-
 		let shiftToNext = 0
-
 		let previousColumnsAmount = 0
 
 		for (const line of data.split("\n")) {
@@ -36,7 +34,6 @@ const UploadZone = () => {
 		}
 
 		res = res.filter((x) => x)
-
 		const dic = new Map<number, number[]>()
 
 		for (const nums of res) {
@@ -70,7 +67,6 @@ const UploadZone = () => {
 			throw new Error("No file name")
 		}
 		changeAlmanacName(files[0]?.name)
-
 		handleFilesDropped(text ?? "")
 	}
 
@@ -131,5 +127,3 @@ const UploadZone = () => {
 		</Box>
 	)
 }
-
-export default UploadZone

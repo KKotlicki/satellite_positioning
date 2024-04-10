@@ -5,6 +5,7 @@ import { styled } from "@mui/material/styles";
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
 
+
 const GNSSPaper = styled(Paper)(({ theme }) => ({
 	flex: '1 0 30%',
 	margin: theme.spacing(1),
@@ -48,7 +49,7 @@ function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
 }
 
 
-const SatelliteSelection = ({ provider }: { provider: number }) => {
+export default function SatelliteSelection({ provider }: { provider: number }) {
 	const containerRef = useRef(null)
 	const almanac = useZustand(useStore, (state) => state.almanac)
 	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
@@ -103,5 +104,3 @@ const SatelliteSelection = ({ provider }: { provider: number }) => {
 		</Box>
 	)
 }
-
-export default SatelliteSelection

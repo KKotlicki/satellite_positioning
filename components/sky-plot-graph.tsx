@@ -1,3 +1,4 @@
+import type { SkyPath } from "@/constants/types";
 import useStore from "@/store/store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -5,6 +6,7 @@ import type { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
+
 
 function generateColorPalette(numColors: number, cycles = 7): string[] {
 	const colors = [];
@@ -15,9 +17,8 @@ function generateColorPalette(numColors: number, cycles = 7): string[] {
 	return colors;
 }
 
-
 function generateData(
-	sky: Map<number, [number | undefined, number][]>,
+	sky: SkyPath,
 	time: number,
 	elevationCutoff: number,
 	selectedSatellites: number[]
@@ -73,51 +74,12 @@ function generateData(
 				}
 			})
 		}
-
-		// 	const separatePath: Array<[number, number]> = []
-
-		// 	satelliteMap.forEach((value: [number | undefined, number], timeIncrement: number) => {
-		// 		let [elevation, azimuth] = value
-		// 		if (elevation === undefined) {
-		// 			elevation = 0
-		// 		}
-
-		// 		if (timeIncrement === satelliteMap.length - 1) {
-		// 			if (elevation >= elevationCutoff && separatePath.length > 0) {
-		// 				separatePath.push([elevation, azimuth])
-		// 			}
-		// 			data.push({
-		// 				type: "scatterpolar",
-		// 				r: separatePath.map((point) => point[0]),
-		// 				theta: separatePath.map((point) => point[1]),
-		// 				mode: "lines",
-		// 				line: { color: color, width: 2 }
-		// 			})
-		// 			separatePath.length = 0
-		// 		}
-		// 		else if (elevation >= elevationCutoff) {
-		// 			separatePath.push([elevation, azimuth])
-		// 		}
-		// 		else if (separatePath.length > 0) {
-		// 			data.push({
-		// 				type: "scatterpolar",
-		// 				r: separatePath.map((point) => point[0]),
-		// 				theta: separatePath.map((point) => point[1]),
-		// 				mode: "lines",
-		// 				line: { color: color, width: 2 }
-		// 			})
-		// 			separatePath.length = 0
-		// 		}
-		// 		else {
-		// 			separatePath.length = 0
-		// 		}
-		// 	}
-		// )
 	}
 	return data
 }
 
-const SkyPlotGraph = () => {
+
+export default function SkyPlotGraph() {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
@@ -212,5 +174,3 @@ const SkyPlotGraph = () => {
 		</Box>
 	)
 }
-
-export default SkyPlotGraph

@@ -1,5 +1,6 @@
+import type { PlotXYObjectData } from "@/constants/types"
 import dayjs from "dayjs"
-import type { Data } from "plotly.js"
+
 
 export function generateTimeLabels(): string[] {
 	const timeLabels: string[] = []
@@ -28,12 +29,12 @@ export function generateSpecificTimeLine(
 	formattedTime: string,
 	minVal: number,
 	maxVal: number
-): Data {
+): PlotXYObjectData {
 	const specificTimeLine = {
 		x: [formattedTime, formattedTime],
 		y: [minVal, maxVal],
 
-		mode: "lines",
+		mode: "lines" as const,
 		marker: {
 			color: "yellow",
 			size: 10

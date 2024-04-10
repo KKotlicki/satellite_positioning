@@ -3,21 +3,16 @@ import HeightPicker from "@/components/settings/height";
 import LatitudePicker from "@/components/settings/latitude";
 import LongitudePicker from "@/components/settings/longitude";
 import UploadZone from "@/components/settings/upload_zone";
-import {
-	Box,
-	Card,
-	CardContent,
-	CardHeader,
-	useTheme
-} from "@mui/material";
+import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+
 
 const DatePicker = dynamic(() => import("../components/settings/date-picker"), {
 	ssr: false
 })
 
-const Settings = () => {
+export default function Settings() {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
@@ -86,6 +81,4 @@ const Settings = () => {
 			</Card>
 		</Box>
 	)
-}
-
-export default Settings
+} 

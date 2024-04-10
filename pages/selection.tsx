@@ -9,7 +9,8 @@ import {
 } from "@mui/material/colors";
 import { useEffect, useRef, useState } from "react";
 
-const Selection = () => {
+
+export default function Selection() {
 	const containerRef = useRef(null)
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
@@ -49,7 +50,6 @@ const Selection = () => {
 	const handleChangeTab = (_event: React.ChangeEvent<unknown>, newValue: number) => {
 		setSelectedTab(newValue);
 	};
-
 
 	return (
 		<Box
@@ -101,5 +101,3 @@ const Selection = () => {
 		</Box>
 	);
 };
-
-export default Selection;

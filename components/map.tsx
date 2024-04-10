@@ -1,3 +1,5 @@
+import { mapLayerAttribution, mapLayerLink } from "@/constants/constants";
+import type { SatellitePathGeocentric } from "@/constants/types";
 import useStore from "@/store/store";
 import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from 'react-leaflet';
@@ -30,7 +32,7 @@ function isSideSwitch(
 }
 
 function generateData(
-  GNSSGeocentric: Map<number, [number, number][]>,
+  GNSSGeocentric: SatellitePathGeocentric,
   time: number,
   selectedSatellites: number[]
 ): Array<JSX.Element> {
@@ -104,7 +106,8 @@ function generateData(
   return data
 }
 
-const MapComponent = () => {
+
+export default function MapComponent() {
   const GNSSGeocentric = useZustand(useStore, (state) => state.GNSSGeocentric)
   const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
   const lat = useZustand(useStore, (state) => state.latitude)
@@ -116,8 +119,8 @@ const MapComponent = () => {
   return (
     <MapContainer center={[0, 0]} zoom={2.5} style={{ height: '100vh', width: '100%', backgroundColor: '#121212' }}>
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url={mapLayerLink}
+        attribution={mapLayerAttribution}
       />
 
       {polylineElements}
@@ -130,5 +133,3 @@ const MapComponent = () => {
     </MapContainer>
   );
 };
-
-export default MapComponent

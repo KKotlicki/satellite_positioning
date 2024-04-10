@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import { useZustand } from "use-zustand";
 
 
-const SettingsView = () => {
+export default function SettingsView() {
   const latitude = useZustand(useStore, (state) => state.latitude)
   const longitude = useZustand(useStore, (state) => state.longitude)
   const height = useZustand(useStore, (state) => state.height)
@@ -45,5 +45,3 @@ const SettingsView = () => {
     </Box>
   )
 }
-
-export default SettingsView

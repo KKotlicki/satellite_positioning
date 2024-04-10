@@ -1,21 +1,23 @@
+import type { PlotXYObjectData, SkyPath } from '@/constants/types';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
-import type { Data, LegendClickEvent } from "plotly.js";
+import type { LegendClickEvent } from "plotly.js";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
+
 function generateData(
-	sky: Map<number, [number | undefined, number][]>,
+	sky: SkyPath,
 	time: number,
 	elevationCutoff: number,
 	selectedSatellites: number[],
 	timeLabels: string[]
-): Array<Data> {
+): Array<PlotXYObjectData> {
 	if (!timeLabels[time]) throw new Error('timeLabels is undefined')
-	const plotData: Array<Data> = [];
+	const plotData: Array<PlotXYObjectData> = [];
 	const colors = generateColorPalette(155);
-	const cutoffLine = {
+	const cutoffLine: PlotXYObjectData = {
 		x: timeLabels,
 		y: Array(144).fill(elevationCutoff),
 		mode: 'lines',
@@ -27,9 +29,9 @@ function generateData(
 		showlegend: false,
 		hoverinfo: 'none',
 	};
-	const specificTimeLine = generateSpecificTimeLine(timeLabels[time], elevationCutoff, 90);
-
-
+	const specificTime = timeLabels[time]
+	if (!specificTime) throw new Error('x is undefined')
+	const specificTimeLine = generateSpecificTimeLine(specificTime, elevationCutoff, 90);
 
 	for (const satelliteId of selectedSatellites) {
 		const satelliteData = sky.get(satelliteId);
@@ -68,18 +70,19 @@ function generateData(
 				return elevationCutoff;
 			}
 			return undefined;
-		});
+		}) as number[];
 
-		const lineData = {
+		const lineData: PlotXYObjectData = {
 			x: timeLabels,
 			y: lineYValues,
 			mode: 'lines',
+			name: satelliteId.toString(),
 			line: {
 				color: color,
 				width: 2
 			},
 			showlegend: false,
-			legendgroup: `${satelliteId}`,
+			legendgroup: satelliteId.toString(),
 		};
 		plotData.push(lineData);
 
@@ -89,7 +92,7 @@ function generateData(
 
 		const specificTime = timeLabels[time]
 		if (!specificTime) throw new Error('x is undefined')
-		const specificTimePoint: Data = {
+		const specificTimePoint: PlotXYObjectData = {
 			x: [specificTime],
 			y: [specificTimeElevation],
 			mode: 'text+markers' as const,
@@ -105,11 +108,10 @@ function generateData(
 				size: 16
 			},
 			showlegend: true,
-			name: `${satelliteId}`,
-			legendgroup: `${satelliteId}`,
+			name: satelliteId.toString(),
+			legendgroup: satelliteId.toString(),
 		};
 		plotData.push(specificTimePoint);
-
 	}
 
 	plotData.push(cutoffLine);
@@ -118,7 +120,7 @@ function generateData(
 }
 
 
-const ElevationGraph = () => {
+export default function ElevationGraph() {
 	const theme = useTheme()
 	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
 	const sky = useZustand(useStore, (state) => state.sky)
@@ -134,7 +136,7 @@ const ElevationGraph = () => {
 		changeSelectedSatellites(updatedSelectedSatellites);
 		return false;
 	}
-console.log(generateData(sky, time, elevationCutoff, selectedSatellites, timeLabels))
+
 	return (
 		<Plot
 			data={generateData(sky, time, elevationCutoff, selectedSatellites, timeLabels)}
@@ -180,5 +182,3 @@ console.log(generateData(sky, time, elevationCutoff, selectedSatellites, timeLab
 		/>
 	)
 }
-
-export default ElevationGraph

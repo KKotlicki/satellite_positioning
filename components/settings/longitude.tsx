@@ -1,13 +1,10 @@
 import useStore from "@/store/store";
-import {
-	InputAdornment,
-	TextField
-} from "@mui/material";
+import { InputAdornment, TextField } from "@mui/material";
 import { type ChangeEvent, useState } from "react";
 import { useZustand } from "use-zustand";
 
 
-const LongitudePicker = () => {
+export default function LongitudePicker() {
 	const [longitudeValue, setLongitudeValue] = useState("E 0° 0' 0.0")
 
 	const changeLongitude = useZustand(useStore, (state) => state.changeLongitude)
@@ -117,5 +114,3 @@ const LongitudePicker = () => {
 		/>
 	)
 }
-
-export default LongitudePicker
