@@ -4,6 +4,7 @@ import useStore from "@/store/store";
 import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from 'react-leaflet';
 import { useZustand } from "use-zustand";
+import { satelliteIDToName } from '../services/astronomy';
 
 
 function generateColorPalette(numColors: number, cycles = 7): string[] {
@@ -61,7 +62,7 @@ function generateData(
         radius={5}
       >
         <Tooltip direction="top" permanent>
-          {satelliteNumber}
+          {satelliteIDToName(satelliteNumber)}
         </Tooltip>
       </CircleMarker>
     );

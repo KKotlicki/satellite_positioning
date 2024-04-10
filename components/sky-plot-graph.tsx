@@ -6,6 +6,7 @@ import type { Data } from "plotly.js";
 import { useEffect, useRef, useState } from "react";
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
+import { satelliteIDToName } from '../services/astronomy';
 
 
 function generateColorPalette(numColors: number, cycles = 7): string[] {
@@ -66,7 +67,7 @@ function generateData(
 				mode: "text+markers",
 				marker: { size: 16, color: color },
 				hovertemplate: "%{r}°, %{theta}<extra></extra>",
-				text: [satelliteNumber.toString()],
+				text: [satelliteIDToName(satelliteNumber)],
 				textposition: "top center",
 				textfont: {
 					color: color,

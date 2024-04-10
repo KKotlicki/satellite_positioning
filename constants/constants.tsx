@@ -37,3 +37,17 @@ export const WGS84_EARTH_ROTATION_RATE = 7.2921151467e-5 * 180 / Math.PI
 
 export const mapLayerLink = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 export const mapLayerAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+
+export const PRN_GNSS: [
+  ["G", number, number],
+  ["R", number, number],
+  ["J", number, number],
+  ["E", number, number],
+  ["C", number, number]
+] = [
+  ["G", 1, 37],
+  ["R", 38, 64],
+  ["J", 111, 118],
+  ["E", 201, 263],
+  ["C", 264, 310],
+];

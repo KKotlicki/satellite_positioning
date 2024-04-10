@@ -1,4 +1,5 @@
 import type { PlotXYObjectData, SkyPath } from '@/constants/types';
+import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
@@ -65,7 +66,7 @@ function generateData(
           hovertemplate: "%{text}",
           text: timeStamps.filter((ts) => ts !== undefined),
           showlegend: false,
-          legendgroup: satelliteId.toString(),
+          legendgroup: satelliteIDToName(satelliteId),
         });
         currentLineX = [];
       }
@@ -84,7 +85,7 @@ function generateData(
         hovertemplate: "%{text}",
         text: timeStamps.filter((ts) => ts !== undefined),
         showlegend: false,
-        legendgroup: satelliteId.toString(),
+        legendgroup: satelliteIDToName(satelliteId),
       });
     }
     const specificTimeData = satelliteData[time]
@@ -108,9 +109,9 @@ function generateData(
         color: color,
         size: 10
       },
-      name: satelliteId.toString(),
+      name: satelliteIDToName(satelliteId),
       showlegend: true,
-      legendgroup: satelliteId.toString(),
+      legendgroup: satelliteIDToName(satelliteId),
       hovertemplate: "<b>%{text}</b>",
       text: [timeStamp],
     });
@@ -167,9 +168,12 @@ export default function VisibilityGraph() {
   } satisfies Partial<Layout>
 
   const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
-    const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
+    const clickedSatelliteName = event.data[event.curveNumber]?.name;
+    if (!clickedSatelliteName) return false;
+    const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
     const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
-    changeSelectedSatellites(new Set(updatedSelectedSatellites));
+    const sortedSet = new Set(updatedSelectedSatellites.sort((a, b) => a - b));
+    changeSelectedSatellites(sortedSet);
     return false;
   }
 

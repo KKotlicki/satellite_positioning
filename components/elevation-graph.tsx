@@ -1,4 +1,5 @@
 import type { PlotXYObjectData, SkyPath } from '@/constants/types';
+import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
@@ -76,13 +77,13 @@ function generateData(
 			x: timeLabels,
 			y: lineYValues,
 			mode: 'lines',
-			name: satelliteId.toString(),
+			name: satelliteIDToName(satelliteId),
 			line: {
 				color: color,
 				width: 2
 			},
 			showlegend: false,
-			legendgroup: satelliteId.toString(),
+			legendgroup: satelliteIDToName(satelliteId),
 		};
 		plotData.push(lineData);
 
@@ -100,7 +101,7 @@ function generateData(
 				color: color,
 				size: 8
 			},
-			text: [satelliteId.toString()],
+			text: [satelliteIDToName(satelliteId)],
 			textposition: "top center" as const,
 			textfont: {
 				color: color,
@@ -108,8 +109,8 @@ function generateData(
 				size: 16
 			},
 			showlegend: true,
-			name: satelliteId.toString(),
-			legendgroup: satelliteId.toString(),
+			name: satelliteIDToName(satelliteId),
+			legendgroup: satelliteIDToName(satelliteId),
 		};
 		plotData.push(specificTimePoint);
 	}
@@ -130,12 +131,15 @@ export default function ElevationGraph() {
 
 	const timeLabels = generateTimeLabels();
 
-	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
-		const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
-		const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
-		changeSelectedSatellites(new Set(updatedSelectedSatellites));
-		return false;
-	}
+  const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
+    const clickedSatelliteName = event.data[event.curveNumber]?.name;
+    if (!clickedSatelliteName) return false;
+    const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
+    const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
+    const sortedSet = new Set(updatedSelectedSatellites.sort((a, b) => a - b));
+    changeSelectedSatellites(sortedSet);
+    return false;
+  }
 
 	return (
 		<Plot

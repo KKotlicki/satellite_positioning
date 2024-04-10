@@ -1,4 +1,4 @@
-import { WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/constants/constants";
+import { PRN_GNSS, WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/constants/constants";
 import type { DOPList, SatellitePath, SatellitePathGeocentric, SkyPath } from "@/constants/types";
 import dayjs from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
@@ -321,4 +321,29 @@ export function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: n
     GNSS_DOP.push([TDOP, PDOP, VDOP, HDOP])
   }
   return GNSS_DOP
+}
+
+export function satelliteIDToName(satelliteID: number): string {
+  for (const key of PRN_GNSS) {
+    if (key[1] <= satelliteID && satelliteID <= key[2]) {
+      // debugger
+      return `${key[0]}${satelliteID - key[1] + 1}`
+    }
+  }
+  return `S${satelliteID}`
+}
+
+export function satelliteNameToID(satelliteName: string): number {
+  // if (satelliteName == "C11") {
+  //   debugger;
+  // }
+  const satelliteNameArray = satelliteName.split("")
+  const satelliteType = satelliteNameArray[0]
+  const satelliteNumber = Number.parseInt(satelliteNameArray.slice(1).join(""))
+  for (const key of PRN_GNSS) {
+    if (key[0] === satelliteType) {
+      return key[1] + satelliteNumber -1
+    }
+  }
+  return -1
 }

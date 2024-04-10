@@ -34,7 +34,6 @@ type Store = {
 	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
 	selectedSatellites: Set<number>
 	changeSelectedSatellites: (newSelectedSatellites: Set<number>) => void
-	selectedSatellitesNames: Set<string>
 	GNSS: SatellitePath
 	GNSSGeocentric: SatellitePathGeocentric
 	sky: SkyPath
@@ -52,7 +51,6 @@ const useStore = createStore<Store>((set) => ({
 	height: 480,
 	elevationCutoff: 7,
 	selectedSatellites: new Set<number>(),
-	selectedSatellitesNames: new Set<string>(),
 	sky: new Map<number, [number | undefined, number][]>(),
 	DOP: new Array<[number, number, number, number, number]>(),
 	time: 72,

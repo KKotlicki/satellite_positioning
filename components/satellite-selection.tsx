@@ -8,6 +8,7 @@ import { styled } from "@mui/material/styles";
 import { useRouter } from 'next/navigation';
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
+import { satelliteIDToName } from '../services/astronomy';
 
 
 const GNSSPaper = styled(Paper)(({ theme }) => ({
@@ -67,7 +68,10 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 		} else {
 			selectedSatellitesSet.add(satelliteId);
 		}
-		changeSelectedSatellites(selectedSatellitesSet);
+		const sortedArray = Array.from(selectedSatellitesSet).sort((a, b) => a - b);
+		const sortedSet = new Set(sortedArray);
+
+		changeSelectedSatellites(sortedSet);
 	};
 
 	return (
@@ -111,7 +115,7 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 							}}
 						>
 							<Typography variant="body1" component="span">
-								{index}
+								{satelliteIDToName(index)}
 							</Typography>
 							<Paper
 								elevation={0}
