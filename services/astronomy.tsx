@@ -326,7 +326,6 @@ export function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: n
 export function satelliteIDToName(satelliteID: number): string {
   for (const key of PRN_GNSS) {
     if (key[1] <= satelliteID && satelliteID <= key[2]) {
-      // debugger
       return `${key[0]}${satelliteID - key[1] + 1}`
     }
   }
@@ -334,15 +333,12 @@ export function satelliteIDToName(satelliteID: number): string {
 }
 
 export function satelliteNameToID(satelliteName: string): number {
-  // if (satelliteName == "C11") {
-  //   debugger;
-  // }
   const satelliteNameArray = satelliteName.split("")
   const satelliteType = satelliteNameArray[0]
   const satelliteNumber = Number.parseInt(satelliteNameArray.slice(1).join(""))
   for (const key of PRN_GNSS) {
     if (key[0] === satelliteType) {
-      return key[1] + satelliteNumber -1
+      return key[1] + satelliteNumber - 1
     }
   }
   return -1
