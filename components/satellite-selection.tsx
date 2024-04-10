@@ -1,7 +1,8 @@
 import useStore from "@/store/store";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import { styled } from "@mui/material/styles";
+import Link from "next/link";
 import { useRef } from "react";
 import { useZustand } from "use-zustand";
 
@@ -69,38 +70,59 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 		<Box
 			ref={containerRef}
 			display="flex"
-			justifyContent="left"
+			justifyContent="center"
 			flexWrap="wrap"
 			width="100%"
 			height="100%"
+			alignItems={selectedSatellites.length === 0 ? "center" : "flex-start"}
 		>
-			{Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
-				const isHealthy = value === 0;
-				return (
-					<GNSSPaper key={index} variant="outlined">
-						<input
-							type="checkbox"
-							checked={new Set(selectedSatellites).has(index)}
-							onChange={() => handleCheckboxChange(index)}
-						/>
-						{index}
-						<Paper
-							elevation={0}
-							style={{
-								display: 'inline-block',
-								backgroundColor: isHealthy ? 'green' : 'red',
-								color: 'white',
-								borderRadius: '20px',
-								padding: '2px 10px',
-								marginLeft: '10px',
-								verticalAlign: 'middle',
-							}}
-						>
-							{isHealthy ? 'Healthy' : 'Unhealthy'}
-						</Paper>
-					</GNSSPaper>
-				);
-			})}
+			{Array.from(getSatelliteData(provider, almanac)).length === 0 ? (
+				<Paper variant="outlined"
+					sx={{
+						flex: '1 0 30%',
+						textAlign: 'center',
+						maxWidth: '30%',
+						backgroundColor: '#282a36',
+						cursor: 'pointer',
+						'&:hover': {
+								cursor: 'pointer',
+						},
+					}}
+					onClick={() => { window.location.href = "/settings"; }}
+				>
+						<Typography variant="body1" component="span" style={{ color: '#bd93f9' }}>
+							No Almanac
+						</Typography>
+				</Paper>
+			) : (
+				Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
+					const isHealthy = value === 0;
+					return (
+						<GNSSPaper key={index} variant="outlined">
+							<input
+								type="checkbox"
+								checked={new Set(selectedSatellites).has(index)}
+								onChange={() => handleCheckboxChange(index)}
+							/>
+							{index}
+							<Paper
+								elevation={0}
+								style={{
+									display: 'inline-block',
+									backgroundColor: isHealthy ? 'green' : 'red',
+									color: 'white',
+									borderRadius: '20px',
+									padding: '2px 10px',
+									marginLeft: '10px',
+									verticalAlign: 'middle',
+								}}
+							>
+								{isHealthy ? 'Healthy' : 'Unhealthy'}
+							</Paper>
+						</GNSSPaper>
+					);
+				})
+			)}
 		</Box>
 	)
 }
