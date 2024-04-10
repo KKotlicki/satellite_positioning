@@ -5,11 +5,12 @@ export type DOPList = Array<number[]>
 export type PlotXYObjectData = {
   x: string[] | number[]
   y: number[]
-  mode: 'lines' | 'markers' | 'text+markers'
+  mode: 'lines' | 'markers' | 'text+markers' | 'lines+text'
   name: string
   showlegend: boolean
   legendgroup?: string
-  hoverinfo?: string
+  hovertemplate?: string
+  hoverinfo?: "none"
   line?: {
     color: string
     width: number

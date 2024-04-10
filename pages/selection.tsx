@@ -60,12 +60,13 @@ export default function Selection() {
 	return (
 		<Box
 			ref={containerRef}
-			display="flex"
-			justifyContent="center"
 			alignItems={'start'}
 			width="100%"
 			marginTop={margin / 16}
-			style={{ fontFamily: 'monospace' }}
+			display="grid"
+			gridTemplateColumns={"repeat(2, 1fr)"}
+			justifyContent="center"
+			style={{ fontFamily: 'monospace', height: '100%' }}
 		>
 			<Card
 				sx={{

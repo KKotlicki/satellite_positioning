@@ -3,7 +3,7 @@ import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } fr
 import useStore from "@/store/store";
 import { useTheme } from "@mui/material/styles";
 import * as math from "mathjs";
-import type { LegendClickEvent } from 'plotly.js';
+import type { Layout, LegendClickEvent } from 'plotly.js';
 import Plot from "react-plotly.js";
 import { useZustand } from "use-zustand";
 
@@ -51,32 +51,37 @@ function generateData(
       if (specificTimeElevation > elevationCutoff) {
         currentLineX.push(i);
       } else if (currentLineX.length > 0) {
+        const timeStamps = currentLineX.map((x) => timeLabels[x]);
         plotData.push({
           x: currentLineX,
           y: Array(currentLineX.length).fill(satelliteIndex),
           mode: 'lines',
           line: {
             color: color,
-            width: 2
+            width: 6,
           },
           name: satelliteId.toString(),
+          hovertemplate: "%{text}",
+          text: timeStamps.filter((ts) => ts !== undefined),
           showlegend: false,
           legendgroup: satelliteId.toString(),
         });
         currentLineX = [];
       }
     }
-
     if (currentLineX.length > 0) {
+      const timeStamps = currentLineX.map((x) => timeLabels[x]);
       plotData.push({
         x: currentLineX,
         y: Array(currentLineX.length).fill(satelliteIndex),
         mode: 'lines',
         line: {
           color: color,
-          width: 2
+          width: 6,
         },
         name: satelliteId.toString(),
+        hovertemplate: "%{text}",
+        text: timeStamps.filter((ts) => ts !== undefined),
         showlegend: false,
         legendgroup: satelliteId.toString(),
       });
@@ -91,8 +96,9 @@ function generateData(
     }
     let specificTimeOfPoint = time;
     if (specificTimeElevation < elevationCutoff) {
-      specificTimeOfPoint = -1;
+      specificTimeOfPoint = -120;
     }
+    const timeStamp = timeLabels[time] ?? '';
     plotData.push({
       x: [specificTimeOfPoint],
       y: [satelliteIndex],
@@ -104,6 +110,8 @@ function generateData(
       name: satelliteId.toString(),
       showlegend: true,
       legendgroup: satelliteId.toString(),
+      hovertemplate: "<b>%{text}</b>",
+      text: [timeStamp],
     });
   }
 
@@ -148,11 +156,15 @@ export default function VisibilityGraph() {
       },
       title: 'Satellite ID',
       range: [-1, selectedSatellites.length],
+      fixedrange: true,
       tickvals: math.range(0, selectedSatellites.length, 1).toArray().map(String),
       ticktext: selectedSatellites.map(String),
-    }
 
-  };
+    },
+    legend: {
+      tracegroupgap: 0
+    },
+  } satisfies Partial<Layout>
 
   const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
     const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
@@ -167,6 +179,10 @@ export default function VisibilityGraph() {
       layout={layout}
       config={{
         displayModeBar: false,
+      }}
+      style={{
+        height: '100vh'
+        , display: 'flex', alignItems: 'stretch'
       }}
       onLegendClick={handleLegendClick}
     />
