@@ -64,7 +64,7 @@ function generateData(
           },
           name: satelliteId.toString(),
           hovertemplate: "%{text}",
-          text: timeStamps.filter((ts) => ts !== undefined),
+          text: timeStamps.filter((ts): ts is string => ts !== undefined),
           showlegend: false,
           legendgroup: satelliteIDToName(satelliteId),
         });
@@ -83,7 +83,7 @@ function generateData(
         },
         name: satelliteId.toString(),
         hovertemplate: "%{text}",
-        text: timeStamps.filter((ts) => ts !== undefined),
+        text: timeStamps.filter((ts): ts is string => ts !== undefined),
         showlegend: false,
         legendgroup: satelliteIDToName(satelliteId),
       });
