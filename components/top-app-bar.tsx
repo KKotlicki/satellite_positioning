@@ -1,6 +1,6 @@
 import { pages, project, theme } from "@/constants/constants";
 import MenuIcon from "@mui/icons-material/Menu";
-import SatelliteAltIcon from '@mui/icons-material/SatelliteAlt';
+import { useMediaQuery } from '@mui/material';
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -18,12 +18,24 @@ export default function TopAppBar() {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null)
   const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => { setAnchorElNav(event.currentTarget) }
   const handleCloseNavMenu = () => { setAnchorElNav(null) }
+  const isXsScreen = useMediaQuery('(max-width:767px)');
+  const isMdScreen = useMediaQuery('(min-width:768px)');
 
   return (
     <AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1, gridArea: "h" }}>
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
-          <SatelliteAltIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+          <img
+            src='/favicon.ico'
+            alt='logo'
+            style={{
+              display: isXsScreen ? 'none' : isMdScreen ? 'flex' : 'none',
+              marginRight: '6px',
+              width: '30px',
+              height: '30px',
+              marginTop: '-2px',
+            }}
+          />
           <Typography
             color={theme.palette.mode === "dark" ? "primary" : "inherit"}
             variant='h6'
@@ -82,7 +94,6 @@ export default function TopAppBar() {
               ))}
             </Menu>
           </Box>
-          <SatelliteAltIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
           <Typography
             color={theme.palette.mode === "dark" ? "primary" : "inherit"}
             variant='h5'
