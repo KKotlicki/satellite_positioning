@@ -65,6 +65,7 @@ function generateData(
 				theta: [azimuth],
 				mode: "text+markers",
 				marker: { size: 16, color: color },
+				hovertemplate: "%{r}°, %{theta}<extra></extra>",
 				text: [satelliteNumber.toString()],
 				textposition: "top center",
 				textfont: {
@@ -167,7 +168,6 @@ export default function SkyPlotGraph() {
 				}}
 				config={{
 					displayModeBar: false,
-					staticPlot: true
 				}}
 				useResizeHandler={true}
 			/>
