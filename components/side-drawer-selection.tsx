@@ -1,8 +1,16 @@
 import { theme } from "@/constants/constants";
 import useStore from "@/store/store";
-import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 import { blue, green, orange, pink, red } from "@mui/material/colors";
 import { useZustand } from "use-zustand";
+
+const satelliteProviders = [
+  { name: 'GPS', color: green },
+  { name: 'GLONASS', color: red },
+  { name: 'Galileo', color: blue },
+  { name: 'Beidou', color: orange },
+  { name: 'QZSS', color: pink },
+];
 
 
 export default function SideDrawerSelection(): JSX.Element {
@@ -57,67 +65,25 @@ export default function SideDrawerSelection(): JSX.Element {
       />
       <CardContent>
         <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: green[800],
-                  "&.Mui-checked": { color: green[600] }
-                }}
-                onChange={(e) => setSatelliteSelection(0, e.target.checked)}
-              />
-            }
-            label='GPS'
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: red[800],
-                  "&.Mui-checked": { color: red[600] }
-                }}
-                onChange={(e) => setSatelliteSelection(1, e.target.checked)}
-              />
-            }
-            label='GLONASS'
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: blue[800],
-                  "&.Mui-checked": { color: blue[600] }
-                }}
-                onChange={(e) => setSatelliteSelection(2, e.target.checked)}
-              />
-            }
-            label='Galileo'
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: orange[800],
-                  "&.Mui-checked": { color: orange[600] }
-                }}
-                onChange={(e) => setSatelliteSelection(3, e.target.checked)}
-              />
-            }
-            label='Beidou'
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                sx={{
-                  color: pink[800],
-                  "&.Mui-checked": { color: pink[600] }
-                }}
-                onChange={(e) => setSatelliteSelection(4, e.target.checked)}
-              />
-            }
-            label='QZSS'
-          />
+          {satelliteProviders.map((provider, index) => (
+            <FormControlLabel
+              key={provider.name}
+              control={
+                <Checkbox
+                  sx={{
+                    color: provider.color[800],
+                    "&.Mui-checked": { color: provider.color[600] }
+                  }}
+                  onChange={(e) => setSatelliteSelection(index, e.target.checked)}
+                />
+              }
+              label={provider.name}
+            />
+          ))}
         </FormGroup>
+        <Typography variant='body1' color='textSecondary'>
+          {selectedSatellites.size} selected
+        </Typography>
       </CardContent>
     </Card>
   );

@@ -1,11 +1,14 @@
 import { drawerWidth } from "@/constants/constants";
+import useStore from "@/store/store";
 import { Box, Drawer, Toolbar } from "@mui/material";
+import { useZustand } from "use-zustand";
 import SettingsView from "./settings-view";
 import SideDrawerSelection from "./side-drawer-selection";
 import TimeSlider from "./time-slider";
 
 
 export default function SideDrawer() {
+  const almanacName = useZustand(useStore, (state) => state.almanacName)
 
   return (
     <Drawer
@@ -22,8 +25,12 @@ export default function SideDrawer() {
     >
       <Toolbar />
       <Box sx={{ overflow: "auto" }}>
-        <TimeSlider />
-        <SideDrawerSelection />
+        {almanacName && (
+          <>
+            <TimeSlider />
+            <SideDrawerSelection />
+          </>
+        )}
         <SettingsView />
       </Box>
     </Drawer>
