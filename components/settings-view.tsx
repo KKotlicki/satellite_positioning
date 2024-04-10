@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 import { useZustand } from "use-zustand";
+import UploadZone from "./settings/upload_zone";
 
 
 const AlmanacPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
@@ -79,14 +80,14 @@ export default function SettingsView(): JSX.Element {
         >
           <li>{parseLatitude(latitude)}</li>
           <li>{parseLongitude(longitude)}</li>
-
           <li>Height: {height} m</li>
           <li>Elevation cutoff: {elevationCutoff}°</li>
           <li>Date: {date.format("DD/MM/YYYY")}</li>
-          <AlmanacPaper color={almanacName ? 'green' : 'red'}>
-            {formatAlmanacName(almanacName) || "No Almanac"}
-          </AlmanacPaper>
         </Box>
+        <AlmanacPaper color={almanacName ? 'green' : 'red'}>
+          {formatAlmanacName(almanacName) || "No Almanac"}
+        </AlmanacPaper>
+        <UploadZone />
       </CardContent>
     </Card>
   );

@@ -2,7 +2,6 @@ import ElevationPicker from "@/components/settings/elevation";
 import HeightPicker from "@/components/settings/height";
 import LatitudePicker from "@/components/settings/latitude";
 import LongitudePicker from "@/components/settings/longitude";
-import UploadZone from "@/components/settings/upload_zone";
 import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
@@ -76,7 +75,6 @@ export default function Settings() {
 					<HeightPicker />
 					<ElevationPicker />
 					<DatePicker />
-					<UploadZone />
 				</CardContent>
 			</Card>
 		</Box>
