@@ -10,7 +10,8 @@ import { satelliteIDToName } from '../services/astronomy';
 function generateColorPalette(numColors: number, cycles = 7): string[] {
   const colors = [];
   for (let i = 0; i < numColors; i++) {
-    const hue = (360 * i * cycles / numColors) % 360;
+    const hue = (360 * i * cycles
+      / numColors) % 360;
     colors.push(`hsl(${hue}, 100%, 50%)`);
   }
   return colors;
@@ -70,15 +71,25 @@ function generateData(
     const separatePath: Array<[number, number]> = []
 
     for (let i = 0; i < 144; i++) {
+      const previousPoint = satelliteMap[i - 1];
       const currentPoint = satelliteMap[i];
       const nextPoint = satelliteMap[i + 1];
 
       if (!currentPoint || !nextPoint) continue;
 
       if (!currentPoint[0] || !currentPoint[1] || !nextPoint[0] || !nextPoint[1]) continue;
-
+      if (separatePath.length === 0 && previousPoint) {
+        if (isSideSwitch(previousPoint, currentPoint)) {
+          if (previousPoint[1] < 0) separatePath.push([previousPoint[0], previousPoint[1] + 360]);
+          else separatePath.push([previousPoint[0], previousPoint[1] - 360]);
+          separatePath.push(currentPoint);
+        }
+      }
       if (isSideSwitch(currentPoint, nextPoint)) {
         separatePath.push(currentPoint);
+        // debugger;
+        if (nextPoint[1] < 0) separatePath.push([nextPoint[0], nextPoint[1] + 360]);
+        else separatePath.push([nextPoint[0], nextPoint[1] - 360]);
         data.push(
           <Polyline
             key={`${satelliteNumber}-path-${i}`}
@@ -93,8 +104,14 @@ function generateData(
     }
     const lastPoint = satelliteMap[144];
     if (!lastPoint) continue;
+    const preLastPoint = satelliteMap[143];
+    if (!preLastPoint) continue;
     if (separatePath.length > 0) {
-      separatePath.push(lastPoint);
+      if (isSideSwitch(preLastPoint, lastPoint)) {
+        if (lastPoint[1] < 0) separatePath.push([lastPoint[0], lastPoint[1] + 360]);
+        else separatePath.push([lastPoint[0], lastPoint[1] - 360]);
+      }
+      else separatePath.push(lastPoint);
       data.push(
         <Polyline
           key={`${satelliteNumber}-path-last`}
@@ -118,7 +135,17 @@ export default function MapComponent() {
   const polylineElements = generateData(GNSSGeocentric, time, selectedSatellites);
 
   return (
-    <MapContainer center={[0, 0]} zoom={2.5} style={{ height: '100vh', width: '100%', backgroundColor: '#121212' }}>
+    <MapContainer
+      center={[0, 0]}
+      zoom={2.5}
+      minZoom={2.5}
+      style={{ height: '100%', width: '100%', backgroundColor: '#121212' }}
+      maxBounds={[
+        [-90, -180],
+        [90, 180]
+      ]}
+      maxBoundsViscosity={1.0}
+    >
       <TileLayer
         url={mapLayerLink}
         attribution={mapLayerAttribution}
