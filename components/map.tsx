@@ -150,7 +150,6 @@ export default function MapComponent() {
         url={mapLayerLink}
         attribution={mapLayerAttribution}
       />
-
       {polylineElements}
       <CircleMarker center={[lat, lon]} pathOptions={{ fillColor: 'red', color: 'red' }} radius={5}>
         <Tooltip direction="top">

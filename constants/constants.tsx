@@ -18,6 +18,16 @@ export const theme = createTheme({
         html, body, #__next {
 					height: 100%;
         }
+        .leaflet-tooltip {
+          background-color: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          color: white !important;
+          font-size: 2vh !important;
+        }
+        .leaflet-tooltip::before {
+          display: none !important;
+        }
       `,
     },
   },
@@ -45,9 +55,9 @@ export const PRN_GNSS: [
   ["E", number, number],
   ["C", number, number]
 ] = [
-  ["G", 1, 37],
-  ["R", 38, 64],
-  ["J", 111, 118],
-  ["E", 201, 263],
-  ["C", 264, 310],
-];
+    ["G", 1, 37],
+    ["R", 38, 64],
+    ["J", 111, 118],
+    ["E", 201, 263],
+    ["C", 264, 310],
+  ];
