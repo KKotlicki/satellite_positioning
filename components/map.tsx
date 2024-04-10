@@ -87,7 +87,6 @@ function generateData(
       }
       if (isSideSwitch(currentPoint, nextPoint)) {
         separatePath.push(currentPoint);
-        // debugger;
         if (nextPoint[1] < 0) separatePath.push([nextPoint[0], nextPoint[1] + 360]);
         else separatePath.push([nextPoint[0], nextPoint[1] - 360]);
         data.push(
