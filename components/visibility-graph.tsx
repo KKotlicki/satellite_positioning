@@ -159,8 +159,9 @@ export default function VisibilityGraph() {
       title: 'Satellite ID',
       range: [-1, selectedSatellites.size],
       fixedrange: true,
+      // list of satellite Names from the list of ids
       tickvals: math.range(0, selectedSatellites.size, 1).toArray().map(String),
-      ticktext: Array.from(selectedSatellites).map(String),
+      ticktext: Array.from(selectedSatellites).map(satelliteIDToName),
     },
     legend: {
       tracegroupgap: 0
