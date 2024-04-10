@@ -62,7 +62,7 @@ export default function Selection() {
 			ref={containerRef}
 			alignItems={'start'}
 			width="100%"
-			marginTop={margin / 16}
+			margin={margin / 16}
 			display="grid"
 			gridTemplateColumns={"repeat(2, 1fr)"}
 			justifyContent="center"
