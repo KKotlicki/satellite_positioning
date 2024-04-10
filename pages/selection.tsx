@@ -1,5 +1,4 @@
 import SatelliteSelection from "@/components/satellite-selection";
-import VisibilityGraph from "@/components/visibility-graph";
 import useStore from "@/store/store";
 import { Box, Card, CardContent, CardHeader, Tab, Tabs } from "@mui/material";
 import {
@@ -9,8 +8,11 @@ import {
 	pink,
 	red
 } from "@mui/material/colors";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { useZustand } from "use-zustand";
+
+const VisibilityGraph = dynamic(() => import("../components/visibility-graph"), { ssr: false })
 
 
 export default function Selection() {

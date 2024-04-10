@@ -15,7 +15,7 @@ const GNSSPaper = styled(Paper)(({ theme }) => ({
 	margin: theme.spacing(1),
 	padding: theme.spacing(2),
 	...theme.typography.body2,
-	textAlign: 'left',
+	textAlign: 'center',
 	maxWidth: '30%',
 }));
 
