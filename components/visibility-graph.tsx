@@ -12,19 +12,20 @@ function generateData(
   sky: SkyPath,
   elevationCutoff: number,
   time: number,
-  selectedSatellites: Array<number>,
+  selectedSatellites: Set<number>,
   timeLabels: Array<string>
 ): Array<PlotXYObjectData> {
   const plotData: Array<PlotXYObjectData> = [];
   const specificTime = timeLabels[time];
   if (!specificTime) throw new Error('x is undefined');
-  const specificTimeLine = generateSpecificTimeLine(time, -1, selectedSatellites.length);
+  const specificTimeLine = generateSpecificTimeLine(time, -1, selectedSatellites.size);
   plotData.push(specificTimeLine);
 
   const colors = generateColorPalette(155);
+  const selectedSatellitesArray = Array.from(selectedSatellites);
 
-  for (let satelliteIndex = 0; satelliteIndex < selectedSatellites.length; satelliteIndex++) {
-    const satelliteId = selectedSatellites[satelliteIndex];
+  for (let satelliteIndex = 0; satelliteIndex < selectedSatellites.size; satelliteIndex++) {
+    const satelliteId = selectedSatellitesArray[satelliteIndex];
     if (!satelliteId) throw new Error('satelliteId is undefined')
     const satelliteData = sky.get(satelliteId);
     if (!satelliteData) {
@@ -155,11 +156,10 @@ export default function VisibilityGraph() {
         color: theme.palette.text.primary,
       },
       title: 'Satellite ID',
-      range: [-1, selectedSatellites.length],
+      range: [-1, selectedSatellites.size],
       fixedrange: true,
-      tickvals: math.range(0, selectedSatellites.length, 1).toArray().map(String),
-      ticktext: selectedSatellites.map(String),
-
+      tickvals: math.range(0, selectedSatellites.size, 1).toArray().map(String),
+      ticktext: Array.from(selectedSatellites).map(String),
     },
     legend: {
       tracegroupgap: 0
@@ -168,8 +168,8 @@ export default function VisibilityGraph() {
 
   const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
     const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
-    const updatedSelectedSatellites = selectedSatellites.filter(id => id !== clickedSatelliteId);
-    changeSelectedSatellites(updatedSelectedSatellites);
+    const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
+    changeSelectedSatellites(new Set(updatedSelectedSatellites));
     return false;
   }
 

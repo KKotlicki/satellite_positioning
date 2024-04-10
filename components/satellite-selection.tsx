@@ -67,7 +67,7 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 		} else {
 			selectedSatellitesSet.add(satelliteId);
 		}
-		changeSelectedSatellites(Array.from(selectedSatellitesSet));
+		changeSelectedSatellites(selectedSatellitesSet);
 	};
 
 	return (

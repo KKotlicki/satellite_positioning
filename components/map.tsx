@@ -34,13 +34,13 @@ function isSideSwitch(
 function generateData(
   GNSSGeocentric: SatellitePathGeocentric,
   time: number,
-  selectedSatellites: number[]
+  selectedSatellites: Set<number>
 ): Array<JSX.Element> {
   const data: Array<JSX.Element> = []
 
   const colors = generateColorPalette(155);
 
-  for (const satelliteNumber of selectedSatellites) {
+  for (const satelliteNumber of Array.from(selectedSatellites)) {
     const satelliteMap = GNSSGeocentric.get(satelliteNumber)
     if (!satelliteMap) continue;
     if (satelliteMap.length < 145) continue;

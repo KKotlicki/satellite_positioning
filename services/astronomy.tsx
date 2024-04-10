@@ -213,11 +213,12 @@ export function calculateSkyPositions(
   return output;
 }
 
-export function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number, selectedSatellites: number[]): DOPList {
-  if (selectedSatellites.length < 4) return []
+export function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: number, longitude: number, height: number, elevationCutoff: number, selectedSatellites: Set<number>): DOPList {
+  if (selectedSatellites.size < 4) return []
+  const selectedSatellitesArray = Array.from(selectedSatellites)
+
   const intervals = 145
   const GNSS_DOP: DOPList = []
-
 
   for (let timeIncrement = 0; timeIncrement < intervals; timeIncrement++) {
 
@@ -237,7 +238,7 @@ export function calculateDOP(GNSS: SatellitePath, skyTrace: SkyPath, latitude: n
     let A = math.matrix([[]]);
     A.resize([1, 4]);
 
-    for (const satelliteNumber of selectedSatellites) {
+    for (const satelliteNumber of selectedSatellitesArray) {
       if (!GNSS.has(satelliteNumber)) continue
       const satelliteData = GNSS.get(satelliteNumber)
       if (satelliteData === undefined) continue

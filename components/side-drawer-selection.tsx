@@ -35,7 +35,7 @@ export default function SideDrawerSelection(): JSX.Element {
         selectedSatellitesSet.delete(i)
       }
     }
-    changeSelectedSatellites(Array.from(selectedSatellitesSet))
+    changeSelectedSatellites(selectedSatellitesSet)
   }
 
   return (

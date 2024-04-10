@@ -21,7 +21,7 @@ function generateData(
 	sky: SkyPath,
 	time: number,
 	elevationCutoff: number,
-	selectedSatellites: number[]
+	selectedSatellites: Set<number>
 ): Array<Data> {
 	const data: Array<Data> = []
 
@@ -42,7 +42,7 @@ function generateData(
 
 	const colors = generateColorPalette(155);
 
-	for (const satelliteNumber of selectedSatellites) {
+	for (const satelliteNumber of Array.from(selectedSatellites.values())) {
 
 		const satelliteMap = sky.get(satelliteNumber)
 		if (!satelliteMap) return data

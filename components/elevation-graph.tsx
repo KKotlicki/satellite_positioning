@@ -11,7 +11,7 @@ function generateData(
 	sky: SkyPath,
 	time: number,
 	elevationCutoff: number,
-	selectedSatellites: number[],
+	selectedSatellites: Set<number>,
 	timeLabels: string[]
 ): Array<PlotXYObjectData> {
 	if (!timeLabels[time]) throw new Error('timeLabels is undefined')
@@ -33,7 +33,7 @@ function generateData(
 	if (!specificTime) throw new Error('x is undefined')
 	const specificTimeLine = generateSpecificTimeLine(specificTime, elevationCutoff, 90);
 
-	for (const satelliteId of selectedSatellites) {
+	for (const satelliteId of Array.from(selectedSatellites)) {
 		const satelliteData = sky.get(satelliteId);
 		if (!satelliteData) {
 			return [];
@@ -132,8 +132,8 @@ export default function ElevationGraph() {
 
 	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
 		const clickedSatelliteId = Number(event.data[event.curveNumber]?.name);
-		const updatedSelectedSatellites = selectedSatellites.filter(id => id !== clickedSatelliteId);
-		changeSelectedSatellites(updatedSelectedSatellites);
+		const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
+		changeSelectedSatellites(new Set(updatedSelectedSatellites));
 		return false;
 	}
 
