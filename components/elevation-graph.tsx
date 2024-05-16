@@ -3,7 +3,6 @@ import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
 import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSky, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
-import type { LegendClickEvent } from "plotly.js";
 import Plot from "react-plotly.js";
 
 
@@ -130,7 +129,7 @@ export default function ElevationGraph() {
 
 	const timeLabels = generateTimeLabels();
 
-	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
+	const handleLegendClick = (event: Readonly<Plotly.LegendClickEvent>) => {
 		const clickedSatelliteName = event.data[event.curveNumber]?.name;
 		if (!clickedSatelliteName) return false;
 		const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);

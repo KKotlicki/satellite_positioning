@@ -4,7 +4,7 @@ import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } fr
 import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSky, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
 import * as math from "mathjs";
-import type { Layout, LegendClickEvent } from 'plotly.js';
+import type { Layout } from 'plotly.js';
 import Plot from "react-plotly.js";
 
 
@@ -167,7 +167,7 @@ export default function VisibilityGraph() {
     },
   } satisfies Partial<Layout>
 
-  const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
+  const handleLegendClick = (event: Readonly<Plotly.LegendClickEvent>) => {
     const clickedSatelliteName = event.data[event.curveNumber]?.name;
     if (!clickedSatelliteName) return false;
     const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
