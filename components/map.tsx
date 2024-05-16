@@ -1,9 +1,8 @@
-import { mapLayerAttribution, mapLayerLink } from "@/constants/constants";
-import type { SatellitePathGeocentric } from "@/constants/types";
-import useStore from "@/store/store";
+import { mapLayerAttribution, mapLayerLink } from "@/global/constants";
+import type { SatellitePathGeocentric } from "@/global/types";
+import { useGNSSGeocentric, useLatitude, useLongitude, useSelectedSatellites, useTime } from "@/stores/almanac-store";
 import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from 'react-leaflet';
-import { useZustand } from "use-zustand";
 import { satelliteIDToName } from '../services/astronomy';
 
 
@@ -125,11 +124,11 @@ function generateData(
 
 
 export default function MapComponent() {
-  const GNSSGeocentric = useZustand(useStore, (state) => state.GNSSGeocentric)
-  const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
-  const lat = useZustand(useStore, (state) => state.latitude)
-  const lon = useZustand(useStore, (state) => state.longitude)
-  const time = useZustand(useStore, (state) => state.time)
+  const GNSSGeocentric = useGNSSGeocentric()
+  const selectedSatellites = useSelectedSatellites()
+  const lat = useLatitude()
+  const lon = useLongitude()
+  const time = useTime()
 
   const polylineElements = generateData(GNSSGeocentric, time, selectedSatellites);
 

@@ -27,3 +27,13 @@ export type PlotXYObjectData = {
     size: number
   },
 }
+export type Almanac = Map<number, number[]>
+export type RINEX = {
+    [key: string]: number[]
+}
+export type AstronomyFile<T extends Almanac | RINEX> = {
+  name: string
+  extensions: T extends Almanac ? ["alm"] : T extends RINEX ? ["rnx"] : never
+  fileName: string | null
+  content: T | null
+}

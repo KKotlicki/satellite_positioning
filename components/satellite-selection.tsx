@@ -1,13 +1,12 @@
 'use client'
 
-import { theme } from "@/constants/constants";
-import useStore from "@/store/store";
+import { theme } from "@/global/constants";
+import { useAlmanacActions, useAlmanacFile, useSelectedSatellites } from "@/stores/almanac-store";
 import { Box, Typography } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import { styled } from "@mui/material/styles";
 import { useRouter } from 'next/navigation';
 import { useRef } from "react";
-import { useZustand } from "use-zustand";
 import { satelliteIDToName } from '../services/astronomy';
 
 
@@ -56,10 +55,9 @@ function getSatelliteData(provider: number, almanac: Map<number, number[]>) {
 export default function SatelliteSelection({ provider }: { provider: number }) {
 	const router = useRouter()
 	const containerRef = useRef(null)
-	const almanac = useZustand(useStore, (state) => state.almanac)
-	const almanacName = useZustand(useStore, (state) => state.almanacName)
-	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
-	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites);
+	const almanacFile = useAlmanacFile()
+	const selectedSatellites = useSelectedSatellites()
+	const { changeSelectedSatellites } = useAlmanacActions()
 
 	const handleCheckboxChange = (satelliteId: number) => {
 		const selectedSatellitesSet = new Set(selectedSatellites);
@@ -78,13 +76,13 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 		<Box
 			ref={containerRef}
 			display="flex"
-			justifyContent={!almanacName ? "center" : "left"}
+			justifyContent={!almanacFile.content ? "center" : "left"}
 			flexWrap="wrap"
 			width="100%"
 			height="100%"
-			alignItems={!almanacName ? "center" : "flex-start"}
+			alignItems={!almanacFile.content ? "center" : "flex-start"}
 		>
-			{!almanacName ? (
+			{!almanacFile.content ? (
 				<Paper variant="outlined"
 					sx={{
 						flex: '1 0 30%',
@@ -103,7 +101,7 @@ export default function SatelliteSelection({ provider }: { provider: number }) {
 					</Typography>
 				</Paper>
 			) : (
-				Array.from(getSatelliteData(provider, almanac)).map(([index, value]) => {
+				Array.from(getSatelliteData(provider, almanacFile.content)).map(([index, value]) => {
 					const isHealthy = value === 0;
 					return (
 						<GNSSPaper

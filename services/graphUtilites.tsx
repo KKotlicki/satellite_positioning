@@ -1,4 +1,4 @@
-import type { PlotXYObjectData } from "@/constants/types"
+import type { PlotXYObjectData } from "@/global/types"
 import dayjs from "dayjs"
 
 

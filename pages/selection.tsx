@@ -1,5 +1,5 @@
 import SatelliteSelection from "@/components/satellite-selection";
-import useStore from "@/store/store";
+import { useAlmanacFile } from "@/stores/almanac-store";
 import { Box, Card, CardContent, CardHeader, Tab, Tabs } from "@mui/material";
 import {
 	blue,
@@ -10,14 +10,13 @@ import {
 } from "@mui/material/colors";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { useZustand } from "use-zustand";
 
 const VisibilityGraph = dynamic(() => import("../components/visibility-graph"), { ssr: false })
 
 
 export default function Selection() {
 	const containerRef = useRef(null)
-	const almanacName = useZustand(useStore, (state) => state.almanacName)
+	const almanacFile = useAlmanacFile()
 	const [size, setSize] = useState(0)
 	const [margin, setMargin] = useState(0)
 	const [selectedTab, setSelectedTab] = useState(0);
@@ -41,14 +40,15 @@ export default function Selection() {
 		window.addEventListener("resize", handleResize)
 
 		const resizeObserver = new ResizeObserver(handleResize)
-		if (containerRef.current) {
-			resizeObserver.observe(containerRef.current)
+		const currentContainerRef = containerRef.current
+		if (currentContainerRef) {
+			resizeObserver.observe(currentContainerRef)
 		}
 
 		return () => {
 			window.removeEventListener("resize", handleResize)
-			if (containerRef.current) {
-				resizeObserver.unobserve(containerRef.current)
+			if (currentContainerRef) {
+				resizeObserver.unobserve(currentContainerRef)
 			}
 		}
 	})
@@ -105,7 +105,7 @@ export default function Selection() {
 					<SatelliteSelection provider={selectedTab} />
 				</CardContent>
 			</Card>
-			{almanacName ? <VisibilityGraph /> : null}
+			{almanacFile.content ? <VisibilityGraph /> : null}
 		</Box>
 	);
 };

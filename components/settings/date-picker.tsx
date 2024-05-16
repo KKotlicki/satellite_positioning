@@ -1,11 +1,10 @@
-import useStore from "@/store/store";
+import { useAlmanacActions } from "@/stores/almanac-store";
 import { LocalizationProvider, DatePicker as MUIDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { type Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { useState } from "react";
-import { useZustand } from "use-zustand";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -14,7 +13,7 @@ dayjs.tz.setDefault("UTC")
 
 export default function DatePicker() {
   const [localDate, setLocalDate] = useState(dayjs())
-  const changeDate = useZustand(useStore, (state) => state.changeDate)
+  const { changeDate } = useAlmanacActions()
 
   const isValidDate = (date: dayjs.Dayjs) => { return date?.isValid() }
 

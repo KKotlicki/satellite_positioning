@@ -1,9 +1,9 @@
-import { theme } from "@/constants/constants";
-import useStore from "@/store/store";
+import { theme } from "@/global/constants";
+import { useAlmanacFile, useDate, useElevationCutoff, useHeight, useLatitude, useLongitude } from "@/stores/almanac-store";
+import { useRinexFile } from "@/stores/rinex-store";
 import { Card, CardContent, CardHeader, Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
-import { useZustand } from "use-zustand";
 import UploadZone from "./settings/upload_zone";
 
 
@@ -17,26 +17,25 @@ const AlmanacPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'colo
   backgroundColor: color,
 }));
 
-const formatAlmanacName = (name: string): string => {
-  let formattedName: string | undefined = name;
+const formatAlmanacName = (name: string | null): string | null => {
+  let formattedName: string | null = name;
   if (formattedName?.endsWith(".alm")) {
     formattedName = formattedName.slice(0, -4);
   }
   if (formattedName?.startsWith("Almanac") && formattedName.length > 7) {
     formattedName = formattedName.slice(7);
   }
-  return formattedName || "";
+  return formattedName || null;
 };
 
 export default function SettingsView(): JSX.Element {
-  const { latitude, longitude, height, elevationCutoff, date, almanacName } = useZustand(useStore, (state) => ({
-    latitude: state.latitude,
-    longitude: state.longitude,
-    height: state.height,
-    elevationCutoff: state.elevationCutoff,
-    date: state.date,
-    almanacName: state.almanacName
-  }));
+  const latitude = useLatitude();
+  const longitude = useLongitude();
+  const height = useHeight();
+  const elevationCutoff = useElevationCutoff();
+  const date = useDate();
+  const almanacFile = useAlmanacFile();
+  const rinexFile = useRinexFile()
 
   function parseLatitude(latitude: number): string {
     const direction = latitude < 0 ? "S" : "N";
@@ -69,26 +68,39 @@ export default function SettingsView(): JSX.Element {
           backgroundColor: theme.palette.divider
         }}
       />
-      <CardContent>
-        <Box
-          component='ul'
-          sx={{
-            m: 0,
-            p: 0,
-            pl: 1
-          }}
-        >
-          <li>{parseLatitude(latitude)}</li>
-          <li>{parseLongitude(longitude)}</li>
-          <li>Height: {height} m</li>
-          <li>Elevation cutoff: {elevationCutoff}°</li>
-          <li>Date: {date.format("DD/MM/YYYY")}</li>
-        </Box>
-        <AlmanacPaper color={almanacName ? 'green' : 'red'}>
-          {formatAlmanacName(almanacName) || "No Almanac"}
-        </AlmanacPaper>
-        <UploadZone />
-      </CardContent>
+      {almanacFile.content === null ? (
+        <CardContent>
+          <AlmanacPaper color='red'>
+            {"No Files Uploaded"}
+          </AlmanacPaper>
+        </CardContent>
+      )
+        : (
+          <CardContent>
+            <Box
+              component='ul'
+              sx={{
+                m: 0,
+                p: 0,
+                pl: 1
+              }}
+            >
+              <li>{parseLatitude(latitude)}</li>
+              <li>{parseLongitude(longitude)}</li>
+              <li>Height: {height} m</li>
+              <li>Elevation cutoff: {elevationCutoff}°</li>
+              <li>Date: {date.format("DD/MM/YYYY")}</li>
+            </Box>
+            <AlmanacPaper color={almanacFile.content ? 'green' : 'red'}>
+              {formatAlmanacName(almanacFile.fileName) || `No ${almanacFile.name} Uploaded`}
+            </AlmanacPaper>
+            <AlmanacPaper color={rinexFile.content ? 'green' : 'red'}>
+              {formatAlmanacName(rinexFile.fileName) || `No ${rinexFile.name} Uploaded`}
+            </AlmanacPaper>
+            <UploadZone />
+          </CardContent>
+        )
+      }
     </Card>
   );
 }

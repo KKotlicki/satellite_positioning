@@ -1,4 +1,5 @@
-import { pages, project, theme } from "@/constants/constants";
+import { pages, project, theme } from "@/global/constants";
+import { useAlmanacFile } from "@/stores/almanac-store";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useMediaQuery } from '@mui/material';
 import AppBar from "@mui/material/AppBar";
@@ -10,6 +11,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import Image from 'next/image';
 import Link from "next/link";
 import { type MouseEvent, useState } from "react";
 
@@ -20,19 +22,20 @@ export default function TopAppBar() {
   const handleCloseNavMenu = () => { setAnchorElNav(null) }
   const isXsScreen = useMediaQuery('(max-width:767px)');
   const isMdScreen = useMediaQuery('(min-width:768px)');
+  const almanacFile = useAlmanacFile()
 
   return (
     <AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1, gridArea: "h" }}>
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
-          <img
+          <Image
             src='/favicon.ico'
             alt='logo'
+            width={30}
+            height={30}
             style={{
               display: isXsScreen ? 'none' : isMdScreen ? 'flex' : 'none',
               marginRight: '6px',
-              width: '30px',
-              height: '30px',
               marginTop: '-2px',
             }}
           />
@@ -80,7 +83,7 @@ export default function TopAppBar() {
                 display: { xs: "block", md: "none" }
               }}
             >
-              {pages.map((page) => (
+              {pages.filter(page => almanacFile.content !== null || page === "Settings").map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Link
                     key={page}
@@ -111,7 +114,7 @@ export default function TopAppBar() {
             {project}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page) => (
+            {pages.filter(page => almanacFile.content !== null || page === "Settings").map((page) => (
               <Link
                 key={page}
                 style={{ textDecoration: "none" }}

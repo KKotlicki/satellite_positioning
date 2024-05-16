@@ -1,8 +1,7 @@
-import useStore from "@/store/store"
+import { useAlmanacActions, useAlmanacFile } from "@/stores/almanac-store"
 import { Box } from "@mui/material"
 import Typography from "@mui/material/Typography"
 import { useState } from "react"
-import { useZustand } from "use-zustand"
 
 
 export default function UploadZone() {
@@ -46,7 +45,8 @@ export default function UploadZone() {
 	}
 
 	const [isDragging, setIsDragging] = useState<boolean>(false)
-	const changeAlmanacName = useZustand(useStore, (state) => state.changeAlmanacName)
+	const almanacFile = useAlmanacFile()
+	const { changeAlmanacFile } = useAlmanacActions()
 
 	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -66,14 +66,15 @@ export default function UploadZone() {
 		if (!files[0]?.name) {
 			throw new Error("No file name")
 		}
-		changeAlmanacName(files[0]?.name)
+		almanacFile.fileName = files[0]?.name
+		changeAlmanacFile(almanacFile)
 		handleFilesDropped(text ?? "")
 	}
 
 	const handleChooseFile = () => {
 		const fileInput = document.createElement("input")
 		fileInput.type = "file"
-		fileInput.accept = ".alm"
+		fileInput.accept = `.${almanacFile.extensions.join(", .")}`
 		fileInput.multiple = true
 		fileInput.onchange = async (e: Event) => {
 			const target = e.target as HTMLInputElement
@@ -83,20 +84,21 @@ export default function UploadZone() {
 				if (!files[0]?.name) {
 					throw new Error("No file name")
 				}
-				changeAlmanacName(files[0]?.name)
+				almanacFile.fileName = files[0]?.name
+				changeAlmanacFile(almanacFile)
 
 				handleFilesDropped(text ?? "")
 			}
 		}
 		fileInput.click()
 	}
-	const changeAlmanac = useZustand(useStore, (state) => state.changeAlmanac)
 	const handleFilesDropped = (content: string | ArrayBuffer | null) => {
 		const almanac = new Map<number, number[]>()
 		parseAlmFile(content as string).forEach((value, key) => {
 			almanac.set(key, value)
 		})
-		changeAlmanac(almanac)
+		almanacFile.content = almanac
+		changeAlmanacFile(almanacFile)
 	}
 
 	return (
@@ -123,7 +125,7 @@ export default function UploadZone() {
 				transition: "all 0.3s ease-in-out"
 			}}
 		>
-			<Typography textAlign="center">Drag and drop Almanac</Typography>
+			<Typography textAlign="center">Drag and drop Files</Typography>
 		</Box>
 	)
 }

@@ -1,42 +1,34 @@
-import { theme } from "@/constants/constants";
-import useStore from "@/store/store";
+import { satelliteProviders, theme, PRN_GNSS } from "@/global/constants";
+import { useAlmanacActions, useAlmanacFile, useSelectedSatellites } from "@/stores/almanac-store";
 import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
-import { blue, green, orange, pink, red } from "@mui/material/colors";
-import { useZustand } from "use-zustand";
-
-const satelliteProviders = [
-  { name: 'GPS', color: green },
-  { name: 'GLONASS', color: red },
-  { name: 'Galileo', color: blue },
-  { name: 'Beidou', color: orange },
-  { name: 'QZSS', color: pink },
-];
 
 
 export default function SideDrawerSelection(): JSX.Element {
-  const almanac = useZustand(useStore, (state) => state.almanac)
-  const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
-  const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites);
+  const almanacFile = useAlmanacFile()
+  const selectedSatellites = useSelectedSatellites()
+  const { changeSelectedSatellites } = useAlmanacActions()
+
   const setSatelliteSelection = (provider: number, turnOn: boolean) => {
     const satelliteIdRange: [number, number] = (() => {
       switch (provider) {
         case 0:
-          return [1, 37]
+          return PRN_GNSS[0].slice(1) as [number, number]
         case 1:
-          return [38, 64]
+          return PRN_GNSS[1].slice(1) as [number, number]
         case 2:
-          return [201, 263]
+          return PRN_GNSS[3].slice(1) as [number, number]
         case 3:
-          return [264, 283]
+          return PRN_GNSS[4].slice(1) as [number, number]
         case 4:
-          return [111, 118]
+          return PRN_GNSS[2].slice(1) as [number, number]
         default:
           throw new Error("Invalid provider")
       }
     })()
     const selectedSatellitesSet = new Set(selectedSatellites)
     for (let i = satelliteIdRange[0]; i <= satelliteIdRange[1]; i++) {
-      if (almanac.get(i) === undefined) continue
+      if (almanacFile.content === null) throw new Error("Almanac content is null")
+      if (almanacFile.content.get(i) === undefined) continue
       if (turnOn) {
         selectedSatellitesSet.add(i)
       } else {

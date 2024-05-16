@@ -1,4 +1,4 @@
-import type { DOPList, SatellitePath, SatellitePathGeocentric, SkyPath } from "@/constants/types";
+import type { Almanac, AstronomyFile, DOPList, SatellitePath, SatellitePathGeocentric, SkyPath } from "@/global/types";
 import {
 	calculateDOP,
 	calculateSatellitePositions,
@@ -8,6 +8,7 @@ import {
 import dayjs, { type Dayjs } from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { useZustand } from "use-zustand";
 import { createStore } from 'zustand/vanilla';
 
 dayjs.extend(utc);
@@ -15,47 +16,70 @@ dayjs.extend(timezone);
 dayjs.tz.setDefault("UTC")
 
 
-type Store = {
+type AlmanacStore = {
 	latitude: number
-	changeLatitude: (newLatitude: number) => void
 	longitude: number
-	changeLongitude: (newLongitude: number) => void
 	height: number
-	changeHeight: (newHeight: number) => void
 	elevationCutoff: number
-	changeElevationCutoff: (newElevationCutoff: number) => void
 	date: Dayjs
-	changeDate: (newDate: Dayjs) => void
 	time: number
-	changeTime: (newTime: number) => void
-	almanacName: string
-	changeAlmanacName: (newAlmanacName: string) => void
-	almanac: Map<number, number[]>
-	changeAlmanac: (newAlmanac: Map<number, number[]>) => void
+	almanacFile: AstronomyFile<Almanac>
 	selectedSatellites: Set<number>
-	changeSelectedSatellites: (newSelectedSatellites: Set<number>) => void
 	GNSS: SatellitePath
 	GNSSGeocentric: SatellitePathGeocentric
 	sky: SkyPath
 	DOP: DOPList
+	actions: {
+		changeLatitude: (newLatitude: number) => void
+		changeLongitude: (newLongitude: number) => void
+		changeHeight: (newHeight: number) => void
+		changeElevationCutoff: (newElevationCutoff: number) => void
+		changeDate: (newDate: Dayjs) => void
+		changeTime: (newTime: number) => void
+		changeAlmanacFile: (newAlmanacFile: AstronomyFile<Almanac>) => void
+		changeSelectedSatellites: (newSelectedSatellites: Set<number>) => void
+	}
 }
 
-const useStore = createStore<Store>((set) => ({
+const useAlmanacStore = createStore<AlmanacStore>((set) => ({
 	date: dayjs().startOf("day"),
-	almanacName: "",
-	almanac: new Map<number, number[]>(),
-	GNSS: new Map<number, [number, number, number][]>(),
-	GNSSGeocentric: new Map<number, [number, number][]>(),
+	almanacFile: {
+		name: "",
+		extensions: ["alm"],
+		fileName: null,
+		content: null
+	},
+	GNSS: new Map(),
+	GNSSGeocentric: new Map(),
 	latitude: 0,
 	longitude: 0,
 	height: 480,
 	elevationCutoff: 7,
 	selectedSatellites: new Set<number>(),
-	sky: new Map<number, [number | undefined, number][]>(),
-	DOP: new Array<[number, number, number, number, number]>(),
+	sky: new Map(),
+	DOP: [],
 	time: 72,
 
-	changeAlmanacName: (newAlmanacName) => set(() => ({ almanacName: newAlmanacName })),
+
+	actions:
+	{
+	
+	changeAlmanacFile: (newAlmanacFile) =>
+		set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
+			if (newAlmanacFile.content === null) return { almanacFile: newAlmanacFile }
+			const GNSS = calculateSatellitePositions(newAlmanacFile.content, date)
+			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
+			const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
+			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
+
+			return {
+				almanacFile: newAlmanacFile,
+				GNSS,
+				GNSSGeocentric,
+				sky,
+				DOP
+			}
+		}),
 
 	changeTime: (newTime) => set(() => ({ time: newTime })),
 
@@ -96,8 +120,9 @@ const useStore = createStore<Store>((set) => ({
 		}),
 
 	changeDate: (newDate) =>
-		set(({ almanac, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-			const GNSS = calculateSatellitePositions(almanac, newDate)
+		set(({ almanacFile, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
+			if (almanacFile.content === null) return { date: newDate }
+			const GNSS = calculateSatellitePositions(almanacFile.content, newDate)
 			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
 			const sky = calculateSkyPositions(
 				GNSS,
@@ -109,23 +134,6 @@ const useStore = createStore<Store>((set) => ({
 
 			return {
 				date: newDate,
-				GNSS,
-				GNSSGeocentric,
-				sky,
-				DOP
-			}
-		}),
-
-	changeAlmanac: (newAlmanac) =>
-		set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-
-			const GNSS = calculateSatellitePositions(newAlmanac, date)
-			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
-			const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
-
-			return {
-				almanac: newAlmanac,
 				GNSS,
 				GNSSGeocentric,
 				sky,
@@ -156,7 +164,19 @@ const useStore = createStore<Store>((set) => ({
 				DOP
 			}
 		}),
-
+	}
 }))
 
-export default useStore
+export const useAlmanacActions = () => useZustand(useAlmanacStore, (state) => state.actions);
+export const useAlmanacFile = () => useZustand(useAlmanacStore, (state) => state.almanacFile);
+export const useGNSS = () => useZustand(useAlmanacStore, (state) => state.GNSS);
+export const useGNSSGeocentric = () => useZustand(useAlmanacStore, (state) => state.GNSSGeocentric);
+export const useSky = () => useZustand(useAlmanacStore, (state) => state.sky);
+export const useDOP = () => useZustand(useAlmanacStore, (state) => state.DOP);
+export const useTime = () => useZustand(useAlmanacStore, (state) => state.time);
+export const useLatitude = () => useZustand(useAlmanacStore, (state) => state.latitude);
+export const useLongitude = () => useZustand(useAlmanacStore, (state) => state.longitude);
+export const useHeight = () => useZustand(useAlmanacStore, (state) => state.height);
+export const useElevationCutoff = () => useZustand(useAlmanacStore, (state) => state.elevationCutoff);
+export const useDate = () => useZustand(useAlmanacStore, (state) => state.date);
+export const useSelectedSatellites = () => useZustand(useAlmanacStore, (state) => state.selectedSatellites);

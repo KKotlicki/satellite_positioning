@@ -1,5 +1,5 @@
-import { theme } from "@/constants/constants"
-import useStore from "@/store/store"
+import { theme } from "@/global/constants"
+import { useAlmanacActions, useDate, useTime } from "@/stores/almanac-store"
 import PauseIcon from "@mui/icons-material/Pause"
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
 import { Card, CardContent, CardHeader, Slider } from "@mui/material"
@@ -8,14 +8,13 @@ import IconButton from "@mui/material/IconButton"
 import Typography from "@mui/material/Typography"
 import dayjs from "dayjs"
 import { useState } from "react"
-import { useZustand } from "use-zustand"
 import { useInterval } from 'usehooks-ts'
 
 
 export default function TimeSlider() {
-  const date = useZustand(useStore, (state) => state.date)
-  const time = useZustand(useStore, (state) => state.time)
-  const changeTime = useZustand(useStore, (state) => state.changeTime)
+  const date = useDate()
+  const time = useTime()
+  const { changeTime } = useAlmanacActions()
 
   const [sliderDateDraft, setSliderDate] = useState(date)
   const [isPlaying, setIsPlaying] = useState(false)

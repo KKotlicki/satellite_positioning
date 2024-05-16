@@ -1,12 +1,11 @@
-import type { PlotXYObjectData, SkyPath } from '@/constants/types';
+import type { PlotXYObjectData, SkyPath } from '@/global/types';
 import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
-import useStore from "@/store/store";
+import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSky, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
 import * as math from "mathjs";
 import type { Layout, LegendClickEvent } from 'plotly.js';
 import Plot from "react-plotly.js";
-import { useZustand } from "use-zustand";
 
 
 function generateData(
@@ -123,11 +122,12 @@ function generateData(
 
 export default function VisibilityGraph() {
   const theme = useTheme()
-  const sky = useZustand(useStore, (state) => state.sky)
-  const time = useZustand(useStore, (state) => state.time)
-  const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
-  const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites)
-  const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
+  const sky = useSky()
+  const time = useTime()
+  const selectedSatellites = useSelectedSatellites()
+  const elevationCutoff = useElevationCutoff()
+  const { changeSelectedSatellites } = useAlmanacActions()
+
   const timeLabels = generateTimeLabels();
 
   const layout = {

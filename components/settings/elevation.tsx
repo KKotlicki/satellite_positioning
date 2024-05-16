@@ -1,11 +1,10 @@
-import useStore from "@/store/store";
+import { useAlmanacActions, useElevationCutoff } from "@/stores/almanac-store";
 import { InputAdornment, TextField } from "@mui/material";
-import { useZustand } from "use-zustand";
 
 
 export default function ElevationPicker() {
-	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
-	const changeElevationCutoff = useZustand(useStore, (state) => state.changeElevationCutoff)
+	const elevationCutoff = useElevationCutoff()
+	const { changeElevationCutoff } = useAlmanacActions()
 
 	return (
 		<TextField

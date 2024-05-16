@@ -1,13 +1,12 @@
-import useStore from "@/store/store";
+import { useAlmanacActions } from "@/stores/almanac-store";
 import { InputAdornment, TextField } from "@mui/material";
 import { type ChangeEvent, useState } from "react";
-import { useZustand } from "use-zustand";
 
 
 export default function LatitudePicker() {
   const [latitudeValue, setLatitudeValue] = useState("N 0° 0' 0.0")
 
-  const changeLatitude = useZustand(useStore, (state) => state.changeLatitude)
+  const { changeLatitude } = useAlmanacActions()
 
   const isValidLatitude = (value: string) => {
     const sanitizedValue = value.replace(/\s+/g, "")

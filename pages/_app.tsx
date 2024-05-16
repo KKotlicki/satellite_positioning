@@ -1,6 +1,6 @@
 import SideDrawer from "@/components/side-drawer";
 import TopAppBar from "@/components/top-app-bar";
-import { drawerWidth, project, roboto, theme } from "@/constants/constants";
+import { drawerWidth, project, roboto, theme } from "@/global/constants";
 import { CssBaseline, Stack } from "@mui/material";
 import Box from "@mui/material/Box";
 import { ThemeProvider } from "@mui/material/styles";

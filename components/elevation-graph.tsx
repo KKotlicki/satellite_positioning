@@ -1,11 +1,10 @@
-import type { PlotXYObjectData, SkyPath } from '@/constants/types';
+import type { PlotXYObjectData, SkyPath } from '@/global/types';
 import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
 import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
-import useStore from "@/store/store";
+import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSky, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
 import type { LegendClickEvent } from "plotly.js";
 import Plot from "react-plotly.js";
-import { useZustand } from "use-zustand";
 
 
 function generateData(
@@ -123,23 +122,23 @@ function generateData(
 
 export default function ElevationGraph() {
 	const theme = useTheme()
-	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
-	const sky = useZustand(useStore, (state) => state.sky)
-	const time = useZustand(useStore, (state) => state.time)
-	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
-	const changeSelectedSatellites = useZustand(useStore, (state) => state.changeSelectedSatellites)
+	const elevationCutoff = useElevationCutoff()
+	const sky = useSky()
+	const time = useTime()
+	const selectedSatellites = useSelectedSatellites()
+	const { changeSelectedSatellites } = useAlmanacActions()
 
 	const timeLabels = generateTimeLabels();
 
-  const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
-    const clickedSatelliteName = event.data[event.curveNumber]?.name;
-    if (!clickedSatelliteName) return false;
-    const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
-    const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
-    const sortedSet = new Set(updatedSelectedSatellites.sort((a, b) => a - b));
-    changeSelectedSatellites(sortedSet);
-    return false;
-  }
+	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
+		const clickedSatelliteName = event.data[event.curveNumber]?.name;
+		if (!clickedSatelliteName) return false;
+		const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
+		const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
+		const sortedSet = new Set(updatedSelectedSatellites.sort((a, b) => a - b));
+		changeSelectedSatellites(sortedSet);
+		return false;
+	}
 
 	return (
 		<Plot

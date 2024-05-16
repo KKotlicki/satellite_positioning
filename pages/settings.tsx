@@ -2,10 +2,12 @@ import ElevationPicker from "@/components/settings/elevation";
 import HeightPicker from "@/components/settings/height";
 import LatitudePicker from "@/components/settings/latitude";
 import LongitudePicker from "@/components/settings/longitude";
+import UploadZone from "@/components/settings/upload_zone";
+import { useResizeObserver } from "@/hooks/use-resize-observer";
+import { useAlmanacFile } from "@/stores/almanac-store";
 import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
-
+import { useRef } from "react";
 
 const DatePicker = dynamic(() => import("../components/settings/date-picker"), {
 	ssr: false
@@ -14,39 +16,9 @@ const DatePicker = dynamic(() => import("../components/settings/date-picker"), {
 export default function Settings() {
 	const theme = useTheme()
 	const containerRef = useRef(null)
-	const [size, setSize] = useState(0)
-	const [, setMargin] = useState(0)
+	const almanacFile = useAlmanacFile()
 
-	useEffect(() => {
-		const handleResize = () => {
-			const drawer = document.querySelector(".MuiDrawer-root") as HTMLElement
-			const drawerWidth = drawer ? drawer.offsetWidth : 0
-			const availableWidth = window.innerWidth - drawerWidth
-
-			const targetSize = availableWidth * 0.5
-			const targetMargin = availableWidth * 0.05
-
-			if (containerRef.current) {
-				setSize(targetSize)
-				setMargin(targetMargin)
-			}
-		}
-
-		handleResize()
-		window.addEventListener("resize", handleResize)
-
-		const resizeObserver = new ResizeObserver(handleResize)
-		if (containerRef.current) {
-			resizeObserver.observe(containerRef.current)
-		}
-
-		return () => {
-			window.removeEventListener("resize", handleResize)
-			if (containerRef.current) {
-				resizeObserver.unobserve(containerRef.current)
-			}
-		}
-	})
+	const { size } = useResizeObserver(containerRef)
 
 	return (
 		<Box
@@ -70,11 +42,17 @@ export default function Settings() {
 					}}
 				/>
 				<CardContent>
-					<LatitudePicker />
-					<LongitudePicker />
-					<HeightPicker />
-					<ElevationPicker />
-					<DatePicker />
+					{almanacFile.content !== null ? (
+						<>
+							<LatitudePicker />
+							<LongitudePicker />
+							<HeightPicker />
+							<ElevationPicker />
+							<DatePicker />
+						</>
+					) : (
+						<UploadZone />
+					)}
 				</CardContent>
 			</Card>
 		</Box>

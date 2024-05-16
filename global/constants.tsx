@@ -1,4 +1,4 @@
-import { deepPurple } from "@mui/material/colors";
+import { blue, deepPurple, green, orange, pink, red } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 import { Roboto } from "next/font/google";
 
@@ -61,3 +61,11 @@ export const PRN_GNSS: [
     ["E", 201, 263],
     ["C", 264, 310],
   ];
+
+export const satelliteProviders = [
+  { name: 'GPS', color: green },
+  { name: 'GLONASS', color: red },
+  { name: 'Galileo', color: blue },
+  { name: 'Beidou', color: orange },
+  { name: 'QZSS', color: pink },
+];

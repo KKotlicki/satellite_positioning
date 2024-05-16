@@ -1,5 +1,5 @@
-import { PRN_GNSS, WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/constants/constants";
-import type { DOPList, SatellitePath, SatellitePathGeocentric, SkyPath } from "@/constants/types";
+import { PRN_GNSS, WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/global/constants";
+import type { DOPList, SatellitePath, SatellitePathGeocentric, SkyPath } from "@/global/types";
 import dayjs from "dayjs";
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';

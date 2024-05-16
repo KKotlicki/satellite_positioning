@@ -1,10 +1,9 @@
-import type { PlotXYObjectData } from '@/constants/types';
+import type { PlotXYObjectData } from '@/global/types';
 import { generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
-import useStore from "@/store/store";
+import { useDOP, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
 import * as math from "mathjs";
 import Plot from "react-plotly.js";
-import { useZustand } from "use-zustand";
 
 type FullDOP = {
 	GDOP: ['blue', number[]],
@@ -84,8 +83,8 @@ function generateData(
 
 export default function DOPGraph() {
 	const theme = useTheme()
-	const DOP = useZustand(useStore, (state) => state.DOP)
-	const time = useZustand(useStore, (state) => state.time)
+	const DOP = useDOP()
+	const time = useTime()
 
 	let maxDOP = 0;
 	const fullDOP: FullDOP = {

@@ -1,11 +1,11 @@
-import type { SkyPath } from "@/constants/types";
-import useStore from "@/store/store";
+import type { SkyPath } from "@/global/types";
+import { useResizeObserver } from "@/hooks/use-resize-observer";
+import { useElevationCutoff, useSelectedSatellites, useSky, useTime } from "@/stores/almanac-store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import type { Data } from "plotly.js";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Plot from "react-plotly.js";
-import { useZustand } from "use-zustand";
 import { satelliteIDToName } from '../services/astronomy';
 
 
@@ -82,48 +82,17 @@ function generateData(
 
 
 export default function SkyPlotGraph() {
+
+	const elevationCutoff = useElevationCutoff()
+	const sky = useSky()
+	const time = useTime()
+	const selectedSatellites = useSelectedSatellites()
+
+
 	const theme = useTheme()
 	const containerRef = useRef(null)
-	const [size, setSize] = useState(0)
-	const [margin, setMargin] = useState(0)
-	const elevationCutoff = useZustand(useStore, (state) => state.elevationCutoff)
-	const sky = useZustand(useStore, (state) => state.sky)
-	const time = useZustand(useStore, (state) => state.time)
-	const selectedSatellites = useZustand(useStore, (state) => state.selectedSatellites)
+	const { margin, size } = useResizeObserver(containerRef)
 
-	useEffect(() => {
-		const handleResize = () => {
-			const navbar = document.querySelector(".MuiAppBar-root") as HTMLElement
-			const navbarHeight = navbar ? navbar.offsetHeight : 0
-			const availableHeight = window.innerHeight - navbarHeight
-			const drawer = document.querySelector(".MuiDrawer-root") as HTMLElement
-			const drawerWidth = drawer ? drawer.offsetWidth : 0
-			const availableWidth = window.innerWidth - drawerWidth
-
-			const targetSize = Math.min(availableWidth, availableHeight) * 0.8
-			const targetMargin = Math.min(availableWidth, availableHeight) * 0.1
-
-			if (containerRef.current) {
-				setSize(targetSize)
-				setMargin(targetMargin)
-			}
-		}
-
-		handleResize()
-		window.addEventListener("resize", handleResize)
-
-		const resizeObserver = new ResizeObserver(handleResize)
-		if (containerRef.current) {
-			resizeObserver.observe(containerRef.current)
-		}
-
-		return () => {
-			window.removeEventListener("resize", handleResize)
-			if (containerRef.current) {
-				resizeObserver.unobserve(containerRef.current)
-			}
-		}
-	})
 	return (
 		<Box
 			ref={containerRef}
