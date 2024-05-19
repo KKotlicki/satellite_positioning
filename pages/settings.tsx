@@ -4,12 +4,17 @@ import LatitudePicker from "@/components/settings/latitude";
 import LongitudePicker from "@/components/settings/longitude";
 import UploadZone from "@/components/settings/upload_zone";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
-import { useAlmanacFile } from "@/stores/almanac-store";
+import { useAlmanacFile } from '@/stores/almanac-store';
+import { useRinexNavigationFile } from "@/stores/rinex-store";
 import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
 import dynamic from "next/dynamic";
 import { useRef } from "react";
 
+
 const DatePicker = dynamic(() => import("../components/settings/date-picker"), {
+	ssr: false
+})
+const DatePeriodPicker = dynamic(() => import("../components/settings/date-period-picker"), {
 	ssr: false
 })
 
@@ -17,6 +22,7 @@ export default function Settings() {
 	const theme = useTheme()
 	const containerRef = useRef(null)
 	const almanacFile = useAlmanacFile()
+	const rinexNavigationFile = useRinexNavigationFile();
 
 	const { size } = useResizeObserver(containerRef)
 
@@ -42,7 +48,9 @@ export default function Settings() {
 					}}
 				/>
 				<CardContent>
-					{almanacFile.content !== null ? (
+					{rinexNavigationFile.content !== null ? (
+						<DatePeriodPicker />
+					) : almanacFile.content !== null ? (
 						<>
 							<LatitudePicker />
 							<LongitudePicker />

@@ -1,25 +1,58 @@
-import type { RINEX, AstronomyFile } from "@/global/types";
+import type { AstronomyFile, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types";
+import type { DateRange } from "@mui/x-date-pickers-pro";
+import dayjs, { type Dayjs } from "dayjs";
 import { useZustand } from "use-zustand";
 import { createStore } from 'zustand/vanilla';
 
+
 type RinexStore = {
-	rinexFile: AstronomyFile<RINEX>
+  rinexNavigationFile: AstronomyFile<RinexNavigation>
+  rinexObservationFile: AstronomyFile<RinexObservation>
+  rinexMeteoFile: AstronomyFile<RinexMeteo>
+
+  observationPeriod: DateRange<Dayjs>
+
   actions: {
-    changeRinexFile: (newRinexFile: AstronomyFile<RINEX>) => void  
+    changeRinexNavigationFile: (newRinexNavigationFile: AstronomyFile<RinexNavigation>) => void
+    changeRinexObservationFile: (newrinexObservationFile: AstronomyFile<RinexObservation>) => void
+    changeRinexMeteoFile: (newrinexMeteoFile: AstronomyFile<RinexMeteo>) => void
+    changeRinexObservationPeriod: (newObservationStartDate: DateRange<Dayjs>) => void
   }
 }
 
 const useRinexStore = createStore<RinexStore>((set) => ({
-	rinexFile: {
-    name: "RINEX",
+  rinexNavigationFile: {
+    name: "RINEX Navigation",
     extensions: ["rnx"],
     fileName: null,
     content: null
   },
+  rinexObservationFile: {
+    name: "RINEX Observation",
+    extensions: ["rnx"],
+    fileName: null,
+    content: null
+  },
+  rinexMeteoFile: {
+    name: "RINEX Meteo",
+    extensions: ["rnx"],
+    fileName: null,
+    content: null
+  },
+  observationPeriod: [
+    dayjs().startOf("day"),
+    dayjs().startOf("day")
+  ],
   actions: {
-    changeRinexFile: (newRinexFile) => set(() => ({ rinexFile: newRinexFile }))
+    changeRinexNavigationFile: (newRinexNavigationFile) => set(() => ({ rinexNavigationFile: newRinexNavigationFile })),
+    changeRinexObservationFile: (newRinexObservationFile) => set(() => ({ rinexObservationFile: newRinexObservationFile })),
+    changeRinexMeteoFile: (newRinexMeteoFile) => set(() => ({ rinexMeteoFile: newRinexMeteoFile })),
+    changeRinexObservationPeriod: (newObservationPeriod) => set(() => ({ observationPeriod: newObservationPeriod })),
   }
 }))
 
-export const useRinexFile = () => useZustand(useRinexStore, (state) => state.rinexFile);
+export const useRinexObservationPeriod = () => useZustand(useRinexStore, (state) => state.observationPeriod);
+export const useRinexNavigationFile = () => useZustand(useRinexStore, (state) => state.rinexNavigationFile);
+export const useRinexObservationFile = () => useZustand(useRinexStore, (state) => state.rinexObservationFile);
+export const useRinexMeteoFile = () => useZustand(useRinexStore, (state) => state.rinexMeteoFile);
 export const useRinexActions = () => useZustand(useRinexStore, (state) => state.actions);

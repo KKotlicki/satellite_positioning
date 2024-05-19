@@ -1,6 +1,6 @@
 import { theme } from "@/global/constants";
 import { useAlmanacFile, useDate, useElevationCutoff, useHeight, useLatitude, useLongitude } from "@/stores/almanac-store";
-import { useRinexFile } from "@/stores/rinex-store";
+import { useRinexNavigationFile, useRinexObservationPeriod } from "@/stores/rinex-store";
 import { Card, CardContent, CardHeader, Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
@@ -15,6 +15,20 @@ const AlmanacPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'colo
   textAlign: 'center',
   maxWidth: '100%',
   backgroundColor: color,
+}));
+
+const RinexPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
+  flex: '1 0 auto',
+  margin: theme.spacing(1),
+  padding: theme.spacing(2),
+  ...theme.typography.body2,
+  textAlign: 'center',
+  maxWidth: '100%',
+  backgroundColor: color,
+  fontSize: '0.6rem',
+  whiteSpace: 'pre-line',
+  overflowWrap: 'break-word',
+  wordWrap: 'break-word',
 }));
 
 const formatAlmanacName = (name: string | null): string | null => {
@@ -35,7 +49,8 @@ export default function SettingsView(): JSX.Element {
   const elevationCutoff = useElevationCutoff();
   const date = useDate();
   const almanacFile = useAlmanacFile();
-  const rinexFile = useRinexFile()
+  const rinexNavigationFile = useRinexNavigationFile();
+  const rinexObservationPeriod = useRinexObservationPeriod();
 
   function parseLatitude(latitude: number): string {
     const direction = latitude < 0 ? "S" : "N";
@@ -52,7 +67,7 @@ export default function SettingsView(): JSX.Element {
     const minutes = (absolute - degrees) * 60;
     return `${degrees}° ${minutes.toFixed(2)}' ${direction}`;
   }
-
+  console.log("a", rinexObservationPeriod[0]?.toISOString())
   return (
     <Card
       sx={{
@@ -68,14 +83,26 @@ export default function SettingsView(): JSX.Element {
           backgroundColor: theme.palette.divider
         }}
       />
-      {almanacFile.content === null ? (
+      {rinexNavigationFile.content !== null ? (
         <CardContent>
-          <AlmanacPaper color='red'>
-            {"No Files Uploaded"}
-          </AlmanacPaper>
+          <Box
+            component='ul'
+            sx={{
+              m: 0,
+              p: 0,
+              pl: 1
+            }}
+          >
+            <li>Observation start: {rinexObservationPeriod[0]?.utc().format("DD/MM/YYYY")}</li>
+            <li>Observation end: {rinexObservationPeriod[1]?.utc().format("DD/MM/YYYY")}</li>
+          </Box>
+          <RinexPaper color={rinexNavigationFile.content ? 'green' : 'red'}>
+            {formatAlmanacName(rinexNavigationFile.fileName?.slice(0, -4) || null) || `No ${rinexNavigationFile.name} Uploaded`}
+          </RinexPaper>
+          <UploadZone />
         </CardContent>
       )
-        : (
+        : almanacFile.content !== null ? (
           <CardContent>
             <Box
               component='ul'
@@ -94,12 +121,19 @@ export default function SettingsView(): JSX.Element {
             <AlmanacPaper color={almanacFile.content ? 'green' : 'red'}>
               {formatAlmanacName(almanacFile.fileName) || `No ${almanacFile.name} Uploaded`}
             </AlmanacPaper>
-            <AlmanacPaper color={rinexFile.content ? 'green' : 'red'}>
-              {formatAlmanacName(rinexFile.fileName) || `No ${rinexFile.name} Uploaded`}
-            </AlmanacPaper>
+            <RinexPaper color={rinexNavigationFile.content ? 'green' : 'red'}>
+              {formatAlmanacName(rinexNavigationFile.fileName?.slice(0, -4) || null) || `No ${rinexNavigationFile.name} Uploaded`}
+            </RinexPaper>
             <UploadZone />
           </CardContent>
         )
+          : (
+            <CardContent>
+              <AlmanacPaper color='red'>
+                {"No Files Uploaded"}
+              </AlmanacPaper>
+            </CardContent>
+          )
       }
     </Card>
   );

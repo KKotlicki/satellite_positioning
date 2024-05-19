@@ -28,12 +28,51 @@ export type PlotXYObjectData = {
   },
 }
 export type Almanac = Map<number, number[]>
-export type RINEX = {
-    [key: string]: number[]
+
+export type RinexNavigation = {
+  [PRN: string]: {
+    [toc: string]: {
+      af0: number,
+      af1: number,
+      af2: number,
+      IODE: number,
+      Crs: number,
+      delta_n: number,
+      M0: number,
+      Cuc: number,
+      e: number,
+      Cus: number,
+      sqrt_a: number,
+      toe: number,
+      Cic: number,
+      Omega0: number,
+      Cis: number,
+      i0: number,
+      Crc: number,
+      omega: number,
+      OmegaDot: number,
+      IDOT: number,
+      L2: number,
+      GPSWeek: number,
+      L2P: number,
+      accuracy: number,
+      health: number,
+      TGD: number,
+      IODC: number,
+      Tom: number,
+}}}
+
+export type RinexObservation  = {
+  [key: string]: number[]
 }
-export type AstronomyFile<T extends Almanac | RINEX> = {
+
+export type RinexMeteo = {
+  [key: string]: number[]
+}
+
+export type AstronomyFile<T extends Almanac | RinexNavigation | RinexObservation | RinexMeteo> = {
   name: string
-  extensions: T extends Almanac ? ["alm"] : T extends RINEX ? ["rnx"] : never
+  extensions: string[]
   fileName: string | null
   content: T | null
 }

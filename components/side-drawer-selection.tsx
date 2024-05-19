@@ -1,4 +1,4 @@
-import { satelliteProviders, theme, PRN_GNSS } from "@/global/constants";
+import { PRN_GNSS, satelliteProviders, theme } from "@/global/constants";
 import { useAlmanacActions, useAlmanacFile, useSelectedSatellites } from "@/stores/almanac-store";
 import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 

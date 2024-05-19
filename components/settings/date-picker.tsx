@@ -15,7 +15,7 @@ export default function DatePicker() {
   const [localDate, setLocalDate] = useState(dayjs())
   const { changeDate } = useAlmanacActions()
 
-  const isValidDate = (date: dayjs.Dayjs) => { return date?.isValid() }
+  const isValidDate = (date: Dayjs) => { return date?.isValid() }
 
   const handleDateChange = (newValue: Dayjs | null) => {
     const newDate = dayjs(newValue)

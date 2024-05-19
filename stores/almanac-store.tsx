@@ -60,110 +60,109 @@ const useAlmanacStore = createStore<AlmanacStore>((set) => ({
 	DOP: [],
 	time: 72,
 
-
 	actions:
 	{
-	
-	changeAlmanacFile: (newAlmanacFile) =>
-		set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-			if (newAlmanacFile.content === null) return { almanacFile: newAlmanacFile }
-			const GNSS = calculateSatellitePositions(newAlmanacFile.content, date)
-			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
-			const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
 
-			return {
-				almanacFile: newAlmanacFile,
-				GNSS,
-				GNSSGeocentric,
-				sky,
-				DOP
-			}
-		}),
+		changeAlmanacFile: (newAlmanacFile) =>
+			set(({ date, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
+				if (newAlmanacFile.content === null) return { almanacFile: newAlmanacFile }
+				const GNSS = calculateSatellitePositions(newAlmanacFile.content, date)
+				const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
+				const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
+				const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
 
-	changeTime: (newTime) => set(() => ({ time: newTime })),
+				return {
+					almanacFile: newAlmanacFile,
+					GNSS,
+					GNSSGeocentric,
+					sky,
+					DOP
+				}
+			}),
 
-	changeLongitude: (newLongitude) =>
-		set(({ GNSS, latitude, height, elevationCutoff, selectedSatellites }) => {
-			const sky = calculateSkyPositions(GNSS, latitude, newLongitude, height)
-			const DOP = calculateDOP(GNSS, sky, latitude, newLongitude, height, elevationCutoff, selectedSatellites)
+		changeTime: (newTime) => set(() => ({ time: newTime })),
 
-			return {
-				longitude: newLongitude,
-				sky,
-				DOP
-			}
-		}),
+		changeLongitude: (newLongitude) =>
+			set(({ GNSS, latitude, height, elevationCutoff, selectedSatellites }) => {
+				const sky = calculateSkyPositions(GNSS, latitude, newLongitude, height)
+				const DOP = calculateDOP(GNSS, sky, latitude, newLongitude, height, elevationCutoff, selectedSatellites)
 
-	changeHeight: (newHeight) =>
-		set(({ GNSS, latitude, longitude, elevationCutoff, selectedSatellites }) => {
-			const sky = calculateSkyPositions(GNSS, latitude, longitude, newHeight)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, newHeight, elevationCutoff, selectedSatellites)
+				return {
+					longitude: newLongitude,
+					sky,
+					DOP
+				}
+			}),
 
-			return {
-				height: newHeight,
-				sky,
-				DOP
-			}
-		}),
+		changeHeight: (newHeight) =>
+			set(({ GNSS, latitude, longitude, elevationCutoff, selectedSatellites }) => {
+				const sky = calculateSkyPositions(GNSS, latitude, longitude, newHeight)
+				const DOP = calculateDOP(GNSS, sky, latitude, longitude, newHeight, elevationCutoff, selectedSatellites)
 
-	changeElevationCutoff: (newElevationCutoff) =>
-		set(({ GNSS, latitude, longitude, height, selectedSatellites }) => {
-			const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, newElevationCutoff, selectedSatellites)
+				return {
+					height: newHeight,
+					sky,
+					DOP
+				}
+			}),
 
-			return {
-				elevationCutoff: newElevationCutoff,
-				sky,
-				DOP
-			}
-		}),
+		changeElevationCutoff: (newElevationCutoff) =>
+			set(({ GNSS, latitude, longitude, height, selectedSatellites }) => {
+				const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
+				const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, newElevationCutoff, selectedSatellites)
 
-	changeDate: (newDate) =>
-		set(({ almanacFile, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-			if (almanacFile.content === null) return { date: newDate }
-			const GNSS = calculateSatellitePositions(almanacFile.content, newDate)
-			const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
-			const sky = calculateSkyPositions(
-				GNSS,
-				latitude,
-				longitude,
-				height
-			)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
+				return {
+					elevationCutoff: newElevationCutoff,
+					sky,
+					DOP
+				}
+			}),
 
-			return {
-				date: newDate,
-				GNSS,
-				GNSSGeocentric,
-				sky,
-				DOP
-			}
-		}),
+		changeDate: (newDate) =>
+			set(({ almanacFile, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
+				if (almanacFile.content === null) return { date: newDate }
+				const GNSS = calculateSatellitePositions(almanacFile.content, newDate)
+				const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS)
+				const sky = calculateSkyPositions(
+					GNSS,
+					latitude,
+					longitude,
+					height
+				)
+				const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites)
 
-	changeLatitude: (newLatitude) =>
-		set(({ GNSS, longitude, height, elevationCutoff, selectedSatellites }) => {
-			const sky = calculateSkyPositions(GNSS, newLatitude, longitude, height)
-			const DOP = calculateDOP(GNSS, sky, newLatitude, longitude, height, elevationCutoff, selectedSatellites)
+				return {
+					date: newDate,
+					GNSS,
+					GNSSGeocentric,
+					sky,
+					DOP
+				}
+			}),
 
-			return {
-				latitude: newLatitude,
-				sky,
-				DOP
-			}
-		}),
+		changeLatitude: (newLatitude) =>
+			set(({ GNSS, longitude, height, elevationCutoff, selectedSatellites }) => {
+				const sky = calculateSkyPositions(GNSS, newLatitude, longitude, height)
+				const DOP = calculateDOP(GNSS, sky, newLatitude, longitude, height, elevationCutoff, selectedSatellites)
 
-	changeSelectedSatellites: (newSelectedSatellites) =>
-		set(({ GNSS, latitude, longitude, height, elevationCutoff }) => {
-			const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
-			const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, newSelectedSatellites)
+				return {
+					latitude: newLatitude,
+					sky,
+					DOP
+				}
+			}),
 
-			return {
-				selectedSatellites: newSelectedSatellites,
-				sky,
-				DOP
-			}
-		}),
+		changeSelectedSatellites: (newSelectedSatellites) =>
+			set(({ GNSS, latitude, longitude, height, elevationCutoff }) => {
+				const sky = calculateSkyPositions(GNSS, latitude, longitude, height)
+				const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, newSelectedSatellites)
+
+				return {
+					selectedSatellites: newSelectedSatellites,
+					sky,
+					DOP
+				}
+			}),
 	}
 }))
 
