@@ -78,6 +78,9 @@ importers:
       '@types/node':
         specifier: 20.12.12
         version: 20.12.12
+      '@types/plotly.js':
+        specifier: ^2.29.4
+        version: 2.29.4
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.0
