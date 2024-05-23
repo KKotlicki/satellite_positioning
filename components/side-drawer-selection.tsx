@@ -1,44 +1,93 @@
-import { PRN_GNSS, satelliteProviders, theme } from "@/global/constants";
-import { useAlmanacActions, useAlmanacFile, useSelectedSatellites } from "@/stores/almanac-store";
+import { satelliteProviders, theme } from "@/global/constants";
+import type { Almanac } from "@/global/types";
+import { useAlmanacActions, useAlmanacFile, useSelectedSatellites, useSelectedTocs } from "@/stores/almanac-store";
+import { useRinexNavigationFile } from "@/stores/rinex-store";
 import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
-
+import { useEffect, useState } from "react";
 
 export default function SideDrawerSelection(): JSX.Element {
-  const almanacFile = useAlmanacFile()
-  const selectedSatellites = useSelectedSatellites()
-  const { changeSelectedSatellites } = useAlmanacActions()
+  const almanacFile = useAlmanacFile();
+  const rinexNavigationFile = useRinexNavigationFile();
+  const selectedSatellites = useSelectedSatellites();
+  const selectedTocs = useSelectedTocs();
+  const { changeSelectedSatellites } = useAlmanacActions();
 
-  const setSatelliteSelection = (provider: number, turnOn: boolean) => {
-    const satelliteIdRange: [number, number] = (() => {
-      switch (provider) {
-        case 0:
-          return PRN_GNSS[0].slice(1) as [number, number]
-        case 1:
-          return PRN_GNSS[1].slice(1) as [number, number]
-        case 2:
-          return PRN_GNSS[3].slice(1) as [number, number]
-        case 3:
-          return PRN_GNSS[4].slice(1) as [number, number]
-        case 4:
-          return PRN_GNSS[2].slice(1) as [number, number]
-        default:
-          throw new Error("Invalid provider")
-      }
-    })()
-    const selectedSatellitesSet = new Set(selectedSatellites)
-    for (let i = satelliteIdRange[0]; i <= satelliteIdRange[1]; i++) {
-      if (almanacFile.content === null) throw new Error("Almanac content is null")
-      if (almanacFile.content.get(i) === undefined) continue
-      if (turnOn) {
-        selectedSatellitesSet.add(i)
-      } else {
-        selectedSatellitesSet.delete(i)
+  const [providerChecked, setProviderChecked] = useState<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    const newProviderChecked = satelliteProviders.reduce((acc, curr) => {
+      const providerSatellites = selectedSatellites[curr.prefix] || {};
+      const isChecked = Object.values(providerSatellites).some(sat => sat.isSelected);
+      acc[curr.prefix] = isChecked;
+      return acc;
+    }, {} as { [key: string]: boolean });
+    setProviderChecked(newProviderChecked);
+  }, [selectedSatellites]);
+
+  const setSatelliteSelection = (provider: string, turnOn: boolean) => {
+    const newSelectedSatellites = { ...selectedSatellites };
+
+    const checkHealthStatus = (satellite: Almanac[string]): { health: number } => {
+      const tocs = Object.entries(satellite).map(([toc, data]) => ({
+        toc: Number(toc),
+        health: data.health,
+      }));
+
+      if (tocs.length === 0) return { health: 1 };
+
+      const firstToc = selectedTocs[0];
+      const lastToc = selectedTocs[selectedTocs.length - 1];
+      if (firstToc === undefined || lastToc === undefined) return { health: 1 };
+
+      const allHealthyInRange = selectedTocs.every(toc => {
+        const health = satellite[toc]?.health;
+        return health === 0;
+      });
+
+      if (allHealthyInRange) return { health: 0 };
+
+      const closestToStart = tocs.reduce((prev, curr) => {
+        return Math.abs(curr.toc - firstToc) < Math.abs(prev.toc - firstToc) ? curr : prev;
+      });
+
+      const closestToEnd = tocs.reduce((prev, curr) => {
+        return Math.abs(curr.toc - lastToc) < Math.abs(prev.toc - lastToc) ? curr : prev;
+      });
+
+      return closestToStart.health === 0 || closestToEnd.health === 0 ? { health: 0 } : { health: 1 };
+    };
+
+    const allSatellites = new Set([
+      ...Object.keys(almanacFile.content || {}),
+      ...Object.keys(rinexNavigationFile.content || {})
+    ]);
+
+    for (const prn of Array.from(allSatellites)) {
+      if (prn.charAt(0) === provider) {
+        const satelliteData = almanacFile.content?.[prn] || rinexNavigationFile.content?.[prn];
+        const healthStatus = satelliteData ? checkHealthStatus(satelliteData) : { health: 1 };
+
+        if (!newSelectedSatellites[provider]) {
+          newSelectedSatellites[provider] = {};
+        }
+
+        if (turnOn) {
+          newSelectedSatellites[provider][prn] = {
+            isSelected: true,
+            health: healthStatus.health,
+          };
+        } else {
+          delete newSelectedSatellites[provider][prn];
+        }
       }
     }
-    const sortedArray = Array.from(selectedSatellitesSet).sort((a, b) => a - b)
-    const sortedSet = new Set(sortedArray)
-    changeSelectedSatellites(sortedSet)
-  }
+
+    changeSelectedSatellites(newSelectedSatellites);
+  };
+
+  const countSelectedSatellites = Object.values(selectedSatellites).reduce((acc, providerSatellites) => {
+    return acc + Object.values(providerSatellites).filter(sat => sat.isSelected).length;
+  }, 0);
 
   return (
     <Card
@@ -57,7 +106,7 @@ export default function SideDrawerSelection(): JSX.Element {
       />
       <CardContent>
         <FormGroup>
-          {satelliteProviders.map((provider, index) => (
+          {satelliteProviders.map((provider) => (
             <FormControlLabel
               key={provider.name}
               control={
@@ -66,7 +115,8 @@ export default function SideDrawerSelection(): JSX.Element {
                     color: provider.color[800],
                     "&.Mui-checked": { color: provider.color[600] }
                   }}
-                  onChange={(e) => setSatelliteSelection(index, e.target.checked)}
+                  checked={providerChecked[provider.prefix] || false}
+                  onChange={(e) => setSatelliteSelection(provider.prefix, e.target.checked)}
                 />
               }
               label={provider.name}
@@ -74,7 +124,7 @@ export default function SideDrawerSelection(): JSX.Element {
           ))}
         </FormGroup>
         <Typography variant='body1' color='textSecondary'>
-          {selectedSatellites.size} selected
+          {countSelectedSatellites} selected
         </Typography>
       </CardContent>
     </Card>

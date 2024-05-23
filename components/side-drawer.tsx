@@ -3,7 +3,7 @@ import { useAlmanacFile } from "@/stores/almanac-store";
 import { Box, Drawer, Toolbar } from "@mui/material";
 import SettingsView from "./settings-view";
 import SideDrawerSelection from "./side-drawer-selection";
-import TimeSlider from "./time-slider";
+import DateTimeSlider from "./time-slider";
 
 
 export default function SideDrawer() {
@@ -26,7 +26,7 @@ export default function SideDrawer() {
       <Box sx={{ overflow: "auto" }}>
         {almanacFile.content && (
           <>
-            <TimeSlider />
+            <DateTimeSlider />
             <SideDrawerSelection />
           </>
         )}

@@ -42,8 +42,8 @@ export const drawerWidth = 240
 
 export const WGS84_EARTH_RADIUS_MAJOR = 637137
 export const WGS84_EARTH_RADIUS_MINOR = 6356752.3142
-export const WGS84_EARTH_GRAVITATIONAL_PARAMETER = 3.986004418e14
-export const WGS84_EARTH_ROTATION_RATE = 7.2921151467e-5 * 180 / Math.PI
+export const WGS84_EARTH_GRAVITATIONAL_PARAMETER = 3.986005e14
+export const WGS84_EARTH_ROTATION_RATE = 7.2921151467e-5
 
 export const mapLayerLink = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 export const mapLayerAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -63,9 +63,9 @@ export const PRN_GNSS: [
   ];
 
 export const satelliteProviders = [
-  { name: 'GPS', color: green },
-  { name: 'GLONASS', color: red },
-  { name: 'Galileo', color: blue },
-  { name: 'Beidou', color: orange },
-  { name: 'QZSS', color: pink },
+  { name: 'GPS', color: green, prefix: 'G' },
+  { name: 'GLONASS', color: red, prefix: 'R' },
+  { name: 'Galileo', color: blue, prefix: 'E' },
+  { name: 'Beidou', color: orange, prefix: 'C' },
+  { name: 'QZSS', color: pink, prefix: 'J' },
 ];

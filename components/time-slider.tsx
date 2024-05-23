@@ -1,54 +1,50 @@
-import { theme } from "@/global/constants"
-import { useAlmanacActions, useDate, useTime } from "@/stores/almanac-store"
-import PauseIcon from "@mui/icons-material/Pause"
-import PlayArrowIcon from "@mui/icons-material/PlayArrow"
-import { Card, CardContent, CardHeader, Slider } from "@mui/material"
-import Box from "@mui/material/Box"
-import IconButton from "@mui/material/IconButton"
-import Typography from "@mui/material/Typography"
-import dayjs from "dayjs"
-import { useState } from "react"
-import { useInterval } from 'usehooks-ts'
+import { theme } from "@/global/constants";
+import { useAlmanacActions, useSelectedTocs, useTime } from "@/stores/almanac-store";
+import PauseIcon from "@mui/icons-material/Pause";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { Card, CardContent, CardHeader, Slider } from "@mui/material";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import dayjs from "dayjs";
+import { useEffect, useState } from "react";
+import { useInterval } from 'usehooks-ts';
 
 
-export default function TimeSlider() {
-  const date = useDate()
-  const time = useTime()
-  const { changeTime } = useAlmanacActions()
+export default function DateTimeSlider() {
+  const selectedTocs = useSelectedTocs();
+  const time = useTime();
+  const { changeTime } = useAlmanacActions();
 
-  const [sliderDateDraft, setSliderDate] = useState(date)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [sliderTime, setSliderTime] = useState(time);
+
+  useEffect(() => {
+    setSliderTime(time);
+  }, [time]);
 
   const handlePlayPause = () => {
-    setIsPlaying(!isPlaying)
-  }
+    setIsPlaying(!isPlaying);
+  };
 
-  const sliderValueToTime = (value: number) => {
-    return dayjs(new Date())
-      .startOf("day")
-      .add(value * 10, "minute")
-  }
+  const sliderValueToDateTime = (value: number) => {
+    const toc = selectedTocs[value];
+    if (toc === undefined) return dayjs.utc(0);
+    return dayjs.utc((toc + 315964800) * 1000);
+  };
 
   const handleSliderChange = (_event: Event, newValue: number | number[]) => {
     if (Array.isArray(newValue))
-      throw new Error("MUI Slider value return: Expected a number")
-    if (newValue === 144) {
-      const newDate = sliderDateDraft.add(1, "day")
-      setSliderDate(newDate)
-    } else {
-      setSliderDate(date)
-    }
-    changeTime(newValue)
-  }
+      throw new Error("MUI Slider value return: Expected a number");
+    setSliderTime(newValue);
+    changeTime(newValue);
+  };
 
   useInterval(() => {
-    if (time === 144) {
-      changeTime(0)
-      setSliderDate(sliderDateDraft.add(1, "day"))
-    } else {
-      changeTime(time + 1)
+    if (isPlaying) {
+      changeTime(sliderTime === 144 ? 0 : sliderTime + 1);
     }
-  }, isPlaying ? 10 : null)
+  }, isPlaying ? 200 : null);
 
   return (
     <Card
@@ -59,7 +55,7 @@ export default function TimeSlider() {
       variant='outlined'
     >
       <CardHeader
-        title='Local Time'
+        title='Time'
         style={{
           borderBottom: `1px solid ${theme.palette.divider}`,
           backgroundColor: theme.palette.divider
@@ -67,15 +63,13 @@ export default function TimeSlider() {
       />
       <CardContent>
         <Typography gutterBottom>
-          {`${sliderDateDraft.format(
-            "DD/MM/YYYY"
-          )} ${sliderValueToTime(time).format("HH:mm")}`}
+          {sliderValueToDateTime(sliderTime).format("DD/MM/YYYY HH:mm:ss")}
         </Typography>
         <Slider
-          aria-label='Local Time'
-          value={time}
+          aria-label='UTC Date and Time'
+          value={sliderTime}
           getAriaValueText={(value: number) =>
-            sliderValueToTime(value).format("HH:mm")
+            sliderValueToDateTime(value).format("HH:mm:ss")
           }
           valueLabelDisplay='off'
           step={1}
@@ -105,5 +99,5 @@ export default function TimeSlider() {
         </Box>
       </CardContent>
     </Card>
-  )
+  );
 }

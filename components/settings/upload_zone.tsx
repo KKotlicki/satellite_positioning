@@ -1,4 +1,4 @@
-import type { RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types"
+import type { Almanac, AstronomyData, AstronomyFile, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types"
 import { checkRnxType, parseAlmFile, parseRnxMeteo, parseRnxNavigation, parseRnxObservation } from "@/services/file-parsing"
 import { useAlmanacActions, useAlmanacFile } from "@/stores/almanac-store"
 import { useRinexActions, useRinexMeteoFile, useRinexNavigationFile, useRinexObservationFile } from "@/stores/rinex-store"
@@ -15,6 +15,16 @@ export default function UploadZone() {
 	const rinexObservationFile = useRinexObservationFile()
 	const rinexMeteoFile = useRinexMeteoFile()
 	const { changeRinexNavigationFile, changeRinexObservationFile, changeRinexMeteoFile } = useRinexActions()
+
+	function updateStoreData<T extends AstronomyFile<Almanac> | AstronomyFile<RinexNavigation> | AstronomyFile<RinexObservation> | AstronomyFile<RinexMeteo>>
+		(content: string, fileName: string, storeFile: T,
+			parser: (content: string) => AstronomyData,
+			storeAction: (content: T) => void) {
+
+		storeFile.fileName = fileName
+		storeFile.content = parser(content)
+		storeAction(storeFile);
+	}
 
 	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
 		e.preventDefault()
@@ -39,7 +49,8 @@ export default function UploadZone() {
 	const handleChooseFile = () => {
 		const fileInput = document.createElement("input")
 		fileInput.type = "file"
-		fileInput.accept = `.${[almanacFile.extensions, rinexNavigationFile.extensions, rinexObservationFile.extensions, rinexMeteoFile.extensions].flat().map((ext) => ext).filter((value, index, self) => self.indexOf(value) === index).sort().map((ext) => ext).filter((value) => value).map((ext) => ext).join(", .")}`
+		fileInput.accept = `.${[almanacFile.extensions, rinexNavigationFile.extensions, rinexObservationFile.extensions,
+		rinexMeteoFile.extensions].flat().map((ext) => ext).filter((value, index, self) => self.indexOf(value) === index).sort().map((ext) => ext).filter((value) => value).map((ext) => ext).join(", .")}`
 
 		fileInput.multiple = true
 		fileInput.onchange = async (e: Event) => {
@@ -47,7 +58,7 @@ export default function UploadZone() {
 			if (target?.files) {
 				const file = Array.from(target.files)[0]
 				if (!file?.name) {
-					throw new Error("No file name")
+					return
 				}
 				handleFilesDropped(file)
 			}
@@ -55,57 +66,29 @@ export default function UploadZone() {
 		fileInput.click()
 	}
 	const handleFilesDropped = async (file: File) => {
-		const almanac = new Map()
 		const content = await file?.text()
+		const fileName = file?.name
 		const extension = file.name.split('.').pop()
-		if (!content || !extension) {
-			return
-		}
-		if (almanacFile.extensions.includes(extension)) {
-			parseAlmFile(content as string).forEach((value, key) => {
-				almanac.set(key, value)
-			})
-			almanacFile.fileName = file?.name
-			almanacFile.content = almanac
-			changeAlmanacFile(almanacFile)
-		}
+		if (!content || !extension) return
+
+		if (almanacFile.extensions.includes(extension))
+			updateStoreData(content, fileName, almanacFile, parseAlmFile, changeAlmanacFile)
+
 		else {
-			const rinex: RinexNavigation = {}
 			const rnxType = checkRnxType(content)
-			if (rinexNavigationFile.extensions.includes(extension) && rnxType === "navigation") {
-				const rnxObject = parseRnxNavigation(content);
-				if (!rnxObject) {
-					return
-				}
-
-				for (const prn in rnxObject) {
-					if (!rnxObject[prn]) return
-					rinex[prn] = rnxObject[prn]
-				}
-				rinexNavigationFile.fileName = file?.name
-				rinexNavigationFile.content = rinex
-				changeRinexNavigationFile(rinexNavigationFile);
-			}
-			else if (rinexObservationFile.extensions.includes(extension) && rnxType === "observation") {
-				const rinex: RinexObservation = {}
-				const rnxObject = parseRnxObservation(content)
-				for (const key in rnxObject) {
-					if (!rnxObject[key]) throw new Error("Undefined key")
-					rinex[key] = rnxObject[key]
-				}
-				rinexObservationFile.content = rinex
-				changeRinexObservationFile(rinexObservationFile)
-			}
-
-			else if (rinexMeteoFile.extensions.includes(extension) && rnxType === "meteo") {
-				const rinex: RinexMeteo = {}
-				const rnxObject = parseRnxMeteo(content)
-				for (const key in rnxObject) {
-					if (!rnxObject[key]) throw new Error("Undefined key")
-					rinex[key] = rnxObject[key]
-				}
-				rinexMeteoFile.content = rinex
-				changeRinexMeteoFile(rinexMeteoFile)
+			switch (rnxType) {
+				case "navigation":
+					if (!rinexNavigationFile.extensions.includes(extension)) return
+					updateStoreData(content, fileName, rinexNavigationFile, parseRnxNavigation, changeRinexNavigationFile)
+					break
+				case "observation":
+					if (!rinexObservationFile.extensions.includes(extension)) return
+					updateStoreData(content, fileName, rinexObservationFile, parseRnxObservation, changeRinexObservationFile)
+					break
+				case "meteo":
+					if (!rinexMeteoFile.extensions.includes(extension)) return
+					updateStoreData(content, fileName, rinexMeteoFile, parseRnxMeteo, changeRinexMeteoFile)
+					break
 			}
 		}
 	}

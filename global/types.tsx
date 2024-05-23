@@ -1,7 +1,50 @@
-export type SatellitePath = Map<number, [number, number, number][]>
-export type SatellitePathGeocentric = Map<number, [number, number][]>
-export type SkyPath = Map<number, [number | undefined, number][]>
-export type DOPList = Array<number[]>
+export type SelectedSatellites = {
+  [provider: string]: {
+    [PRN: string]: {
+      isSelected: boolean,
+      health: number,
+    }
+  }
+}
+
+export type SatellitePath = {
+  [PRN: string]: {
+    [toc: number]: {
+      x: number,
+      y: number,
+      z: number
+    }
+  }
+}
+
+export type SatellitePathGeocentric = {
+  [PRN: string]: {
+    [toc: number]: {
+      latitude: number,
+      longitude: number,
+    }
+  }
+}
+
+export type SkyPath = {
+  [PRN: string]: {
+    [toc: number]: {
+      elevation: number | undefined,
+      azimuth: number,
+    }
+  }
+}
+
+export type DOPList = {
+  [toc: number]: {
+    TDOP: number,
+    PDOP: number,
+    VDOP: number,
+    HDOP: number,
+  }
+}
+
+
 export type PlotXYObjectData = {
   x: string[] | number[]
   y: number[]
@@ -27,11 +70,29 @@ export type PlotXYObjectData = {
     size: number
   },
 }
-export type Almanac = Map<number, number[]>
+
+export type Almanac = {
+  [PRN: string]: {
+    [toc: number]: {
+      health: number,
+      e: number,
+      sqrt_a: number,
+      Omega0: number,
+      omega: number,
+      M0: number,
+      toe: number,
+      i0: number,
+      OmegaDot: number,
+      af0: number,
+      af1: number,
+      GPSWeek: number,
+    }
+  }
+}
 
 export type RinexNavigation = {
   [PRN: string]: {
-    [toc: string]: {
+    [toc: number]: {
       af0: number,
       af1: number,
       af2: number,
@@ -60,19 +121,18 @@ export type RinexNavigation = {
       TGD: number,
       IODC: number,
       Tom: number,
-}}}
-
-export type RinexObservation  = {
-  [key: string]: number[]
+    }
+  }
 }
 
-export type RinexMeteo = {
-  [key: string]: number[]
-}
+export type RinexObservation = { [key: string]: number[] }
+export type RinexMeteo = { [key: string]: number[] }
 
-export type AstronomyFile<T extends Almanac | RinexNavigation | RinexObservation | RinexMeteo> = {
+export type AstronomyData = Almanac | RinexNavigation | RinexObservation | RinexMeteo
+
+export type AstronomyFile<T extends AstronomyData> = {
   name: string
   extensions: string[]
-  fileName: string | null
-  content: T | null
+  fileName?: string
+  content?: T
 }

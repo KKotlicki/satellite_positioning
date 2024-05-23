@@ -2,6 +2,6 @@
 import dynamic from "next/dynamic"
 
 
-const MapComponent = dynamic(() => import("../components/map"), { ssr: false })
+const SatMapComponent = dynamic(() => import("../components/sat-map-graph"), { ssr: false })
 
-export default function WorldView() { return <MapComponent /> }
+export default function WorldView() { return <SatMapComponent /> }

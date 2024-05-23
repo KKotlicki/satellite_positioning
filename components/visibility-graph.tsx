@@ -1,136 +1,27 @@
-import type { PlotXYObjectData, SkyPath } from '@/global/types';
-import { satelliteIDToName, satelliteNameToID } from '@/services/astronomy';
-import { generateColorPalette, generateSpecificTimeLine, generateTimeLabels } from '@/services/graphUtilites';
-import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSky, useTime } from '@/stores/almanac-store';
+import type { SelectedSatellites } from '@/global/types';
+import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSelectedTocs, useSky, useTime } from '@/stores/almanac-store';
 import { useTheme } from "@mui/material/styles";
-import * as math from "mathjs";
 import type { Layout } from 'plotly.js';
 import Plot from "react-plotly.js";
-
-
-function generateData(
-  sky: SkyPath,
-  elevationCutoff: number,
-  time: number,
-  selectedSatellites: Set<number>,
-  timeLabels: Array<string>
-): Array<PlotXYObjectData> {
-  const plotData: Array<PlotXYObjectData> = [];
-  const specificTime = timeLabels[time];
-  if (!specificTime) throw new Error('x is undefined');
-  const specificTimeLine = generateSpecificTimeLine(time, -1, selectedSatellites.size);
-  plotData.push(specificTimeLine);
-
-  const colors = generateColorPalette(155);
-  const selectedSatellitesArray = Array.from(selectedSatellites);
-
-  for (let satelliteIndex = 0; satelliteIndex < selectedSatellites.size; satelliteIndex++) {
-    const satelliteId = selectedSatellitesArray[satelliteIndex];
-    if (!satelliteId) throw new Error('satelliteId is undefined')
-    const satelliteData = sky.get(satelliteId);
-    if (!satelliteData) {
-      return [];
-    }
-
-    let color = colors[satelliteId % colors.length];
-    if (color === undefined) {
-      color = "white";
-    }
-
-    let currentLineX: number[] = [];
-
-    for (let i = 0; i < satelliteData.length; i++) {
-      const specificTimeData = satelliteData[i];
-      if (specificTimeData === undefined) {
-        continue;
-      }
-      let specificTimeElevation = specificTimeData[0];
-      if (specificTimeElevation === undefined) {
-        specificTimeElevation = 0;
-      }
-
-      if (specificTimeElevation > elevationCutoff) {
-        currentLineX.push(i);
-      } else if (currentLineX.length > 0) {
-        const timeStamps = currentLineX.map((x) => timeLabels[x]);
-        plotData.push({
-          x: currentLineX,
-          y: Array(currentLineX.length).fill(satelliteIndex),
-          mode: 'lines',
-          line: {
-            color: color,
-            width: 6,
-          },
-          name: satelliteId.toString(),
-          hovertemplate: "%{text}",
-          text: timeStamps.filter((ts): ts is string => ts !== undefined),
-          showlegend: false,
-          legendgroup: satelliteIDToName(satelliteId),
-        });
-        currentLineX = [];
-      }
-    }
-    if (currentLineX.length > 0) {
-      const timeStamps = currentLineX.map((x) => timeLabels[x]);
-      plotData.push({
-        x: currentLineX,
-        y: Array(currentLineX.length).fill(satelliteIndex),
-        mode: 'lines',
-        line: {
-          color: color,
-          width: 6,
-        },
-        name: satelliteId.toString(),
-        hovertemplate: "%{text}",
-        text: timeStamps.filter((ts): ts is string => ts !== undefined),
-        showlegend: false,
-        legendgroup: satelliteIDToName(satelliteId),
-      });
-    }
-    const specificTimeData = satelliteData[time]
-    if (!specificTimeData) {
-      continue;
-    }
-    const specificTimeElevation = specificTimeData[0];
-    if (specificTimeElevation === undefined) {
-      continue;
-    }
-    let specificTimeOfPoint = time;
-    if (specificTimeElevation < elevationCutoff) {
-      specificTimeOfPoint = -120;
-    }
-    const timeStamp = timeLabels[time] ?? '';
-    plotData.push({
-      x: [specificTimeOfPoint],
-      y: [satelliteIndex],
-      mode: 'markers',
-      marker: {
-        color: color,
-        size: 10
-      },
-      name: satelliteIDToName(satelliteId),
-      showlegend: true,
-      legendgroup: satelliteIDToName(satelliteId),
-      hovertemplate: "<b>%{text}</b>",
-      text: [timeStamp],
-    });
-  }
-
-  return plotData;
-}
+import generateVisibilityData from './graph/visibility-generate';
 
 
 export default function VisibilityGraph() {
-  const theme = useTheme()
-  const sky = useSky()
-  const time = useTime()
-  const selectedSatellites = useSelectedSatellites()
-  const elevationCutoff = useElevationCutoff()
-  const { changeSelectedSatellites } = useAlmanacActions()
+  const theme = useTheme();
+  const sky = useSky();
+  const time = useTime();
+  const selectedSatellites = useSelectedSatellites();
+  const elevationCutoff = useElevationCutoff();
+  const { changeSelectedSatellites } = useAlmanacActions();
+  const selectedTocs = useSelectedTocs();
 
-  const timeLabels = generateTimeLabels();
+  const timeLabels = selectedTocs.map(toc => new Date((toc + 315964800) * 1000).toISOString().substr(11, 5));
 
-  const layout = {
+  const selectedSatellitesArray = Object.entries(selectedSatellites).flatMap(([_, sats]) =>
+    Object.keys(sats || {}).filter(prn => sats?.[prn]?.isSelected)
+  );
+
+  const layout: Partial<Layout> = {
     autosize: true,
     margin: {
       pad: 0,
@@ -144,9 +35,9 @@ export default function VisibilityGraph() {
       tickfont: {
         color: theme.palette.text.primary,
       },
-      range: [0, 144],
+      range: [0, timeLabels.length - 1],
       fixedrange: true,
-      tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
+      tickvals: Array.from({ length: timeLabels.length }, (_, i) => i).filter((_, index) => index % 12 === 0),
       ticktext: timeLabels.filter((_, index) => index % 12 === 0),
     },
     yaxis: {
@@ -157,38 +48,51 @@ export default function VisibilityGraph() {
         color: theme.palette.text.primary,
       },
       title: 'Satellite ID',
-      range: [-1, selectedSatellites.size],
+      range: [-1, selectedSatellitesArray.length],
       fixedrange: true,
-      tickvals: math.range(0, selectedSatellites.size, 1).toArray().map(String),
-      ticktext: Array.from(selectedSatellites).map(satelliteIDToName),
+      tickvals: Array.from({ length: selectedSatellitesArray.length }, (_, i) => i),
+      ticktext: selectedSatellitesArray,
     },
     legend: {
-      tracegroupgap: 0
+      tracegroupgap: 0,
     },
-  } satisfies Partial<Layout>
+  };
 
   const handleLegendClick = (event: Readonly<Plotly.LegendClickEvent>) => {
     const clickedSatelliteName = event.data[event.curveNumber]?.name;
     if (!clickedSatelliteName) return false;
-    const clickedSatelliteId = satelliteNameToID(clickedSatelliteName);
-    const updatedSelectedSatellites = Array.from(selectedSatellites).filter(id => id !== clickedSatelliteId);
-    const sortedSet = new Set(updatedSelectedSatellites.sort((a, b) => a - b));
-    changeSelectedSatellites(sortedSet);
+    const updatedSelectedSatellites = Object.entries(selectedSatellites).reduce((acc, [provider, sats]) => {
+      const newSats = Object.keys(sats || {}).reduce((satAcc, prn) => {
+        if (prn !== clickedSatelliteName) {
+          const satPrn = sats[prn];
+          if (satPrn === undefined) return satAcc;
+          satAcc[prn] = satPrn;
+        }
+        return satAcc;
+      }, {} as SelectedSatellites[string]);
+      if (Object.keys(newSats).length > 0) {
+        acc[provider] = newSats;
+      }
+      return acc;
+    }, {} as SelectedSatellites);
+    changeSelectedSatellites(updatedSelectedSatellites);
     return false;
-  }
+  };
 
   return (
     <Plot
-      data={generateData(sky, elevationCutoff, time, selectedSatellites, timeLabels)}
+      data={generateVisibilityData(sky, elevationCutoff, time, selectedSatellites, selectedTocs)}
       layout={layout}
       config={{
         displayModeBar: false,
       }}
       style={{
-        height: '100vh'
-        , display: 'flex', alignItems: 'stretch'
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'stretch',
       }}
-      onLegendClick={handleLegendClick}
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      onLegendClick={(e: Readonly<any>) => handleLegendClick(e)}
     />
   );
 }

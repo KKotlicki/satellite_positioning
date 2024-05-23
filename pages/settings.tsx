@@ -1,3 +1,4 @@
+import DatePeriodPicker from "@/components/settings/date-period-picker";
 import ElevationPicker from "@/components/settings/elevation";
 import HeightPicker from "@/components/settings/height";
 import LatitudePicker from "@/components/settings/latitude";
@@ -7,16 +8,8 @@ import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { useAlmanacFile } from '@/stores/almanac-store';
 import { useRinexNavigationFile } from "@/stores/rinex-store";
 import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
-import dynamic from "next/dynamic";
 import { useRef } from "react";
 
-
-const DatePicker = dynamic(() => import("../components/settings/date-picker"), {
-	ssr: false
-})
-const DatePeriodPicker = dynamic(() => import("../components/settings/date-period-picker"), {
-	ssr: false
-})
 
 export default function Settings() {
 	const theme = useTheme()
@@ -48,15 +41,15 @@ export default function Settings() {
 					}}
 				/>
 				<CardContent>
-					{rinexNavigationFile.content !== null ? (
+					{rinexNavigationFile.content !== undefined ? (
 						<DatePeriodPicker />
-					) : almanacFile.content !== null ? (
+					) : almanacFile.content !== undefined ? (
 						<>
 							<LatitudePicker />
 							<LongitudePicker />
 							<HeightPicker />
 							<ElevationPicker />
-							<DatePicker />
+							<DatePeriodPicker />
 						</>
 					) : (
 						<UploadZone />

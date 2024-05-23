@@ -1,136 +1,169 @@
-import type { Almanac, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types"
+import { PRN_GNSS } from "@/global/constants";
+import type { Almanac, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types";
+import dayjs from "dayjs";
+
 
 export function parseAlmFile(input: string): Almanac {
-  const data: string = input
+  const initializeAlmanacEntry = (): Almanac[string][number] => {
+    return {
+      health: Number.NaN,
+      e: Number.NaN,
+      sqrt_a: Number.NaN,
+      Omega0: Number.NaN,
+      omega: Number.NaN,
+      M0: Number.NaN,
+      toe: Number.NaN,
+      i0: Number.NaN,
+      OmegaDot: Number.NaN,
+      af0: Number.NaN,
+      af1: Number.NaN,
+      GPSWeek: Number.NaN,
+    };
+  };
 
-  let res = [] as number[][]
-  let shiftToNext = 0
-  let previousColumnsAmount = 0
-
-  for (const line of data.split("\n")) {
-    const numbers = line.replace(/\-/g, " -").trim().split(/\s+/)
-
-    if (numbers.length <= 1) {
-      shiftToNext += previousColumnsAmount
-      continue
+  const satelliteIDToName = (satelliteID: string): string => {
+    const id = Number(satelliteID);
+    for (const key of PRN_GNSS) {
+      if (key[1] <= id && id <= key[2]) {
+        const adjustedID = id - key[1] + 1;
+        return `${key[0]}${adjustedID < 10 ? '0' : ''}${adjustedID}`;
+      }
     }
+    return `S${satelliteID}`;
+  };
 
-    previousColumnsAmount = numbers.length + 1
+  const lines = input.split("\n").filter(line => line.trim().length > 0);
+  const alm: Almanac = {};
+  const numRowsPerSat = 13;
 
-    for (let i = 0; i < numbers.length; i++) {
-      const n = numbers[i]
-      if (n === undefined) throw new Error("Undefined number")
-      const satellite = res[i + shiftToNext]
-      if (!satellite) res[i + shiftToNext] = []
-      if (Number.isNaN(n)) continue
-      res[i + shiftToNext]?.push(+n)
+  for (let chunkStart = 0; chunkStart < lines.length; chunkStart += numRowsPerSat) {
+    const chunkEnd = chunkStart + numRowsPerSat;
+    if (chunkEnd > lines.length) break;
+
+    const chunkLines = lines.slice(chunkStart, chunkEnd);
+    const chunkLine = chunkLines[0];
+    if (!chunkLine) continue;
+    const firstLineValues = chunkLine.match(/.{1,10}/g)?.map(val => val.trim()) || [];
+    const numColumns = firstLineValues.length;
+
+    for (let col = 0; col < numColumns; col++) {
+      let prn: string | null = null;
+      let toe: number | null = null;
+      let gpsWeek: number | null = null;
+      const entry = initializeAlmanacEntry();
+
+      for (let row = 0; row < numRowsPerSat; row++) {
+        const line = chunkLines[row];
+        if (!line) continue;
+        const values = line.match(/.{1,10}/g)?.map(val => val.trim()) || [];
+        if (values.length <= col) continue;
+
+        const valueStr = values[col];
+        if (!valueStr) continue;
+        const value = Number.parseFloat(valueStr);
+
+        switch (row) {
+          case 0: prn = satelliteIDToName(valueStr); break;
+          case 1: entry.health = value; break;
+          case 2: entry.e = value; break;
+          case 3: entry.sqrt_a = value; break;
+          case 4: entry.Omega0 = value * Math.PI / 180; break;
+          case 5: entry.omega = value * Math.PI / 180; break;
+          case 6: entry.M0 = value * Math.PI / 180; break;
+          case 7: toe = value; break;
+          case 8: entry.i0 = (value + 54) * Math.PI / 180; break;
+          case 9: entry.OmegaDot = value * Math.PI / 180 / 1000; break;
+          case 10: entry.af0 = value; break;
+          case 11: entry.af1 = value; break;
+          case 12: gpsWeek = value; break;
+        }
+      }
+
+      if (!prn || toe == null || gpsWeek == null) continue;
+      if (!alm[prn]) alm[prn] = {};
+      const toc = toe + gpsWeek * 7 * 24 * 60 * 60;
+      entry.toe = toe;
+      entry.GPSWeek = gpsWeek;
+      const currentSatellite = alm[prn]
+      if (!currentSatellite) continue;
+      currentSatellite[toc] = entry;
     }
   }
 
-  res = res.filter((x) => x)
-  const dic = new Map<number, number[]>()
-
-  for (const nums of res) {
-    const key = nums[0]
-    if (key === undefined) throw new Error("Undefined key")
-    dic.set(key, nums.splice(1))
-  }
-
-  return dic
+  return alm;
 }
 
 export function parseRnxNavigation(input: string): RinexNavigation {
-  type Toc = { [K in keyof RinexNavigation[string][string]]: number };
-  const s2n = (s: string, p: number): number => {
-    const a = s.substring(p * 19 + 4, 4 + (p + 1) * 19).trim();
-    return a ? Number.parseFloat(a) : Number.NaN;
-  };
-
-  const s2e = (s: string, p: number, n: number): number[] => [
-    Number.parseInt(s.substring(p, p + 4), 10),
-    Number.parseInt(s.substring(p + 5, p + 7), 10),
-    Number.parseInt(s.substring(p + 8, p + 10), 10),
-    Number.parseInt(s.substring(p + 11, p + 13), 10),
-    Number.parseInt(s.substring(p + 14, p + 16), 10),
-    Number.parseFloat(s.substring(p + 17, n).trim())
+  type RINEXNavFileToc = RinexNavigation[string][number]
+  const keys: (keyof RINEXNavFileToc)[] = [
+    'af0', 'af1', 'af2', 'IODE', 'Crs', 'delta_n', 'M0',
+    'Cuc', 'e', 'Cus', 'sqrt_a', 'toe', 'Cic', 'Omega0', 'Cis',
+    'i0', 'Crc', 'omega', 'OmegaDot', 'IDOT', 'L2', 'GPSWeek',
+    'L2P', 'accuracy', 'health', 'TGD', 'IODC', 'Tom'
   ];
 
-  const initializeNavEntry = (): Toc => {
-    const keys: (keyof RinexNavigation[string][string])[]
-      = [
-        'af0', 'af1', 'af2', 'IODE', 'Crs', 'delta_n', 'M0',
-        'Cuc', 'e', 'Cus', 'sqrt_a', 'toe', 'Cic', 'Omega0', 'Cis',
-        'i0', 'Crc', 'omega', 'OmegaDot', 'IDOT', 'L2', 'GPSWeek',
-        'L2P', 'accuracy', 'health', 'TGD', 'IODC', 'Tom'
-      ]
+  const initializeNavEntry = (keys: (keyof RINEXNavFileToc)[]): RINEXNavFileToc => {
     return keys.reduce((acc, key) => {
       acc[key] = Number.NaN;
       return acc;
-    }, {} as Toc);
+    }, {} as RINEXNavFileToc);
   };
 
   const lines = input.split('\n');
   const nav: RinexNavigation = {};
   let headerEnded = false;
   let currentPRN: string | null = null;
-  let toc: string | null = null;
+  let currentSatToc: RINEXNavFileToc = initializeNavEntry(keys);
+  let currentToc: number | null = null;
+
   let m = 1;
 
-  for (const s of lines) {
+  const parseToc = (line: string): number => {
+    const year = Number(line.substring(4, 8).trim());
+    const month = Number(line.substring(9, 11).trim());
+    const day = Number(line.substring(12, 14).trim());
+    const hour = Number(line.substring(15, 17).trim());
+    const minute = Number(line.substring(18, 20).trim());
+    const second = Number(line.substring(21, 23).trim());
+
+    const date = dayjs.utc().set('year', year).set('month', month - 1).set('date', day).set('hour', hour).set('minute', minute).set('second', second);
+    const gpsEpoch = dayjs.utc().set('year', 1980).set('month', 0).set('date', 6).set('hour', 0).set('minute', 0).set('second', 0);
+    const tocInSeconds = date.diff(gpsEpoch, 'second');
+    return tocInSeconds;
+  };
+
+  for (const line of lines) {
     if (!headerEnded) {
-      if (s.includes('END OF HEADER')) {
+      if (line.includes('END OF HEADER')) {
         headerEnded = true;
       }
       continue;
     }
 
-    if (!s) continue;
-
-    const line = s.replace(/D/g, 'E');
-
     if (m === 1) {
-      currentPRN = line.substring(0, 3).trim();
-      const epoch = s2e(line, 4, 23);
+      currentPRN = line.substring(0, 3).replace(/D/g, 'E').trim();
+      currentToc = parseToc(line);
+      currentSatToc = initializeNavEntry(keys);
+    }
 
-      if (!currentPRN || epoch.some(e => Number.isNaN(e))) {
-        continue;
+    for (let j = 0; j < 4; j++) {
+      if (m === 1 && j === 0) continue;
+      const currentKey = keys[(m - 1) * 4 + j - 1];
+      if (!currentKey) continue;
+      currentSatToc[currentKey] = Number.parseFloat(line.substring(j * 19 + 4, 4 + (j + 1) * 19).trim());
+    }
+
+    if (m === 8) {
+      if (!currentPRN || currentToc === null) continue;
+      const storeToc = {} as RinexNavigation[string][number];
+      for (const key of keys) {
+        storeToc[key] = currentSatToc[key];
       }
-
-      const epoch5 = epoch[5];
-      if (epoch5 === undefined) continue;
-
-      toc = `${epoch[0]}-${String(epoch[1]).padStart(2, '0')}-${String(epoch[2]).padStart(2, '0')}T${String(epoch[3]).padStart(2, '0')}:${String(epoch[4]).padStart(2, '0')}:${String(Math.floor(epoch5)).padStart(2, '0')}`;
-
-      const currentSat = nav[currentPRN];
-      if (currentSat === undefined) continue;
-
-      currentSat[toc] = {
-        ...initializeNavEntry(),
-        af0: s2n(line, 1),
-        af1: s2n(line, 2),
-        af2: s2n(line, 3),
-      }
-    } else if (currentPRN && toc) {
-      const keys = [
-        ['IODE', 'Crs', 'delta_n', 'M0'],
-        ['Cuc', 'e', 'Cus', 'sqrt_a'],
-        ['toe', 'Cic', 'Omega0', 'Cis'],
-        ['i0', 'Crc', 'omega', 'OmegaDot'],
-        ['IDOT', 'L2', 'GPSWeek', 'L2P'],
-        ['accuracy', 'health', 'TGD', 'IODC'],
-        ['Tom']
-      ] as const;
-
-      const currentKeys = keys[m - 2];
-      if (!currentKeys) continue;
-      currentKeys.forEach((key, index) => {
-        if (currentPRN === null || toc === null) return;
-        const currentSat = nav[currentPRN];
-        if (currentSat === undefined) return;
-        const currentSatTime = currentSat[toc];
-        if (currentSatTime === undefined) return;
-        currentSatTime[key] = s2n(line, index);
-      });
+      storeToc.toe = currentSatToc.toe;
+      nav[currentPRN] = {
+        ...nav[currentPRN],
+        [currentToc]: storeToc,
+      };
     }
 
     m = (m % 8) + 1;
@@ -141,13 +174,13 @@ export function parseRnxNavigation(input: string): RinexNavigation {
 
 export function parseRnxObservation(input: string): RinexObservation {
   return {
-    test: [1, 2, 3],
+    test: [Number(input)],
   }
 }
 
 export function parseRnxMeteo(input: string): RinexMeteo {
   return {
-    test: [1, 2, 3],
+    test: [Number(input)],
   }
 }
 

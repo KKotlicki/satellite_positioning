@@ -24,20 +24,14 @@ const useRinexStore = createStore<RinexStore>((set) => ({
   rinexNavigationFile: {
     name: "RINEX Navigation",
     extensions: ["rnx"],
-    fileName: null,
-    content: null
   },
   rinexObservationFile: {
     name: "RINEX Observation",
     extensions: ["rnx"],
-    fileName: null,
-    content: null
   },
   rinexMeteoFile: {
     name: "RINEX Meteo",
     extensions: ["rnx"],
-    fileName: null,
-    content: null
   },
   observationPeriod: [
     dayjs().startOf("day"),
