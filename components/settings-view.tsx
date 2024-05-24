@@ -16,32 +16,11 @@ const FileUploadedPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 
   textAlign: 'center',
   maxWidth: '100%',
   backgroundColor: color,
-}));
-
-const RinexPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
-  flex: '1 0 auto',
-  margin: theme.spacing(1),
-  padding: theme.spacing(2),
-  ...theme.typography.body2,
-  textAlign: 'center',
-  maxWidth: '100%',
-  backgroundColor: color,
   fontSize: '0.6rem',
   whiteSpace: 'pre-line',
   overflowWrap: 'break-word',
   wordWrap: 'break-word',
 }));
-
-const formatAlmanacName = (name: string | null): string | null => {
-  let formattedName: string | null = name;
-  if (formattedName?.endsWith(".alm")) {
-    formattedName = formattedName.slice(0, -4);
-  }
-  if (formattedName?.startsWith("Almanac") && formattedName.length > 7) {
-    formattedName = formattedName.slice(7);
-  }
-  return formattedName || null;
-};
 
 
 export default function SettingsView(): JSX.Element {
@@ -109,11 +88,11 @@ export default function SettingsView(): JSX.Element {
             <li>Observation end: {endDateTime}</li>
           </Box>
           <FileUploadedPaper color={navigationFile !== null ? 'green' : 'red'}>
-            {formatAlmanacName(navigationFile.fileName.slice(0, -4) || null) || "No navigation file ploaded"}
+            {navigationFile !== null ? `Navigation file: ${navigationFile.fileName}` : "No navigation file ploaded"}
           </FileUploadedPaper>
-          <RinexPaper color={observationFile !== null ? 'green' : 'red'}>
-            {formatAlmanacName(observationFile?.fileName.slice(0, -4) || null) || "No observation file uploaded"}
-          </RinexPaper>
+          <FileUploadedPaper color={observationFile !== null ? 'green' : 'red'}>
+            {observationFile !== null ? `Observation file: ${observationFile.fileName}` : "No observation file ploaded"}
+          </FileUploadedPaper>
           <UploadZone />
         </CardContent>
       )
