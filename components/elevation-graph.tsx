@@ -73,7 +73,7 @@ export default function ElevationGraph() {
 			config={{
 				displayModeBar: false,
 			}}
-			onLegendClick={(e: Readonly<LegendClickEvent>) => handleLegendClick(e)}
+			onLegendClick={handleLegendClick}
 		/>
 	)
 }

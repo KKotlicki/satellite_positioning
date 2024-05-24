@@ -91,7 +91,7 @@ export default function VisibilityGraph() {
         display: 'flex',
         alignItems: 'stretch',
       }}
-      onLegendClick={(e: Readonly<LegendClickEvent>) => handleLegendClick(e)}
+      onLegendClick={handleLegendClick}
     />
   );
 }
