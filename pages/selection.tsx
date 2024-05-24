@@ -1,5 +1,5 @@
 import SatelliteSelection from "@/components/satellite-selection";
-import { useAlmanacFile } from "@/stores/almanac-store";
+import { useNavigationFile } from "@/stores/navigation-store";
 import { Box, Card, CardContent, CardHeader, Tab, Tabs } from "@mui/material";
 import {
   blue,
@@ -19,7 +19,7 @@ const VisibilityGraph = dynamic(() => import("../components/visibility-graph"), 
 export default function Selection() {
   const containerRef = useRef(null);
   const [selectedTab, setSelectedTab] = useState(0);
-  const almanacFile = useAlmanacFile();
+  const navigationFile = useNavigationFile();
 
   const handleChangeTab = (_event: React.ChangeEvent<unknown>, newValue: number) => {
     setSelectedTab(newValue);
@@ -83,7 +83,7 @@ export default function Selection() {
             <SatelliteSelection provider={providers[selectedTab] || "G"} />
           </CardContent>
         </Card>
-        {almanacFile.content ? (
+        {navigationFile !== null ? (
           <Box
             sx={{
               flex: '1 1 50%',

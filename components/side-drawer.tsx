@@ -1,5 +1,5 @@
 import { drawerWidth } from "@/global/constants";
-import { useAlmanacFile } from "@/stores/almanac-store";
+import { useNavigationFile } from "@/stores/navigation-store";
 import { Box, Drawer, Toolbar } from "@mui/material";
 import SettingsView from "./settings-view";
 import SideDrawerSelection from "./side-drawer-selection";
@@ -7,7 +7,7 @@ import DateTimeSlider from "./time-slider";
 
 
 export default function SideDrawer() {
-  const almanacFile = useAlmanacFile()
+  const navigationFile = useNavigationFile()
 
   return (
     <Drawer
@@ -24,7 +24,7 @@ export default function SideDrawer() {
     >
       <Toolbar />
       <Box sx={{ overflow: "auto" }}>
-        {almanacFile.content && (
+        {navigationFile !== null && (
           <>
             <DateTimeSlider />
             <SideDrawerSelection />

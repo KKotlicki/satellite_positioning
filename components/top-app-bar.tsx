@@ -1,5 +1,5 @@
 import { pages, project, theme } from "@/global/constants";
-import { useAlmanacFile } from "@/stores/almanac-store";
+import { useNavigationFile } from "@/stores/navigation-store";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useMediaQuery } from '@mui/material';
 import AppBar from "@mui/material/AppBar";
@@ -22,7 +22,7 @@ export default function TopAppBar() {
   const handleCloseNavMenu = () => { setAnchorElNav(null) }
   const isXsScreen = useMediaQuery('(max-width:767px)');
   const isMdScreen = useMediaQuery('(min-width:768px)');
-  const almanacFile = useAlmanacFile()
+  const navigationFile = useNavigationFile()
 
   return (
     <AppBar position='relative' sx={{ zIndex: theme.zIndex.drawer + 1, gridArea: "h" }}>
@@ -83,7 +83,7 @@ export default function TopAppBar() {
                 display: { xs: "block", md: "none" }
               }}
             >
-              {pages.filter(page => almanacFile.content !== null || page === "Settings").map((page) => (
+              {pages.filter(page => navigationFile !== null || page === "Settings").map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Link
                     key={page}
@@ -114,7 +114,7 @@ export default function TopAppBar() {
             {project}
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.filter(page => almanacFile.content !== null || page === "Settings").map((page) => (
+            {pages.filter(page => navigationFile !== null || page === "Settings").map((page) => (
               <Link
                 key={page}
                 style={{ textDecoration: "none" }}

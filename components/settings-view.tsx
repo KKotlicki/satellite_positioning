@@ -1,6 +1,6 @@
 import { theme } from "@/global/constants";
-import { useAlmanacFile, useElevationCutoff, useHeight, useLatitude, useLongitude, useSelectedTocs } from "@/stores/almanac-store";
-import { useRinexNavigationFile, useRinexObservationPeriod } from "@/stores/rinex-store";
+import { useElevationCutoff, useHeight, useLatitude, useLongitude, useNavigationFile, useSelectedTocs } from "@/stores/navigation-store";
+import { useObservationFile } from "@/stores/observation-store";
 import { Card, CardContent, CardHeader, Paper } from "@mui/material";
 import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import UploadZone from "./settings/upload_zone";
 
 
-const AlmanacPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
+const FileUploadedPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
   flex: '1 0 auto',
   margin: theme.spacing(1),
   padding: theme.spacing(2),
@@ -49,9 +49,8 @@ export default function SettingsView(): JSX.Element {
   const longitude = useLongitude();
   const height = useHeight();
   const elevationCutoff = useElevationCutoff();
-  const almanacFile = useAlmanacFile();
-  const rinexNavigationFile = useRinexNavigationFile();
-  const rinexObservationPeriod = useRinexObservationPeriod();
+  const navigationFile = useNavigationFile();
+  const observationFile = useObservationFile();
   const selectedTocs = useSelectedTocs();
 
   const startSelectedToc = selectedTocs[0];
@@ -92,7 +91,7 @@ export default function SettingsView(): JSX.Element {
           backgroundColor: theme.palette.divider
         }}
       />
-      {rinexNavigationFile.content !== undefined ? (
+      {navigationFile !== null ? (
         <CardContent>
           <Box
             component='ul'
@@ -102,48 +101,29 @@ export default function SettingsView(): JSX.Element {
               pl: 1
             }}
           >
-            <li>Observation start: {rinexObservationPeriod[0]?.utc().format("DD/MM/YYYY HH:mm:ss")}</li>
-            <li>Observation end: {rinexObservationPeriod[1]?.utc().format("DD/MM/YYYY HH:mm:ss")}</li>
+            <li>{parseLatitude(latitude)}</li>
+            <li>{parseLongitude(longitude)}</li>
+            <li>Height: {height} m</li>
+            <li>Elevation cutoff: {elevationCutoff}°</li>
+            <li>Observation start: {startDateTime}</li>
+            <li>Observation end: {endDateTime}</li>
           </Box>
-          <RinexPaper color={rinexNavigationFile.content ? 'green' : 'red'}>
-            {formatAlmanacName(rinexNavigationFile.fileName?.slice(0, -4) || null) || `No ${rinexNavigationFile.name} Uploaded`}
+          <FileUploadedPaper color={navigationFile !== null ? 'green' : 'red'}>
+            {formatAlmanacName(navigationFile.fileName.slice(0, -4) || null) || "No navigation file ploaded"}
+          </FileUploadedPaper>
+          <RinexPaper color={observationFile !== null ? 'green' : 'red'}>
+            {formatAlmanacName(observationFile?.fileName.slice(0, -4) || null) || "No observation file uploaded"}
           </RinexPaper>
           <UploadZone />
         </CardContent>
       )
-        : almanacFile.content !== undefined ? (
+        : (
           <CardContent>
-            <Box
-              component='ul'
-              sx={{
-                m: 0,
-                p: 0,
-                pl: 1
-              }}
-            >
-              <li>{parseLatitude(latitude)}</li>
-              <li>{parseLongitude(longitude)}</li>
-              <li>Height: {height} m</li>
-              <li>Elevation cutoff: {elevationCutoff}°</li>
-              <li>Observation start: {startDateTime}</li>
-              <li>Observation end: {endDateTime}</li>
-            </Box>
-            <AlmanacPaper color={almanacFile.content ? 'green' : 'red'}>
-              {formatAlmanacName(almanacFile.fileName?.slice(0, -4) || null) || `No ${almanacFile.name} Uploaded`}
-            </AlmanacPaper>
-            <RinexPaper color={rinexNavigationFile.content ? 'green' : 'red'}>
-              {formatAlmanacName(rinexNavigationFile.fileName?.slice(0, -4) || null) || `No ${rinexNavigationFile.name} Uploaded`}
-            </RinexPaper>
-            <UploadZone />
+            <FileUploadedPaper color='red'>
+              {"No Files Uploaded"}
+            </FileUploadedPaper>
           </CardContent>
         )
-          : (
-            <CardContent>
-              <AlmanacPaper color='red'>
-                {"No Files Uploaded"}
-              </AlmanacPaper>
-            </CardContent>
-          )
       }
     </Card>
   );

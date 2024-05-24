@@ -1,5 +1,5 @@
 import { useResizeObserver } from "@/hooks/use-resize-observer";
-import { useElevationCutoff, useSelectedSatellites, useSelectedTocs, useSky, useTime } from "@/stores/almanac-store";
+import { useElevationCutoff, useSelectedSatellites, useSelectedTocs, useSky, useTime } from "@/stores/navigation-store";
 import { Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useRef } from "react";

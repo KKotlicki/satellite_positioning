@@ -1,5 +1,5 @@
 import { satelliteProviders } from "@/global/constants";
-import type { Almanac, AstronomyFile, DOPList, SatellitePath, SatellitePathGeocentric, SelectedSatellites, SkyPath } from "@/global/types";
+import type { Almanac, AstronomyFile, DOPList, RinexNavigation, SatellitePath, SatellitePathGeocentric, SelectedSatellites, SkyPath } from "@/global/types";
 import {
   calculateDOP,
   calculateSatellitePositions,
@@ -53,14 +53,14 @@ function orderNewSelectedSatellites(newSelectedSatellites: SelectedSatellites): 
   return sortedNewSelectedSatellites;
 }
 
-type AlmanacStore = {
+type NavigationStore = {
   latitude: number;
   longitude: number;
   height: number;
   elevationCutoff: number;
   selectedTocs: number[];
   time: number;
-  almanacFile: AstronomyFile<Almanac>;
+  navigationFile: AstronomyFile<Almanac | RinexNavigation> | null;
   selectedSatellites: SelectedSatellites;
   GNSS: SatellitePath;
   GNSSGeocentric: SatellitePathGeocentric;
@@ -73,17 +73,14 @@ type AlmanacStore = {
     changeElevationCutoff: (newElevationCutoff: number) => void;
     changeSelectedTocs: (newSelectedTocs: number[]) => void;
     changeTime: (newTime: number) => void;
-    changeAlmanacFile: (newAlmanacFile: AstronomyFile<Almanac>) => void;
+    changeNavigationFile: (newNavigationFile: AstronomyFile<Almanac | RinexNavigation>) => void;
     changeSelectedSatellites: (newSelectedSatellites: SelectedSatellites) => void;
   };
 };
 
-const useAlmanacStore = createStore<AlmanacStore>((set) => ({
+const useNavigationStore = createStore<NavigationStore>((set) => ({
   selectedTocs: generateInitialSelectedTocs(),
-  almanacFile: {
-    name: "",
-    extensions: ["alm"],
-  },
+  navigationFile: null,
   GNSS: {},
   GNSSGeocentric: {},
   latitude: 0,
@@ -96,16 +93,16 @@ const useAlmanacStore = createStore<AlmanacStore>((set) => ({
   time: 72,
 
   actions: {
-    changeAlmanacFile: (newAlmanacFile) =>
+    changeNavigationFile: (newNavigationFile) =>
       set(({ selectedTocs, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-        const content = newAlmanacFile.content;
-        if (content === undefined) return { almanacFile: newAlmanacFile };
+        const content = newNavigationFile.content;
+        if (content === undefined) return { navigationFile: null };
         const GNSS = calculateSatellitePositions(content, selectedTocs);
         const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS);
         const sky = calculateSkyPositions(GNSS, latitude, longitude, height);
         const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites);
         return {
-          almanacFile: newAlmanacFile,
+          navigationFile: newNavigationFile,
           GNSS,
           GNSSGeocentric,
           sky,
@@ -152,10 +149,9 @@ const useAlmanacStore = createStore<AlmanacStore>((set) => ({
       }),
 
     changeSelectedTocs: (newSelectedTocs) =>
-      set(({ almanacFile, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
-        const content = almanacFile.content;
-        if (content === undefined) return { selectedTocs: newSelectedTocs };
-        const GNSS = calculateSatellitePositions(content, newSelectedTocs);
+      set(({ navigationFile, latitude, longitude, height, elevationCutoff, selectedSatellites }) => {
+        if (navigationFile === null) return { selectedTocs: newSelectedTocs };
+        const GNSS = calculateSatellitePositions(navigationFile.content, newSelectedTocs);
         const GNSSGeocentric = calculateSatellitePositionsGeocentric(GNSS);
         const sky = calculateSkyPositions(GNSS, latitude, longitude, height);
         const DOP = calculateDOP(GNSS, sky, latitude, longitude, height, elevationCutoff, selectedSatellites);
@@ -196,16 +192,16 @@ const useAlmanacStore = createStore<AlmanacStore>((set) => ({
   }
 }));
 
-export const useAlmanacActions = () => useZustand(useAlmanacStore, (state) => state.actions);
-export const useAlmanacFile = () => useZustand(useAlmanacStore, (state) => state.almanacFile);
-export const useGNSS = () => useZustand(useAlmanacStore, (state) => state.GNSS);
-export const useGNSSGeocentric = () => useZustand(useAlmanacStore, (state) => state.GNSSGeocentric);
-export const useSky = () => useZustand(useAlmanacStore, (state) => state.sky);
-export const useDOP = () => useZustand(useAlmanacStore, (state) => state.DOP);
-export const useTime = () => useZustand(useAlmanacStore, (state) => state.time);
-export const useLatitude = () => useZustand(useAlmanacStore, (state) => state.latitude);
-export const useLongitude = () => useZustand(useAlmanacStore, (state) => state.longitude);
-export const useHeight = () => useZustand(useAlmanacStore, (state) => state.height);
-export const useElevationCutoff = () => useZustand(useAlmanacStore, (state) => state.elevationCutoff);
-export const useSelectedTocs = () => useZustand(useAlmanacStore, (state) => state.selectedTocs);
-export const useSelectedSatellites = () => useZustand(useAlmanacStore, (state) => state.selectedSatellites);
+export const useNavigationActions = () => useZustand(useNavigationStore, (state) => state.actions);
+export const useNavigationFile = () => useZustand(useNavigationStore, (state) => state.navigationFile);
+export const useGNSS = () => useZustand(useNavigationStore, (state) => state.GNSS);
+export const useGNSSGeocentric = () => useZustand(useNavigationStore, (state) => state.GNSSGeocentric);
+export const useSky = () => useZustand(useNavigationStore, (state) => state.sky);
+export const useDOP = () => useZustand(useNavigationStore, (state) => state.DOP);
+export const useTime = () => useZustand(useNavigationStore, (state) => state.time);
+export const useLatitude = () => useZustand(useNavigationStore, (state) => state.latitude);
+export const useLongitude = () => useZustand(useNavigationStore, (state) => state.longitude);
+export const useHeight = () => useZustand(useNavigationStore, (state) => state.height);
+export const useElevationCutoff = () => useZustand(useNavigationStore, (state) => state.elevationCutoff);
+export const useSelectedTocs = () => useZustand(useNavigationStore, (state) => state.selectedTocs);
+export const useSelectedSatellites = () => useZustand(useNavigationStore, (state) => state.selectedSatellites);

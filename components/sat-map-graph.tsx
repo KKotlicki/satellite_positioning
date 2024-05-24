@@ -1,5 +1,5 @@
 import { mapLayerAttribution, mapLayerLink } from "@/global/constants";
-import { useGNSSGeocentric, useLatitude, useLongitude, useSelectedSatellites, useSelectedTocs, useTime } from "@/stores/almanac-store";
+import { useGNSSGeocentric, useLatitude, useLongitude, useSelectedSatellites, useSelectedTocs, useTime } from "@/stores/navigation-store";
 import 'leaflet/dist/leaflet.css';
 import { CircleMarker, MapContainer, TileLayer, Tooltip } from 'react-leaflet';
 import generateSatMapData from "./graph/sat-map-generate";

@@ -1,7 +1,6 @@
 import { theme } from "@/global/constants";
 import type { Almanac, RinexNavigation } from "@/global/types";
-import { useAlmanacActions, useAlmanacFile, useSelectedSatellites, useSelectedTocs } from "@/stores/almanac-store";
-import { useRinexNavigationFile } from "@/stores/rinex-store";
+import { useNavigationActions, useNavigationFile, useSelectedSatellites, useSelectedTocs } from "@/stores/navigation-store";
 import { Box, Typography } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import { styled } from "@mui/material/styles";
@@ -18,8 +17,7 @@ const GNSSPaper = styled(Paper)(({ theme }) => ({
 
 function getSatelliteData(
   provider: string,
-  almanac: Almanac | undefined,
-  rinex: RinexNavigation | undefined,
+  navigationFile: Almanac | RinexNavigation | undefined,
   selectedTocs: number[]
 ): Map<string, number> {
   const satelliteData: Map<string, number> = new Map();
@@ -55,13 +53,12 @@ function getSatelliteData(
   };
 
   const allSatellites = new Set([
-    ...Object.keys(almanac || {}),
-    ...Object.keys(rinex || {})
+    ...Object.keys(navigationFile || {})
   ]);
 
   for (const prn of Array.from(allSatellites)) {
     if (prn.charAt(0) === provider) {
-      const currentSatellite = almanac?.[prn] || rinex?.[prn];
+      const currentSatellite = navigationFile?.[prn];
       if (currentSatellite) {
         const healthStatus = checkHealthStatus(currentSatellite);
         satelliteData.set(prn, healthStatus.health);
@@ -72,13 +69,11 @@ function getSatelliteData(
   return satelliteData;
 }
 
-
 export default function SatelliteSelection({ provider }: { provider: string }) {
-  const almanacFile = useAlmanacFile();
-  const rinexNavigationFile = useRinexNavigationFile();
+  const navigationFile = useNavigationFile();
   const selectedSatellites = useSelectedSatellites();
   const selectedTocs = useSelectedTocs();
-  const { changeSelectedSatellites } = useAlmanacActions();
+  const { changeSelectedSatellites } = useNavigationActions();
 
   const handleCheckboxChange = (provider: string, prn: string, health: number) => {
     const newSelectedSatellites = { ...selectedSatellites };
@@ -99,7 +94,10 @@ export default function SatelliteSelection({ provider }: { provider: string }) {
     changeSelectedSatellites(newSelectedSatellites);
   };
 
-  const satelliteData = getSatelliteData(provider, almanacFile.content, rinexNavigationFile.content, selectedTocs);
+  if (navigationFile === null) {
+    return <></>
+  }
+  const satelliteData = getSatelliteData(provider, navigationFile.content, selectedTocs);
 
   const countSelectedSatellites = Object.values(selectedSatellites).reduce((acc, providerSatellites) => {
     return acc + Object.values(providerSatellites).filter(sat => sat.isSelected).length;

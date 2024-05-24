@@ -1,7 +1,8 @@
-import type { Almanac, AstronomyData, AstronomyFile, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types"
+import type { AstronomyData, AstronomyFile } from "@/global/types"
 import { checkRnxType, parseAlmFile, parseRnxMeteo, parseRnxNavigation, parseRnxObservation } from "@/services/file-parsing"
-import { useAlmanacActions, useAlmanacFile } from "@/stores/almanac-store"
-import { useRinexActions, useRinexMeteoFile, useRinexNavigationFile, useRinexObservationFile } from "@/stores/rinex-store"
+import { useMeteoActions } from "@/stores/meteo-store"
+import { useNavigationActions } from "@/stores/navigation-store"
+import { useObservationActions } from "@/stores/observation-store"
 import { Box } from "@mui/material"
 import Typography from "@mui/material/Typography"
 import { useState } from "react"
@@ -9,21 +10,21 @@ import { useState } from "react"
 
 export default function UploadZone() {
 	const [isDragging, setIsDragging] = useState<boolean>(false)
-	const almanacFile = useAlmanacFile()
-	const { changeAlmanacFile } = useAlmanacActions()
-	const rinexNavigationFile = useRinexNavigationFile()
-	const rinexObservationFile = useRinexObservationFile()
-	const rinexMeteoFile = useRinexMeteoFile()
-	const { changeRinexNavigationFile, changeRinexObservationFile, changeRinexMeteoFile } = useRinexActions()
 
-	function updateStoreData<T extends AstronomyFile<Almanac> | AstronomyFile<RinexNavigation> | AstronomyFile<RinexObservation> | AstronomyFile<RinexMeteo>>
-		(content: string, fileName: string, storeFile: T,
-			parser: (content: string) => AstronomyData,
-			storeAction: (content: T) => void) {
+	const { changeNavigationFile } = useNavigationActions()
+	const { changeObservationFile } = useObservationActions()
+	const { changeMeteoFile } = useMeteoActions()
 
-		storeFile.fileName = fileName
-		storeFile.content = parser(content)
-		storeAction(storeFile);
+	function updateStoreData<T extends AstronomyData>
+		(content: string, fileName: string,
+			parser: (content: string) => T,
+			storeAction: (file: AstronomyFile<T>) => void) {
+		storeAction(
+			{
+				fileName: fileName,
+				content: parser(content),
+			}
+		);
 	}
 
 	const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
@@ -43,16 +44,15 @@ export default function UploadZone() {
 		if (!file?.name) {
 			throw new Error("No file name")
 		}
-		handleFilesDropped(file)
+		handleFileDropped(file)
 	}
 
 	const handleChooseFile = () => {
 		const fileInput = document.createElement("input")
 		fileInput.type = "file"
-		fileInput.accept = `.${[almanacFile.extensions, rinexNavigationFile.extensions, rinexObservationFile.extensions,
-		rinexMeteoFile.extensions].flat().map((ext) => ext).filter((value, index, self) => self.indexOf(value) === index).sort().map((ext) => ext).filter((value) => value).map((ext) => ext).join(", .")}`
+		fileInput.accept = ".alm,.rnx"
 
-		fileInput.multiple = true
+		fileInput.multiple = false
 		fileInput.onchange = async (e: Event) => {
 			const target = e.target as HTMLInputElement
 			if (target?.files) {
@@ -60,34 +60,32 @@ export default function UploadZone() {
 				if (!file?.name) {
 					return
 				}
-				handleFilesDropped(file)
+				handleFileDropped(file)
 			}
 		}
 		fileInput.click()
 	}
-	const handleFilesDropped = async (file: File) => {
+
+	const handleFileDropped = async (file: File) => {
 		const content = await file?.text()
-		const fileName = file?.name
+		const fileName = file.name
 		const extension = file.name.split('.').pop()
-		if (!content || !extension) return
+		if (!content || !fileName || !extension) return
 
-		if (almanacFile.extensions.includes(extension))
-			updateStoreData(content, fileName, almanacFile, parseAlmFile, changeAlmanacFile)
+		if (extension === "alm")
+			updateStoreData(content, fileName, parseAlmFile, changeNavigationFile)
 
-		else {
+		else if (extension === "rnx") {
 			const rnxType = checkRnxType(content)
 			switch (rnxType) {
 				case "navigation":
-					if (!rinexNavigationFile.extensions.includes(extension)) return
-					updateStoreData(content, fileName, rinexNavigationFile, parseRnxNavigation, changeRinexNavigationFile)
+					updateStoreData(content, fileName, parseRnxNavigation, changeNavigationFile)
 					break
 				case "observation":
-					if (!rinexObservationFile.extensions.includes(extension)) return
-					updateStoreData(content, fileName, rinexObservationFile, parseRnxObservation, changeRinexObservationFile)
+					updateStoreData(content, fileName, parseRnxObservation, changeObservationFile)
 					break
 				case "meteo":
-					if (!rinexMeteoFile.extensions.includes(extension)) return
-					updateStoreData(content, fileName, rinexMeteoFile, parseRnxMeteo, changeRinexMeteoFile)
+					updateStoreData(content, fileName, parseRnxMeteo, changeMeteoFile)
 					break
 			}
 		}

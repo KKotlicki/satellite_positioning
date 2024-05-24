@@ -1,7 +1,8 @@
 import { generateTimeLabels } from '@/services/graphUtilites';
-import { useAlmanacActions, useElevationCutoff, useSelectedSatellites, useSelectedTocs, useSky, useTime } from '@/stores/almanac-store';
+import { useElevationCutoff, useNavigationActions, useSelectedSatellites, useSelectedTocs, useSky, useTime } from '@/stores/navigation-store';
 import { useTheme } from "@mui/material/styles";
 import dayjs from 'dayjs';
+import type { LegendClickEvent } from 'plotly.js';
 import Plot from "react-plotly.js";
 import generateElevationData from './graph/elevation-generate';
 
@@ -13,12 +14,12 @@ export default function ElevationGraph() {
 	const time = useTime();
 	const selectedSatellites = useSelectedSatellites();
 	const selectedTocs = useSelectedTocs();
-	const { changeSelectedSatellites } = useAlmanacActions();
+	const { changeSelectedSatellites } = useNavigationActions();
 
 	const timeLabels = generateTimeLabels(selectedTocs);
 	const shortTimeLabels = selectedTocs.map(toc => dayjs.utc((toc + 315964800) * 1000).format('HH:mm'));
 
-	const handleLegendClick = (event: Readonly<Plotly.LegendClickEvent>) => {
+	const handleLegendClick = (event: Readonly<LegendClickEvent>) => {
 		const clickedSatelliteName = event.data[event.curveNumber]?.name;
 		if (!clickedSatelliteName) return false;
 		const updatedSelectedSatellites = { ...selectedSatellites };
@@ -72,8 +73,7 @@ export default function ElevationGraph() {
 			config={{
 				displayModeBar: false,
 			}}
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-			onLegendClick={(e: Readonly<any>) => handleLegendClick(e)}
+			onLegendClick={(e: Readonly<LegendClickEvent>) => handleLegendClick(e)}
 		/>
 	)
 }

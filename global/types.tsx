@@ -131,8 +131,6 @@ export type RinexMeteo = { [key: string]: number[] }
 export type AstronomyData = Almanac | RinexNavigation | RinexObservation | RinexMeteo
 
 export type AstronomyFile<T extends AstronomyData> = {
-  name: string
-  extensions: string[]
-  fileName?: string
-  content?: T
+  fileName: string,
+  content: T,
 }

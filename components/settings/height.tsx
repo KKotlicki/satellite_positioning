@@ -1,10 +1,10 @@
-import { useAlmanacActions, useHeight } from "@/stores/almanac-store";
+import { useHeight, useNavigationActions } from "@/stores/navigation-store";
 import { InputAdornment, TextField } from "@mui/material";
 
 
 export default function HeightPicker() {
 	const height = useHeight()
-	const { changeHeight } = useAlmanacActions()
+	const { changeHeight } = useNavigationActions()
 
 	return (
 		<TextField

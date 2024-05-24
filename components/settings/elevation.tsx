@@ -1,10 +1,10 @@
-import { useAlmanacActions, useElevationCutoff } from "@/stores/almanac-store";
+import { useElevationCutoff, useNavigationActions } from "@/stores/navigation-store";
 import { InputAdornment, TextField } from "@mui/material";
 
 
 export default function ElevationPicker() {
 	const elevationCutoff = useElevationCutoff()
-	const { changeElevationCutoff } = useAlmanacActions()
+	const { changeElevationCutoff } = useNavigationActions()
 
 	return (
 		<TextField

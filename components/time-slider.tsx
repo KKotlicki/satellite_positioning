@@ -1,5 +1,5 @@
 import { theme } from "@/global/constants";
-import { useAlmanacActions, useSelectedTocs, useTime } from "@/stores/almanac-store";
+import { useNavigationActions, useSelectedTocs, useTime } from "@/stores/navigation-store";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { Card, CardContent, CardHeader, Slider } from "@mui/material";
@@ -14,7 +14,7 @@ import { useInterval } from 'usehooks-ts';
 export default function DateTimeSlider() {
   const selectedTocs = useSelectedTocs();
   const time = useTime();
-  const { changeTime } = useAlmanacActions();
+  const { changeTime } = useNavigationActions();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [sliderTime, setSliderTime] = useState(time);

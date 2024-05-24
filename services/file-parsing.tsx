@@ -94,26 +94,25 @@ export function parseAlmFile(input: string): Almanac {
 }
 
 export function parseRnxNavigation(input: string): RinexNavigation {
-  type RINEXNavFileToc = RinexNavigation[string][number]
-  const keys: (keyof RINEXNavFileToc)[] = [
+  const keys: (keyof RinexNavigation[string][number])[] = [
     'af0', 'af1', 'af2', 'IODE', 'Crs', 'delta_n', 'M0',
     'Cuc', 'e', 'Cus', 'sqrt_a', 'toe', 'Cic', 'Omega0', 'Cis',
     'i0', 'Crc', 'omega', 'OmegaDot', 'IDOT', 'L2', 'GPSWeek',
     'L2P', 'accuracy', 'health', 'TGD', 'IODC', 'Tom'
   ];
 
-  const initializeNavEntry = (keys: (keyof RINEXNavFileToc)[]): RINEXNavFileToc => {
+  const initializeNavEntry = (keys: (keyof RinexNavigation[string][number])[]): RinexNavigation[string][number] => {
     return keys.reduce((acc, key) => {
       acc[key] = Number.NaN;
       return acc;
-    }, {} as RINEXNavFileToc);
+    }, {} as RinexNavigation[string][number]);
   };
 
   const lines = input.split('\n');
   const nav: RinexNavigation = {};
   let headerEnded = false;
   let currentPRN: string | null = null;
-  let currentSatToc: RINEXNavFileToc = initializeNavEntry(keys);
+  let currentSatToc: RinexNavigation[string][number] = initializeNavEntry(keys);
   let currentToc: number | null = null;
 
   let m = 1;
@@ -169,7 +168,34 @@ export function parseRnxNavigation(input: string): RinexNavigation {
     m = (m % 8) + 1;
   }
 
-  return nav;
+  const sortedPRNs = Object.keys(nav).sort((a, b) => {
+    const order = 'GRJEC';
+    const a0 = a[0];
+    const b0 = b[0];
+    if (a0 === undefined || b0 === undefined) return 0;
+    const indexA = order.indexOf(a0);
+    const indexB = order.indexOf(b0);
+    if (indexA !== indexB) {
+      return indexA - indexB;
+    }
+    return Number.parseInt(a.substring(1)) - Number.parseInt(b.substring(1));
+  });
+
+  const sortedNav: RinexNavigation = {};
+  for (const prn of sortedPRNs) {
+    const navSatellite = nav[prn];
+    if (navSatellite === undefined) continue;
+    const sortedTocs = Object.keys(navSatellite).map(Number).sort((a, b) => a - b);
+    sortedNav[prn] = {};
+    const prnNav = sortedNav[prn];
+    for (const toc of sortedTocs) {
+      const navSatToc = navSatellite[toc];
+      if (navSatToc === undefined) continue;
+      prnNav[toc] = navSatToc;
+    }
+  }
+
+  return sortedNav;
 }
 
 export function parseRnxObservation(input: string): RinexObservation {

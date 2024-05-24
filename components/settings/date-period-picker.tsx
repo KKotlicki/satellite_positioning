@@ -1,4 +1,4 @@
-import { useAlmanacActions, useSelectedTocs } from "@/stores/almanac-store";
+import { useNavigationActions, useSelectedTocs } from "@/stores/navigation-store";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { DateRangePicker as MUIDateRangePicker } from '@mui/x-date-pickers-pro/DateRangePicker';
 import type { DateRange } from "@mui/x-date-pickers-pro/models/range";
@@ -14,7 +14,7 @@ dayjs.tz.setDefault("UTC");
 
 
 export default function DatePeriodPicker() {
-  const { changeSelectedTocs } = useAlmanacActions();
+  const { changeSelectedTocs } = useNavigationActions();
   const selectedTocs = useSelectedTocs();
 
   const firstToc = selectedTocs[0];

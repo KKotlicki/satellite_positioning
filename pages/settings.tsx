@@ -5,8 +5,7 @@ import LatitudePicker from "@/components/settings/latitude";
 import LongitudePicker from "@/components/settings/longitude";
 import UploadZone from "@/components/settings/upload_zone";
 import { useResizeObserver } from "@/hooks/use-resize-observer";
-import { useAlmanacFile } from '@/stores/almanac-store';
-import { useRinexNavigationFile } from "@/stores/rinex-store";
+import { useNavigationFile } from "@/stores/navigation-store";
 import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
 import { useRef } from "react";
 
@@ -14,8 +13,7 @@ import { useRef } from "react";
 export default function Settings() {
 	const theme = useTheme()
 	const containerRef = useRef(null)
-	const almanacFile = useAlmanacFile()
-	const rinexNavigationFile = useRinexNavigationFile();
+	const navigationFile = useNavigationFile()
 
 	const { size } = useResizeObserver(containerRef)
 
@@ -41,9 +39,7 @@ export default function Settings() {
 					}}
 				/>
 				<CardContent>
-					{rinexNavigationFile.content !== undefined ? (
-						<DatePeriodPicker />
-					) : almanacFile.content !== undefined ? (
+					{navigationFile !== null ? (
 						<>
 							<LatitudePicker />
 							<LongitudePicker />

@@ -1,5 +1,5 @@
 import { generateTimeLabels } from '@/services/graphUtilites';
-import { useDOP, useSelectedTocs, useTime } from '@/stores/almanac-store';
+import { useDOP, useSelectedTocs, useTime } from '@/stores/navigation-store';
 import { useTheme } from "@mui/material/styles";
 import dayjs from 'dayjs';
 import Plot from "react-plotly.js";

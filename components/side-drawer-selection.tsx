@@ -1,16 +1,15 @@
 import { satelliteProviders, theme } from "@/global/constants";
 import type { Almanac } from "@/global/types";
-import { useAlmanacActions, useAlmanacFile, useSelectedSatellites, useSelectedTocs } from "@/stores/almanac-store";
-import { useRinexNavigationFile } from "@/stores/rinex-store";
+import { useNavigationActions, useNavigationFile, useSelectedSatellites, useSelectedTocs } from "@/stores/navigation-store";
 import { Card, CardContent, CardHeader, Checkbox, FormControlLabel, FormGroup, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
+
 export default function SideDrawerSelection(): JSX.Element {
-  const almanacFile = useAlmanacFile();
-  const rinexNavigationFile = useRinexNavigationFile();
+  const navigationFile = useNavigationFile();
   const selectedSatellites = useSelectedSatellites();
   const selectedTocs = useSelectedTocs();
-  const { changeSelectedSatellites } = useAlmanacActions();
+  const { changeSelectedSatellites } = useNavigationActions();
 
   const [providerChecked, setProviderChecked] = useState<{ [key: string]: boolean }>({});
 
@@ -57,14 +56,14 @@ export default function SideDrawerSelection(): JSX.Element {
       return closestToStart.health === 0 || closestToEnd.health === 0 ? { health: 0 } : { health: 1 };
     };
 
+    if (navigationFile === null) return;
     const allSatellites = new Set([
-      ...Object.keys(almanacFile.content || {}),
-      ...Object.keys(rinexNavigationFile.content || {})
+      ...Object.keys(navigationFile.content || {})
     ]);
 
     for (const prn of Array.from(allSatellites)) {
       if (prn.charAt(0) === provider) {
-        const satelliteData = almanacFile.content?.[prn] || rinexNavigationFile.content?.[prn];
+        const satelliteData = navigationFile.content?.[prn];
         const healthStatus = satelliteData ? checkHealthStatus(satelliteData) : { health: 1 };
 
         if (!newSelectedSatellites[provider]) {
