@@ -6,7 +6,6 @@ import Plot from "react-plotly.js";
 import type { FullDOP } from './graph/dop-generate';
 import generateDOPData from './graph/dop-generate';
 
-
 export default function DOPGraph() {
   const theme = useTheme();
   const DOP = useDOP();
@@ -27,7 +26,13 @@ export default function DOPGraph() {
     if (!DOPDataAtTime) continue;
 
     const { TDOP, PDOP, VDOP, HDOP } = DOPDataAtTime;
-    const GDOP = Math.sqrt(PDOP ** 2 + TDOP ** 2);
+
+    let GDOP: number;
+    if (TDOP === -1 || PDOP === -1 || VDOP === -1 || HDOP === -1) {
+      GDOP = -1;
+    } else {
+      GDOP = Math.sqrt(PDOP ** 2 + TDOP ** 2);
+    }
 
     fullDOP.GDOP[1].push(GDOP);
     fullDOP.TDOP[1].push(TDOP);
@@ -35,7 +40,9 @@ export default function DOPGraph() {
     fullDOP.HDOP[1].push(HDOP);
     fullDOP.VDOP[1].push(VDOP);
 
-    maxDOP = Math.max(maxDOP, GDOP, TDOP, PDOP, HDOP, VDOP);
+    if (GDOP !== -1) {
+      maxDOP = Math.max(maxDOP, GDOP, TDOP, PDOP, HDOP, VDOP);
+    }
   }
 
   maxDOP += 1;
@@ -59,9 +66,9 @@ export default function DOPGraph() {
           tickfont: {
             color: theme.palette.text.primary,
           },
-          range: [0, 144],
+          range: [0, selectedTocs.length - 1],
           fixedrange: true,
-          tickvals: Array.from({ length: 13 }, (_, i) => i * 12),
+          tickvals: Array.from({ length: Math.ceil(selectedTocs.length / 12) + 1 }, (_, i) => i * 12).filter(val => val < selectedTocs.length),
           ticktext: shortTimeLabels.filter((_, index) => index % 12 === 0),
         },
         yaxis: {

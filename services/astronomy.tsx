@@ -264,12 +264,24 @@ export function calculateDOP(
     }
 
     A = math.subset(A, math.index(math.range(1, sizeOfA0), math.range(0, 4)));
+    const sizeOfASubset = A.size();
+    const sizeOfASubset0 = sizeOfASubset[0];
+    if (sizeOfASubset0 === undefined) {
+      GNSS_DOP[toc] = { TDOP: -1, PDOP: -1, VDOP: -1, HDOP: -1 };
+      continue;
+    }
+    if (sizeOfASubset0 < 4 || sizeOfASubset[1] !== 4) {
+      GNSS_DOP[toc] = { TDOP: -1, PDOP: -1, VDOP: -1, HDOP: -1 };
+      continue;
+    }
+
     const Atranspose = math.transpose(A);
     const QnotInverted = math.multiply(Atranspose, A);
 
     const det = math.det(QnotInverted);
     if (det === 0) {
-      throw new Error("Determinant of A is zero, yet matrix has 4x4 dimensions. This should not happen.");
+      GNSS_DOP[toc] = { TDOP: -1, PDOP: -1, VDOP: -1, HDOP: -1 };
+      continue;
     }
 
     const Q = math.inv(QnotInverted);
