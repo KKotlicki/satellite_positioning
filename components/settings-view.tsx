@@ -6,6 +6,7 @@ import Box from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
 import dayjs from "dayjs";
 import UploadZone from "./settings/upload_zone";
+import { useMeteoFile } from "@/stores/meteo-store";
 
 
 const FileUploadedPaper = styled(Paper, { shouldForwardProp: (prop) => prop !== 'color' })(({ theme, color }) => ({
@@ -30,6 +31,7 @@ export default function SettingsView(): JSX.Element {
   const elevationCutoff = useElevationCutoff();
   const navigationFile = useNavigationFile();
   const observationFile = useObservationFile();
+  const meteoFile = useMeteoFile();
   const selectedTocs = useSelectedTocs();
 
   const startSelectedToc = selectedTocs[0];
@@ -70,14 +72,14 @@ export default function SettingsView(): JSX.Element {
           backgroundColor: theme.palette.divider
         }}
       />
-      {navigationFile !== null ? (
+      {navigationFile !== null || observationFile !== null || meteoFile !== null ? (
         <CardContent>
           <Box
             component='ul'
             sx={{
               m: 0,
               p: 0,
-              pl: 1
+              pl: 1,
             }}
           >
             <li>{parseLatitude(latitude)}</li>
@@ -92,6 +94,9 @@ export default function SettingsView(): JSX.Element {
           </FileUploadedPaper>
           <FileUploadedPaper color={observationFile !== null ? 'green' : 'red'}>
             {observationFile !== null ? `Observation file: ${observationFile.fileName}` : "No observation file uploaded"}
+          </FileUploadedPaper>
+          <FileUploadedPaper color={meteoFile !== null ? 'green' : 'red'}>
+            {meteoFile !== null ? `Meteo file: ${meteoFile.fileName}` : "No meteo file uploaded"}
           </FileUploadedPaper>
           <UploadZone />
         </CardContent>
