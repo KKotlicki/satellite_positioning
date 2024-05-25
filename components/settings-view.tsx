@@ -88,10 +88,10 @@ export default function SettingsView(): JSX.Element {
             <li>Observation end: {endDateTime}</li>
           </Box>
           <FileUploadedPaper color={navigationFile !== null ? 'green' : 'red'}>
-            {navigationFile !== null ? `Navigation file: ${navigationFile.fileName}` : "No navigation file ploaded"}
+            {navigationFile !== null ? `Navigation file: ${navigationFile.fileName}` : "No navigation file uploaded"}
           </FileUploadedPaper>
           <FileUploadedPaper color={observationFile !== null ? 'green' : 'red'}>
-            {observationFile !== null ? `Observation file: ${observationFile.fileName}` : "No observation file ploaded"}
+            {observationFile !== null ? `Observation file: ${observationFile.fileName}` : "No observation file uploaded"}
           </FileUploadedPaper>
           <UploadZone />
         </CardContent>
