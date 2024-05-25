@@ -7,12 +7,6 @@ import * as math from 'mathjs';
 
 dayjs.extend(utc);
 
-function meanMotionOfOrbit(sqrtA: number) {
-  if (sqrtA === 0) throw new Error("Semi-major axis cannot be zero");
-  const a = sqrtA ** 2;
-  return Math.sqrt(WGS84_EARTH_GRAVITATIONAL_PARAMETER / (a * a * a));
-}
-
 const meanAnomalyOfOrbit = (M0: number, n: number, tk: number) => M0 + n * tk;
 function eccentricAnomalyOfOrbit(e: number, Mk: number) {
   let E = Mk;
@@ -28,9 +22,6 @@ function eccentricAnomalyOfOrbit(e: number, Mk: number) {
 const trueAnomalyOfOrbit = (e: number, Ek: number) =>
   Math.atan2(Math.sqrt(1 - e ** 2) * Math.sin(Ek),
     Math.cos(Ek) - e);
-
-const argumentOfPerigeeOfOrbit = (vk: number, omega: number) => vk + omega;
-const radiusOfOrbit = (a: number, e: number, Ek: number) => a * (1 - e * Math.cos(Ek));
 
 const positionInOrbit = (rk: number, psi: number): [number, number] => ([
   rk * Math.cos(psi),
@@ -51,63 +42,91 @@ const positionInECEF = (
   z: yk * Math.sin(inc)
 });
 
+function findClosestToc(tocs: number[], targetToc: number): number {
+  return tocs.reduce((prev, curr) =>
+    Math.abs(curr - targetToc) < Math.abs(prev - targetToc) ? curr : prev
+  );
+}
+
+function isRinexNavigationData(data: Almanac[string][number] | RinexNavigation[string][number]): data is RinexNavigation[string][number] {
+  return 'af0' in data && 'af1' in data && 'af2' in data && 'IODE' in data;
+}
+
+function getSatelliteDataEntries(
+  navigationData: Almanac | RinexNavigation
+): [string, { [toc: number]: Almanac[string][number] | RinexNavigation[string][number] }][] {
+  return Object.entries(navigationData);
+}
+
+function extractSatelliteData(
+  satelliteData: { [toc: number]: Almanac[string][number] | RinexNavigation[string][number] },
+  closestToc: number
+) {
+  const data = satelliteData[closestToc];
+  if (!data) return null;
+
+  const { e, sqrt_a, Omega0, omega, M0, i0, OmegaDot, toe } = data;
+
+  if (![e, sqrt_a, Omega0, omega, M0, i0, OmegaDot, toe].every(val => val !== undefined)) {
+    return null;
+  }
+
+  const {
+    delta_n = 0, Cuc = 0, Cus = 0, Cic = 0, Cis = 0, Crc = 0, Crs = 0, IDOT = 0
+  } = isRinexNavigationData(data) ? data : {};
+
+  return { e, sqrt_a, Omega0, omega, M0, i0, OmegaDot, toe, delta_n, Cuc, Cus, Cic, Cis, Crc, Crs, IDOT };
+}
+
 export function calculateSatellitePositions(
   navigationData: Almanac | RinexNavigation,
   selectedTocs: number[]
 ): SatellitePath {
   const output: SatellitePath = {};
 
-  for (const [prn, satelliteData] of Object.entries(navigationData)) {
-    for (const [tocStr, data] of Object.entries(satelliteData)) {
-      const e = data.e;
-      const sqrtA = data.sqrt_a;
-      const Omega0 = data.Omega0;
-      const omega = data.omega;
-      const M0 = data.M0;
-      const inc = data.i0;
-      const Omega = data.OmegaDot;
-      const toe = data.toe;
+  for (const [prn, satelliteData] of getSatelliteDataEntries(navigationData)) {
+    const tocs = Object.keys(satelliteData).map(Number);
 
-      if (
-        e === undefined ||
-        sqrtA === undefined ||
-        Omega0 === undefined ||
-        omega === undefined ||
-        M0 === undefined ||
-        inc === undefined ||
-        Omega === undefined ||
-        toe === undefined
-      ) {
-        continue;
-      }
+    for (const t of selectedTocs) {
+      const closestToc = findClosestToc(tocs, t);
+      const data = extractSatelliteData(satelliteData, closestToc);
 
-      const toc = Number(tocStr);
+      if (!data) continue;
+
+      const { e, sqrt_a, Omega0, omega, M0, i0, OmegaDot, toe, delta_n, Cuc, Cus, Cic, Cis, Crc, Crs, IDOT } = data;
+
+      const tk = t - closestToc;
+      const a = sqrt_a * sqrt_a;
+      const n0 = Math.sqrt(WGS84_EARTH_GRAVITATIONAL_PARAMETER / (a * a * a));
+      const n = n0 + delta_n;
+      const Mk = meanAnomalyOfOrbit(M0, n, tk);
+      const E = eccentricAnomalyOfOrbit(e, Mk);
+      const vk = trueAnomalyOfOrbit(e, E);
+      const psi = vk + omega;
+      const psiSin2 = Math.sin(2 * psi);
+      const psiCos2 = Math.cos(2 * psi);
+      const deltaU = Cus * psiSin2 + Cuc * psiCos2;
+      const deltaR = Crs * psiSin2 + Crc * psiCos2;
+      const deltaI = Cis * psiSin2 + Cic * psiCos2;
+
+      const u = psi + deltaU;
+      const r = a * (1 - e * Math.cos(E)) + deltaR;
+      const i = i0 + IDOT * tk + deltaI;
+
+      const [xk, yk] = positionInOrbit(r, u);
+      const OmegaK = ascendingNodeOfOrbit(Omega0, OmegaDot, tk, toe);
+      const position = positionInECEF(xk, yk, OmegaK, i);
 
       if (!output[prn]) {
         output[prn] = {};
       }
 
-      for (const t of selectedTocs) {
-        const tk = t - toc;
-        const n = meanMotionOfOrbit(sqrtA);
-        const Mk = meanAnomalyOfOrbit(M0, n, tk);
-        const E = eccentricAnomalyOfOrbit(e, Mk);
-        const vk = trueAnomalyOfOrbit(e, E);
-        const psi = argumentOfPerigeeOfOrbit(vk, omega);
-        const rk = radiusOfOrbit(sqrtA * sqrtA, e, E);
-        const [xk, yk] = positionInOrbit(rk, psi);
-        const OmegaK = ascendingNodeOfOrbit(Omega0, Omega, tk, toe);
-        const position = positionInECEF(xk, yk, OmegaK, inc);
-
-        output[prn][t] = position;
-      }
+      output[prn][t] = position;
     }
   }
 
   return output;
 }
-
-
 
 export function calculateSatellitePositionsGeocentric(
   GNSS: SatellitePath
