@@ -125,7 +125,83 @@ export type RinexNavigation = {
   }
 }
 
-export type RinexObservation = { [key: string]: number[] }
+export type ObservationTypes = {
+  C1C?: number;
+  L1C?: number;
+  S1C?: number;
+  C2W?: number;
+  L2W?: number;
+  S2W?: number;
+  C2X?: number;
+  L2X?: number;
+  S2X?: number;
+  C5X?: number;
+  L5X?: number;
+  S5X?: number;
+  C1P?: number;
+  L1P?: number;
+  S1P?: number;
+  C2C?: number;
+  L2C?: number;
+  S2C?: number;
+  C3X?: number;
+  L3X?: number;
+  S3X?: number;
+  C1X?: number;
+  L1X?: number;
+  S1X?: number;
+  C1Z?: number;
+  L1Z?: number;
+  S1Z?: number;
+  C2I?: number;
+  L2I?: number;
+  S2I?: number;
+  C7I?: number;
+  L7I?: number;
+  S7I?: number;
+  C6I?: number;
+  L6I?: number;
+  S6I?: number;
+}
+
+export type RinexObservationHeader = {
+  approxPositionXYZ: {
+    x: number;
+    y: number;
+    z: number;
+  }
+  antennaDelta: {
+    h: number;
+    e: number;
+    n: number;
+  }
+  observationTypes: { [system: string]: ObservationTypes; }
+  interval: number;
+  tocOfFirstObs: number;
+  phaseShifts: {
+    [system: string]: {
+      [observationType: string]: number;
+    };
+  }
+  signalStrengthUnit: string;
+  glonassSlotFrequencies: { [prn: string]: number }
+}
+
+export type RinexObservationBody = {
+  [toc: number]: {
+    [prn: string]: {
+      pseudorange: number,
+      carrierPhase: number,
+      signalStrength: number,
+    }
+  }
+};
+
+export type RinexObservation = {
+  header: RinexObservationHeader;
+  body: RinexObservationBody;
+}
+
 export type RinexMeteo = { [key: string]: number[] }
 
 export type AstronomyData = Almanac | RinexNavigation | RinexObservation | RinexMeteo

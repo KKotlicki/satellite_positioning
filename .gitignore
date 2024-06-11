@@ -36,6 +36,6 @@ yarn-error.log*
 next-env.d.ts
 
 # almanac
-*.alm
-*.al3
-*.rnx
+/*.alm
+/*.al3
+/*.rnx

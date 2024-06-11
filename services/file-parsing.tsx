@@ -1,6 +1,8 @@
 import { PRN_GNSS } from "@/global/constants";
-import type { Almanac, RinexMeteo, RinexNavigation, RinexObservation } from "@/global/types";
+import type { Almanac, ObservationTypes, RinexMeteo, RinexNavigation, RinexObservation, RinexObservationBody, RinexObservationHeader } from "@/global/types";
 import dayjs from "dayjs";
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 
 export function parseAlmFile(input: string): Almanac {
@@ -198,11 +200,136 @@ export function parseRnxNavigation(input: string): RinexNavigation {
   return sortedNav;
 }
 
+// export function parseRnxObservation(input: string): RinexObservation {
+//   return {
+//     test: [Number(input)],
+//   }
+// }
+
 export function parseRnxObservation(input: string): RinexObservation {
-  return {
-    test: [Number(input)],
+  const lines = input.split('\n');
+  let headerEnded = false;
+  const header: RinexObservationHeader = {
+    approxPositionXYZ: { x: 0, y: 0, z: 0 },
+    antennaDelta: { h: 0, e: 0, n: 0 },
+    observationTypes: {},
+    interval: 0,
+    tocOfFirstObs: 0,
+    phaseShifts: {},
+    signalStrengthUnit: '',
+    glonassSlotFrequencies: {}
+  };
+  const body: RinexObservationBody = {};
+  let currentEpoch = 0;
+
+  const parseToc = (line: string): number => {
+    const year = Number(line.substring(2, 6).trim());
+    const month = Number(line.substring(7, 9).trim());
+    const day = Number(line.substring(10, 12).trim());
+    const hour = Number(line.substring(13, 15).trim());
+    const minute = Number(line.substring(16, 18).trim());
+    const second = Number(line.substring(19, 29).trim());
+
+    const date = dayjs.utc().set('year', year).set('month', month - 1).set('date', day).set('hour', hour).set('minute', minute).set('second', second);
+    const gpsEpoch = dayjs.utc().set('year', 1980).set('month', 0).set('date', 6).set('hour', 0).set('minute', 0).set('second', 0);
+    const tocInSeconds = date.diff(gpsEpoch, 'second');
+    return tocInSeconds;
+  };
+
+  for (let line of lines) {
+    if (!headerEnded) {
+      if (line.includes('END OF HEADER')) {
+        headerEnded = true;
+      } else {
+        // Parse header lines
+        if (line.includes('APPROX POSITION XYZ')) {
+          header.approxPositionXYZ.x = Number.parseFloat(line.substring(0, 14).trim());
+          header.approxPositionXYZ.y = Number.parseFloat(line.substring(14, 28).trim());
+          header.approxPositionXYZ.z = Number.parseFloat(line.substring(28, 42).trim());
+        } else if (line.includes('ANTENNA: DELTA H/E/N')) {
+          header.antennaDelta.h = Number.parseFloat(line.substring(0, 14).trim());
+          header.antennaDelta.e = Number.parseFloat(line.substring(14, 28).trim());
+          header.antennaDelta.n = Number.parseFloat(line.substring(28, 42).trim());
+        } else if (line.includes('SYS / # / OBS TYPES')) {
+          const system = line.charAt(0);
+          const numTypes = Number.parseInt(line.substring(4, 6).trim(), 10);
+          const observationTypes: ObservationTypes = {};
+          let index = 7;
+          const currentLine = lines.shift()
+          if (!currentLine) continue;
+          for (let i = 0; i < numTypes; i++) {
+            if (index > 58) {
+              index = 7;
+              line = currentLine;
+            }
+            const obsType = line.substring(index, index + 3).trim();
+            observationTypes[obsType as keyof ObservationTypes] = i + 1;
+            index += 4;
+          }
+          header.observationTypes[system] = observationTypes;
+        } else if (line.includes('INTERVAL')) {
+          header.interval = Number.parseFloat(line.substring(0, 10).trim());
+        } else if (line.includes('TIME OF FIRST OBS')) {
+          const year = Number.parseInt(line.substring(2, 6).trim(), 10);
+          const month = Number.parseInt(line.substring(10, 12).trim(), 10);
+          const day = Number.parseInt(line.substring(16, 18).trim(), 10);
+          const hour = Number.parseInt(line.substring(22, 24).trim(), 10);
+          const minute = Number.parseInt(line.substring(28, 30).trim(), 10);
+          const second = Number(line.substring(33, 43).trim());
+          const date = dayjs.utc().set('year', year).set('month', month - 1).set('date', day).set('hour', hour).set('minute', minute).set('second', second);
+          const gpsEpoch = dayjs.utc().set('year', 1980).set('month', 0).set('date', 6).set('hour', 0).set('minute', 0).set('second', 0);
+          const tocInSeconds = date.diff(gpsEpoch, 'second');
+          header.tocOfFirstObs = tocInSeconds;
+
+        } else if (line.includes('SYS / PHASE SHIFT')) {
+          const system = line.charAt(0);
+          const observationType = line.substring(2, 5).trim();
+          const shift = Number.parseFloat(line.substring(5, 15).trim());
+          if (!header.phaseShifts[system]) {
+            header.phaseShifts[system] = {};
+          }
+          header.phaseShifts[system][observationType] = shift;
+        } else if (line.includes('SIGNAL STRENGTH UNIT')) {
+          header.signalStrengthUnit = line.substring(0, 4).trim();
+        } else if (line.includes('GLONASS SLOT / FRQ #')) {
+          const parts = line.split(/\s+/);
+          for (let i = 1; i < parts.length; i += 2) {
+            const part1 = parts[i];
+            const part2 = parts[i + 1];
+            if (part1 && part2) {
+              header.glonassSlotFrequencies[part1] = Number.parseInt(part2, 10);
+            }
+          }
+        }
+      }
+      continue;
+    }
+
+    if (line.startsWith('>')) {
+      currentEpoch = parseToc(line);
+      if (!body[currentEpoch]) {
+        body[currentEpoch] = {};
+      }
+      continue;
+    }
+
+    const prn = line.substring(0, 3).trim();
+    const observation = {
+      pseudorange: Number.parseFloat(line.substring(3, 20).trim()),
+      carrierPhase: Number.parseFloat(line.substring(20, 37).trim()),
+      signalStrength: Number.parseFloat(line.substring(37, 54).trim()),
+    };
+    const currentEpochData = body[currentEpoch];
+    if (!currentEpochData) {
+      body[currentEpoch] = { [prn]: observation };
+    } else if (!currentEpochData[prn]) {
+      currentEpochData[prn] = observation;
+    }
   }
+
+  return { header, body };
 }
+
 
 export function parseRnxMeteo(input: string): RinexMeteo {
   return {
