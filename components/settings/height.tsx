@@ -1,10 +1,9 @@
-import { useHeight, useNavigationActions } from "@/stores/navigation-store";
-import { InputAdornment, TextField } from "@mui/material";
-
+import { useActions, useHeight } from "@/services/store"
+import { InputAdornment, TextField } from "@mui/material"
 
 export default function HeightPicker() {
 	const height = useHeight()
-	const { changeHeight } = useNavigationActions()
+	const { changeHeight } = useActions()
 
 	return (
 		<TextField

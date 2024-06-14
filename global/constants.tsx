@@ -4,7 +4,7 @@ import { Roboto } from "next/font/google";
 
 
 export const project = "GNSS Planning"
-export const pages = ["Settings", "Selection", "Charts", "Sky Plot", "World View"] as const
+export const pages = ["Settings", "Selection", "Charts", "Sky Plot", "World View", "Receiver"] as const
 export const theme = createTheme({
   palette: {
     primary: {
@@ -40,6 +40,7 @@ export const roboto = Roboto({
 
 export const drawerWidth = 240
 
+export const SPEED_OF_LIGHT = 299792458
 export const WGS84_EARTH_RADIUS_MAJOR = 637137
 export const WGS84_EARTH_RADIUS_MINOR = 6356752.3142
 export const WGS84_EARTH_GRAVITATIONAL_PARAMETER = 3.986005e14

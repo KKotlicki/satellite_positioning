@@ -1,11 +1,11 @@
-import { useNavigationActions } from "@/stores/navigation-store";
+import { useActions } from "@/services/store";
 import { InputAdornment, TextField } from "@mui/material";
 import { type ChangeEvent, useState } from "react";
 
 export default function LatitudePicker() {
   const [latitudeValue, setLatitudeValue] = useState("N 0° 0' 0.0")
 
-  const { changeLatitude } = useNavigationActions()
+  const { changeLatitude } = useActions()
 
   const isValidLatitude = (value: string) => {
     const sanitizedValue = value.replace(/\s+/g, "").replace("''", "'")

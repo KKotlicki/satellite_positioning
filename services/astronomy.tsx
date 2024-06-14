@@ -1,5 +1,5 @@
-import { WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/global/constants";
-import type { Almanac, DOPList, RinexNavigation, SatellitePath, SatellitePathGeocentric, SelectedSatellites, SkyPath } from "@/global/types";
+import { SPEED_OF_LIGHT, WGS84_EARTH_GRAVITATIONAL_PARAMETER, WGS84_EARTH_RADIUS_MAJOR, WGS84_EARTH_RADIUS_MINOR, WGS84_EARTH_ROTATION_RATE } from "@/global/constants";
+import type { Almanac, DOPList, ObservationPath, RinexNavigation, RinexObservationBody, SatellitePath, SatellitePathGeocentric, SelectedSatellites, SkyPath } from "@/global/types";
 import dayjs from "dayjs";
 import utc from 'dayjs/plugin/utc';
 import * as math from 'mathjs';
@@ -120,8 +120,12 @@ export function calculateSatellitePositions(
       if (!output[prn]) {
         output[prn] = {};
       }
+      const outputPRN = output[prn];
+      if (!outputPRN) {
+        throw new Error('outputPRN is undefined');
+      }
 
-      output[prn][t] = position;
+      outputPRN[t] = position;
     }
   }
 
@@ -140,7 +144,11 @@ export function calculateSatellitePositionsGeocentric(
       const r = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
       const latitude = Math.asin(z / r) * 180 / Math.PI;
       const longitude = Math.atan2(y, x) * 180 / Math.PI;
-      output[prn][toc] = { latitude, longitude };
+      const outputPRN = output[prn];
+      if (!outputPRN) {
+        throw new Error('outputPRN is undefined');
+      }
+      outputPRN[toc] = { latitude, longitude };
     }
   }
 
@@ -191,7 +199,11 @@ export function calculateSkyPositions(
       const elevation = Math.asin(zUp / rGeocentric);
       const azimuth = (Math.atan2(xEast, yNorth) + 2 * Math.PI) % (2 * Math.PI);
 
-      output[prn][toc] = { elevation, azimuth };
+      const outputPRN = output[prn];
+      if (!outputPRN) {
+        throw new Error('outputPRN is undefined');
+      }
+      outputPRN[toc] = { elevation, azimuth };
     }
   }
 
@@ -251,6 +263,7 @@ export function calculateDOP(
     for (const satellitePRN of selectedSatellitesList) {
       if (!GNSS[satellitePRN]) continue;
       const satelliteData = GNSS[satellitePRN];
+      if (!satelliteData) continue;
       const satellitePosition = satelliteData[toc];
       if (!satellitePosition) continue;
       const { x, y, z } = satellitePosition;
@@ -337,4 +350,76 @@ export function calculateDOP(
   }
 
   return GNSS_DOP;
+}
+
+export function calculateReceiverPositions(
+  elevationCutoff: number,
+  navigation: SatellitePath,
+  observation: RinexObservationBody
+): ObservationPath {
+  const output: ObservationPath = {};
+
+  for (const [toc, observations] of Object.entries(observation)) {
+      const t = Number(toc);
+      const obsList = Object.entries(observations);
+
+      let x0 = 0;
+      let y0 = 0;
+      let z0 = 0;
+      let deltaT = 0;
+
+      for (let iter = 0; iter < 5; iter++) {
+          const A = [];
+          const Y: number[] = [];
+
+          for (const [prn, obs] of obsList) {
+              const navigationData = navigation[prn];
+              if (!navigationData) continue;
+              const navigationDataInToc = navigationData[t];
+              if (!navigationDataInToc) continue;
+
+              const { x, y, z } = navigationDataInToc;
+              const pseudorange = obs.pseudorange;
+
+              const dtr = pseudorange / SPEED_OF_LIGHT;
+              const xs = x * Math.cos(WGS84_EARTH_ROTATION_RATE * dtr) + y * Math.sin(WGS84_EARTH_ROTATION_RATE * dtr);
+              const ys = y * Math.cos(WGS84_EARTH_ROTATION_RATE * dtr) - x * Math.sin(WGS84_EARTH_ROTATION_RATE * dtr);
+              const zs = z;
+
+              const rho = Math.sqrt((xs - x0) ** 2 + (ys - y0) ** 2 + (zs - z0) ** 2);
+
+              const elevation = Math.asin((zs - z0) / rho);
+              if (elevation < elevationCutoff * (Math.PI / 180)) continue;
+
+              const rho_corrected = Math.sqrt((xs - x0) ** 2 + (ys - y0) ** 2 + (zs - z0) ** 2);
+              Y.push(pseudorange - rho_corrected + SPEED_OF_LIGHT * deltaT);
+
+              const A_row = [
+                  -(xs - x0) / rho_corrected,
+                  -(ys - y0) / rho_corrected,
+                  -(zs - z0) / rho_corrected,
+                  SPEED_OF_LIGHT
+              ];
+              A.push(A_row);
+          }
+
+          if (A.length < 4) continue;
+
+          const A_mat = math.matrix(A);
+          const y_vec = math.matrix(Y);
+
+          const AT = math.transpose(A_mat);
+          const ATA = math.multiply(AT, A_mat);
+          const ATy = math.multiply(AT, y_vec);
+          const x = math.lusolve(ATA, ATy);
+
+          x0 += x.get([0, 0]);
+          y0 += x.get([1, 0]);
+          z0 += x.get([2, 0]);
+          deltaT += x.get([3, 0]) / SPEED_OF_LIGHT;
+      }
+
+      output[t] = { x: x0, y: y0, z: z0 };
+  }
+  return output;
 }

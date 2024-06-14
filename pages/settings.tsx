@@ -1,14 +1,13 @@
-import DatePeriodPicker from "@/components/settings/date-period-picker";
-import ElevationPicker from "@/components/settings/elevation";
-import HeightPicker from "@/components/settings/height";
-import LatitudePicker from "@/components/settings/latitude";
-import LongitudePicker from "@/components/settings/longitude";
-import UploadZone from "@/components/settings/upload_zone";
-import { useResizeObserver } from "@/hooks/use-resize-observer";
-import { useNavigationFile } from "@/stores/navigation-store";
-import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material";
-import { useRef } from "react";
-
+import DatePeriodPicker from "@/components/settings/date-period-picker"
+import ElevationPicker from "@/components/settings/elevation"
+import HeightPicker from "@/components/settings/height"
+import LatitudePicker from "@/components/settings/latitude"
+import LongitudePicker from "@/components/settings/longitude"
+import UploadZone from "@/components/settings/upload_zone"
+import { useResizeObserver } from "@/hooks/use-resize-observer"
+import { useNavigationFile } from "@/services/store"
+import { Box, Card, CardContent, CardHeader, useTheme } from "@mui/material"
+import { useRef } from "react"
 
 export default function Settings() {
 	const theme = useTheme()
@@ -20,14 +19,14 @@ export default function Settings() {
 	return (
 		<Box
 			ref={containerRef}
-			display="flex"
-			alignItems={'center'}
-			justifyContent="center"
-			width="100%"
+			display='flex'
+			alignItems={"center"}
+			justifyContent='center'
+			width='100%'
 		>
 			<Card
 				sx={{
-					width: size,
+					width: size
 				}}
 				variant='outlined'
 			>
@@ -54,4 +53,4 @@ export default function Settings() {
 			</Card>
 		</Box>
 	)
-} 
+}

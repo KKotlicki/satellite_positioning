@@ -1,10 +1,9 @@
-import { useElevationCutoff, useNavigationActions } from "@/stores/navigation-store";
-import { InputAdornment, TextField } from "@mui/material";
-
+import { useActions, useElevationCutoff } from "@/services/store"
+import { InputAdornment, TextField } from "@mui/material"
 
 export default function ElevationPicker() {
 	const elevationCutoff = useElevationCutoff()
-	const { changeElevationCutoff } = useNavigationActions()
+	const { changeElevationCutoff } = useActions()
 
 	return (
 		<TextField
